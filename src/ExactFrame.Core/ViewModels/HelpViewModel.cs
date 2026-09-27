@@ -100,7 +100,7 @@ public sealed class HelpViewModel : ObservableObject
         new(".NET", _appInfo.RuntimeVersion),
         new("Windows App SDK", _appInfo.WindowsAppSdkVersion),
         new("Windows", _appInfo.OperatingSystem),
-        new("Settings file", _appInfo.SettingsPath)
+        new("App database", _appInfo.DatabasePath)
     ];
 
     public bool IsInfoCopied
@@ -151,7 +151,7 @@ public sealed class HelpViewModel : ObservableObject
                             $", work area {w.Width} × {w.Height} at ({w.X}, {w.Y})" + (display.IsPrimary ? ", primary" : string.Empty));
         }
 
-        return text.AppendLine($"Settings: {_appInfo.SettingsPath}").ToString();
+        return text.AppendLine($"Database: {_appInfo.DatabasePath}").ToString();
     }
 
     private void ApplySearch()
@@ -168,7 +168,7 @@ public sealed class HelpViewModel : ObservableObject
         foreach (var item in _allTopics) item.IsSelected = item.Topic == _selectedTopic;
     }
 
-    private void RevealSettings() => _shell.RevealInExplorer(_appInfo.SettingsPath);
+    private void RevealSettings() => _shell.RevealInExplorer(_appInfo.DatabasePath);
 
     private async Task CopySystemInfoAsync()
     {

@@ -56,6 +56,7 @@ public sealed class JsonSettingsStoreTests : IDisposable
             HideFromRecorders = false,
             Profiles = [new FrameProfile { Id = "p1", Name = "Left half", Width = 1280, Height = 720, Anchor = null, X = -1280, Y = 40, DisplayDeviceName = @"\\.\DISPLAY2",
                 NestedFrames = [new NestedFrame { Name = "Shorts 9:16", AspectWidth = 9, AspectHeight = 16, Anchor = FrameAnchor.Right, Color = OutlineColor.Blue }] }],
+            RememberedAppSizes = [new RememberedAppSize("devenv", 1600, 900, WindowArea.VisibleFrame)],
             ActiveProfileId = "p1",
             NextProfileHotkey = new HotkeyGesture(HotkeyModifiers.Windows | HotkeyModifiers.Shift, 0x50),
             LastFrame = new FrameProfile { Id = "last", Mode = FrameMode.Resize, Area = WindowArea.Client, TargetProcessName = "devenv", Anchor = FrameAnchor.TopRight }
@@ -67,6 +68,7 @@ public sealed class JsonSettingsStoreTests : IDisposable
         Assert.Equal(settings.Style, loaded.Style);
         Assert.False(loaded.HideFromRecorders);
         Assert.Equal(settings.Profiles, loaded.Profiles);
+        Assert.Equal(settings.RememberedAppSizes, loaded.RememberedAppSizes);
         Assert.Equal("p1", loaded.ActiveProfileId);
         Assert.Equal(settings.NextProfileHotkey, loaded.NextProfileHotkey);
         Assert.Equal(settings.LastFrame, loaded.LastFrame);

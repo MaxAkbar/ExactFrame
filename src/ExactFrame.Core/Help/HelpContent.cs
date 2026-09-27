@@ -166,6 +166,9 @@ public static class HelpContent
                     Bullets(
                         "A minimized or maximized app is first restored to a normal window.",
                         "The app is brought to the front, moved to the display, measured, adjusted and checked.",
+                        "After a manual resize, ExactFrame remembers the measured size and Client area or Whole window choice for that app.",
+                        "Selecting that app again applies its remembered size automatically. It keeps the current position if it fits, otherwise centers the app.",
+                        "If the remembered size cannot fit on the app's display, ExactFrame leaves the app alone and shows a warning. Select Forget size to remove the saved size.",
                         "The outline marks the app's actual size and position, then follows it when it moves or changes size.",
                         "Move the app itself; the outline's border is click-through while following. It also follows the app across displays.",
                         "If the app is minimized or hidden, the outline disappears and returns when the app is visible again.",
@@ -214,8 +217,10 @@ public static class HelpContent
                 ]),
                 new("Reset settings",
                 [
-                Paragraph("Close ExactFrame and delete **settings.json** (see **About** for where it is). If the file can't be " +
-                "read, ExactFrame keeps a copy named settings.json.bad and starts with default settings.")
+                Paragraph("Close ExactFrame, then rename the **ExactFrame** folder under your local app data directory " +
+                "to keep a backup. The next launch creates a fresh database with default settings. " +
+                "The **About** page shows the database path. Renaming the whole folder also prevents an old " +
+                "settings.json from being imported again.")
                 ])
             ]),
 

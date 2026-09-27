@@ -89,6 +89,22 @@
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
+                <Grid ColumnSpacing="8" Visibility="{x:Bind ViewModel.HasRememberedAppSize, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionStyle}"
+                        Text="{x:Bind ViewModel.RememberedAppSizeText, Mode=OneWay}"
+                        TextWrapping="Wrap" />
+                    <Button
+                        Grid.Column="1"
+                        Command="{x:Bind ViewModel.ForgetAppSizeCommand}"
+                        Content="Forget size"
+                        Style="{StaticResource SmallButtonStyle}" />
+                </Grid>
             </StackPanel>
 
             <Border Style="{StaticResource DividerStyle}" />

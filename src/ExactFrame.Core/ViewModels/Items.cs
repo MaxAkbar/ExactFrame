@@ -13,6 +13,8 @@ public abstract class SelectableItem : ObservableObject
 
     protected SelectableItem(Action select) => SelectCommand = new RelayCommand(select);
 
+    protected SelectableItem(Func<Task> select) => SelectCommand = new AsyncRelayCommand(select);
+
     public IRelayCommand SelectCommand { get; }
 
     public bool IsSelected
@@ -137,7 +139,7 @@ public sealed class DisplayItem(DisplayInfo display, double glyphScale, Action s
     public string DeviceName { get; } = display.DeviceName;
 }
 
-public sealed class WindowItem(WindowInfo window, Action select) : SelectableItem(select)
+public sealed class WindowItem(WindowInfo window, Func<Task> select) : SelectableItem(select)
 {
     private static readonly string[] Tints = ["#2F6FB0", "#6B4FB8", "#33464B", "#0E6B60", "#8A4B2A", "#8A2F5C"];
 

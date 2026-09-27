@@ -52,9 +52,11 @@ public partial class App : Application
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<DialogService>();
         services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());
-        string settingsPath = JsonSettingsStore.DefaultPath();
-        services.AddSingleton<ISettingsStore>(_ => new JsonSettingsStore(settingsPath));
-        services.AddSingleton<IAppInfo>(_ => new AppInfo(settingsPath));
+        string databasePath = CSharpDbAppStore.DefaultPath();
+        services.AddSingleton(_ => new CSharpDbAppStore(databasePath, JsonSettingsStore.DefaultPath()));
+        services.AddSingleton<ISettingsStore>(sp => sp.GetRequiredService<CSharpDbAppStore>());
+        services.AddSingleton<IAppDataStore>(sp => sp.GetRequiredService<CSharpDbAppStore>());
+        services.AddSingleton<IAppInfo>(_ => new AppInfo(databasePath));
         services.AddSingleton<IShellService, ShellService>();
 
         // Presentation

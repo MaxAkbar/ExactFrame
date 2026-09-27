@@ -68,7 +68,7 @@ public sealed partial class MainViewModel
             Guard(ToggleOutline);
             return;
         }
-        await RunBusyAsync(ResizeTargetAsync);
+        await RunBusyAsync(() => ResizeTargetAsync(rememberSize: true));
     }
 
     private void ToggleOutline()

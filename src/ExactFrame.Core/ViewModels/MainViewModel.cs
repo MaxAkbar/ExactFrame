@@ -2,8 +2,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CSharpDB.Primitives;
 using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
 using ExactFrame.Core.Services;
@@ -84,6 +86,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         });
         PrimaryCommand = new AsyncRelayCommand(PrimaryAsync, () => !IsBusy && (IsOutlineMode || _targetWindow is not null));
         RestoreCommand = new AsyncRelayCommand(() => RunBusyAsync(RestoreTargetAsync), () => !IsBusy && CanRestore);
+        ForgetAppSizeCommand = new RelayCommand(ForgetAppSize, () => HasRememberedAppSize && !IsBusy);
         CopyBoundsCommand = new AsyncRelayCommand(CopyBoundsAsync);
         CenterCommand = new RelayCommand(() => SelectAnchor(FrameAnchor.Center));
         HideOutlineCommand = new RelayCommand(HideOutline);
@@ -115,6 +118,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public IRelayCommand OpenProfilesCommand { get; }
     public IAsyncRelayCommand PrimaryCommand { get; }
     public IAsyncRelayCommand RestoreCommand { get; }
+    public IRelayCommand ForgetAppSizeCommand { get; }
     public IAsyncRelayCommand CopyBoundsCommand { get; }
     public IRelayCommand CenterCommand { get; }
     public IRelayCommand HideOutlineCommand { get; }
@@ -302,6 +306,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             IsBusy = false;
             PrimaryCommand.NotifyCanExecuteChanged();
             RestoreCommand.NotifyCanExecuteChanged();
+            ForgetAppSizeCommand.NotifyCanExecuteChanged();
             NotifyResizeState();
         }
     }
@@ -312,7 +317,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         {
             _store.Save(_settings);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or CSharpDbException or InvalidOperationException or JsonException)
         {
             SetStatus($"Settings couldn’t be saved: {ex.Message}", warning: true);
         }

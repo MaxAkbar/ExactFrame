@@ -11,5 +11,5 @@ public interface IAppInfo
 
     string OperatingSystem { get; }
 
-    string SettingsPath { get; }
+    string DatabasePath { get; }
 }

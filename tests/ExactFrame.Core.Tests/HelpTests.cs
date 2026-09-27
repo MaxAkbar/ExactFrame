@@ -15,7 +15,7 @@ internal sealed class FakeAppInfo : IAppInfo
 
     public string OperatingSystem => "Windows 10.0.26100 (x64)";
 
-        public string SettingsPath => @"C:\Users\me\AppData\Local\ExactFrame\settings.json";
+        public string DatabasePath => @"C:\Users\me\AppData\Local\ExactFrame\exactframe.db";
 }
 
 internal sealed class FakeShell : IShellService
@@ -133,7 +133,7 @@ public sealed class HelpTests
         Assert.Contains(new AboutRow("Windows App SDK", "2.5.1"), help.AboutRows);
 
         help.RevealSettingsCommand.Execute(null);
-        Assert.Equal(new FakeAppInfo().SettingsPath, _shell.Revealed);
+        Assert.Equal(new FakeAppInfo().DatabasePath, _shell.Revealed);
     }
 
     [Fact]

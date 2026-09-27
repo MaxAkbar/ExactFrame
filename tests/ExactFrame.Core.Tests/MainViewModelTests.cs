@@ -1,4 +1,5 @@
 using System.Drawing;
+using CommunityToolkit.Mvvm.Input;
 using ExactFrame.Core.Models;
 using ExactFrame.Core.Settings;
 using ExactFrame.Core.ViewModels;
@@ -291,6 +292,127 @@ public sealed class MainViewModelTests : IDisposable
         await vm.RestoreCommand.ExecuteAsync(null);
         Assert.False(_overlay.IsVisible);
         Assert.False(vm.CanRestore);
+    }
+
+    [Fact]
+    public async Task Manual_resize_remembers_the_accepted_size_and_measurement_area()
+    {
+        _windows.AcceptedSize = new Rectangle(0, 0, 1600, 900);
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        vm.MeasureOptions.Single(o => o.Key == nameof(WindowArea.VisibleFrame)).SelectCommand.Execute(null);
+
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        Assert.Equal(new RememberedAppSize("devenv", 1600, 900, WindowArea.VisibleFrame),
+            Assert.Single(_store.Settings.RememberedAppSizes));
+        Assert.True(vm.HasRememberedAppSize);
+        Assert.Contains("1600 × 900", vm.RememberedAppSizeText);
+        Assert.True(_store.SaveCount > 0);
+    }
+
+    [Fact]
+    public async Task Selecting_a_remembered_app_applies_its_saved_size_automatically()
+    {
+        var settings = new AppSettings
+        {
+            RememberedAppSizes = [new RememberedAppSize("DEVENV", 1280, 720, WindowArea.VisibleFrame)]
+        };
+        var vm = Create(settings);
+        vm.ShowResizeModeCommand.Execute(null);
+
+        await ((IAsyncRelayCommand)vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand).ExecuteAsync(null);
+
+        var resize = Assert.Single(_windows.Resizes);
+        Assert.Equal(new Rectangle(240, 180, 1280, 720), resize.Desired);
+        Assert.Equal(WindowArea.VisibleFrame, resize.Area);
+        Assert.True(_overlay.IsVisible);
+        Assert.Equal(new Rectangle(240, 180, 1280, 720), _overlay.Frame);
+        Assert.Single(_store.Settings.RememberedAppSizes);
+    }
+
+    [Fact]
+    public async Task Manual_override_updates_only_the_selected_apps_remembered_size()
+    {
+        var settings = new AppSettings
+        {
+            RememberedAppSizes =
+            [
+                new RememberedAppSize("devenv", 1280, 720, WindowArea.Client),
+                new RememberedAppSize("WindowsTerminal", 1024, 768, WindowArea.VisibleFrame)
+            ]
+        };
+        var vm = Create(settings);
+        vm.ShowResizeModeCommand.Execute(null);
+        await ((IAsyncRelayCommand)vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand).ExecuteAsync(null);
+
+        vm.WidthValue = 1600;
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, _store.Settings.RememberedAppSizes.Count);
+        Assert.Equal(new RememberedAppSize("devenv", 1600, 900, WindowArea.Client),
+            _store.Settings.RememberedAppSizes.Single(s => s.ProcessName == "devenv"));
+        Assert.Equal(new RememberedAppSize("WindowsTerminal", 1024, 768, WindowArea.VisibleFrame),
+            _store.Settings.RememberedAppSizes.Single(s => s.ProcessName == "WindowsTerminal"));
+    }
+
+    [Fact]
+    public async Task Picking_a_remembered_app_applies_its_saved_size()
+    {
+        var settings = new AppSettings
+        {
+            RememberedAppSizes = [new RememberedAppSize("devenv", 1280, 720, WindowArea.Client)]
+        };
+        _picker.Result = FakeWindows.Studio;
+        var vm = Create(settings);
+        vm.ShowResizeModeCommand.Execute(null);
+
+        await vm.PickWindowCommand.ExecuteAsync(null);
+
+        var resize = Assert.Single(_windows.Resizes);
+        Assert.Equal(new Rectangle(240, 228, 1280, 720), resize.Desired);
+        Assert.Equal(WindowArea.Client, resize.Area);
+    }
+
+    [Fact]
+    public async Task Remembered_size_that_does_not_fit_is_loaded_but_not_applied()
+    {
+        var settings = new AppSettings
+        {
+            RememberedAppSizes = [new RememberedAppSize("devenv", 5000, 3000, WindowArea.Client)]
+        };
+        var vm = Create(settings);
+        vm.ShowResizeModeCommand.Execute(null);
+
+        await ((IAsyncRelayCommand)vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand).ExecuteAsync(null);
+
+        Assert.Empty(_windows.Resizes);
+        Assert.Equal(5000, vm.WidthValue);
+        Assert.Equal(3000, vm.HeightValue);
+        Assert.Equal(StatusKind.Warning, vm.StatusKind);
+        Assert.Contains("does not fit", vm.StatusDetail);
+    }
+
+    [Fact]
+    public async Task Forgetting_an_app_size_prevents_the_next_automatic_resize()
+    {
+        var settings = new AppSettings
+        {
+            RememberedAppSizes = [new RememberedAppSize("devenv", 1280, 720, WindowArea.Client)]
+        };
+        var vm = Create(settings);
+        vm.ShowResizeModeCommand.Execute(null);
+        await ((IAsyncRelayCommand)vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand).ExecuteAsync(null);
+        Assert.Single(_windows.Resizes);
+
+        vm.ForgetAppSizeCommand.Execute(null);
+        Assert.False(vm.HasRememberedAppSize);
+        Assert.Empty(_store.Settings.RememberedAppSizes);
+
+        vm.Windows.Single(w => w.Window == FakeWindows.Terminal).SelectCommand.Execute(null);
+        vm.Windows.Single(w => w.Window.IsSameWindow(FakeWindows.Studio)).SelectCommand.Execute(null);
+        Assert.Single(_windows.Resizes);
     }
 
     [Fact]

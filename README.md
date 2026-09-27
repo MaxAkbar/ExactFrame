@@ -62,6 +62,11 @@ cancels). Choose whether the size applies to the **Client area** (content only) 
 whether to center it or keep its current position. Select **Resize window**. A minimized or maximized app is first restored to a normal window, then brought to the front so it lands visibly inside the outline. (A minimized app has no position to keep, so it's centered.) ExactFrame moves the window,
 measures its real borders on that monitor, adjusts, and verifies the result. **Restore original size** puts
 it back as it was before the first resize in this session.
+ExactFrame remembers the measured size and **Client area** or **Whole window** choice for each app after a
+manual resize. The next time you select that app from the list or pick it on screen, ExactFrame applies its
+saved size automatically. It keeps the app's current position when that size fits, otherwise centers it on
+the app's display. If the saved size cannot fit, it leaves the app alone and shows a warning. Select
+**Forget size** beside the app to remove its saved size; the next manual resize saves a new one.
 After resizing, the outline follows that app when it moves or changes size, including across displays. Move
 the app itself; its outline is click-through while following. The outline hides if the app is minimized or
 hidden and returns when it becomes visible. Hiding the outline, choosing another app, editing the requested
@@ -87,7 +92,11 @@ keep it in step with this README.
 | Ctrl + Alt + 1 … 9 | Apply profile 1 to 9 |
 | Esc | Close help, or hide the outline (while ExactFrame has focus) |
 
-Settings and profiles are saved to `%LOCALAPPDATA%\ExactFrame\settings.json`.
+Settings, profiles and app-specific sizes are saved in the CSharpDB database at
+`%LOCALAPPDATA%\ExactFrame\exactframe.db`. On first launch after this update, ExactFrame imports an existing
+`settings.json` once and leaves that file untouched as a backup. Later saves go only to the database.
+Future features can save typed records in separate collections through `IAppDataStore` without adding more
+settings files.
 
 ## How the outline works
 
@@ -140,6 +149,8 @@ projections. XAML compilation, rendering and native behavior need a Windows run:
   minimized; then use **Restore original size**.
 - After resizing, drag the app to another position and display, resize it by hand, minimize and restore it,
   then close it. Check that the outline follows, hides and returns at the measured capture bounds.
+- Resize an app, restart ExactFrame, then select the app again. Check that the remembered measurement mode
+  and size apply automatically; use **Forget size** and confirm selection no longer resizes it.
 - Repeat on a second monitor with different scaling and a negative origin.
 - Record a new shortcut, and save, apply and delete a profile.
 - Add a 9:16 guide inside a 16:9 frame; move and resize the main outline, adjust the guide's scale and position,

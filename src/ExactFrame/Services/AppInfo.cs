@@ -4,7 +4,7 @@ using ExactFrame.Core.Services;
 
 namespace ExactFrame.Services;
 
-internal sealed class AppInfo(string settingsPath) : IAppInfo
+internal sealed class AppInfo(string databasePath) : IAppInfo
 {
     public string Version { get; } = ReadVersion();
 
@@ -14,7 +14,7 @@ internal sealed class AppInfo(string settingsPath) : IAppInfo
 
     public string OperatingSystem { get; } = DescribeWindows();
 
-    public string SettingsPath { get; } = settingsPath;
+    public string DatabasePath { get; } = databasePath;
 
     private static string ReadVersion()
     {

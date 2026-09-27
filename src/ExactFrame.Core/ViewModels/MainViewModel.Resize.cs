@@ -35,6 +35,13 @@ public sealed partial class MainViewModel
 
     public bool HasTargetWindow => _targetWindow is not null;
 
+    public bool HasRememberedAppSize => _targetWindow is not null && FindRememberedSize(_targetWindow.ProcessName) is not null;
+
+    public string RememberedAppSizeText => _targetWindow is { } window && FindRememberedSize(window.ProcessName) is { } saved
+        ? $"Remembered for {window.ProcessName}: {saved.Width} × {saved.Height} px " +
+          $"{(saved.Area == WindowArea.Client ? "client area" : "whole window")}. Applied when you select this app."
+        : string.Empty;
+
     public bool CanRestore => _windowService.CanRestore(_targetWindow);
 
     public string MeasureNote => _area == WindowArea.Client
@@ -64,15 +71,21 @@ public sealed partial class MainViewModel
                 || window.Title.Contains(filter, StringComparison.CurrentCultureIgnoreCase)
                 || window.ProcessName.Contains(filter, StringComparison.CurrentCultureIgnoreCase);
             if (!matches) continue;
-            Windows.Add(new WindowItem(window, () => SelectWindow(window)) { IsSelected = window.IsSameWindow(_targetWindow) });
+            Windows.Add(new WindowItem(window, () => SelectWindowAsync(window)) { IsSelected = window.IsSameWindow(_targetWindow) });
         }
         OnPropertyChanged(nameof(HasNoWindows));
     }
 
-    private void SelectWindow(WindowInfo window)
+    private async Task SelectWindowAsync(WindowInfo window)
     {
+        if (IsBusy) return;
         SetTarget(window);
-        if (_anchor is null) KeepWindowPosition();
+        if (IsResizeMode && FindRememberedSize(window.ProcessName) is { } saved)
+        {
+            if (!PrepareRememberedSize(window, saved)) return;
+            await RunBusyAsync(() => ResizeTargetAsync(rememberSize: false));
+        }
+        else if (_anchor is null) KeepWindowPosition();
         else UpdateFrame();
     }
 
@@ -149,10 +162,105 @@ public sealed partial class MainViewModel
 
         WindowFilter = string.Empty;
         Guard(RefreshWindows);
-        SelectWindow(_allWindows.FirstOrDefault(w => w.IsSameWindow(picked)) ?? picked);
+        await SelectWindowAsync(_allWindows.FirstOrDefault(w => w.IsSameWindow(picked)) ?? picked);
     }
 
-    private async Task ResizeTargetAsync()
+    private RememberedAppSize? FindRememberedSize(string processName) =>
+        _settings.RememberedAppSizes.LastOrDefault(saved =>
+            string.Equals(saved.ProcessName, processName, StringComparison.OrdinalIgnoreCase));
+
+    private bool PrepareRememberedSize(WindowInfo window, RememberedAppSize saved)
+    {
+        if (saved.Width is < MinSize or > MaxSize || saved.Height is < MinSize or > MaxSize ||
+            !Enum.IsDefined(saved.Area))
+        {
+            SetStatus($"The remembered size for {window.ProcessName} is invalid. Forget it or choose another size.", warning: true);
+            return false;
+        }
+
+        var display = _displays
+            .Select(item => (Display: item, Area: Rectangle.Intersect(item.Bounds, window.Bounds)))
+            .Where(item => item.Area.Width > 0 && item.Area.Height > 0)
+            .OrderByDescending(item => (long)item.Area.Width * item.Area.Height)
+            .Select(item => item.Display)
+            .FirstOrDefault() ?? _display;
+        if (display is null)
+        {
+            SetStatus("No display is available for the remembered app size.", warning: true);
+            return false;
+        }
+
+        var size = new Size(saved.Width, saved.Height);
+        var centered = FrameGeometry.Place(size, display.UsableArea(_keepClear), FrameAnchor.Center);
+        Rectangle desired = centered;
+        bool keepPosition = false;
+        if (!window.IsMinimized)
+        {
+            try
+            {
+                var current = _windowService.Measure(window, saved.Area);
+                var atCurrentPosition = new Rectangle(current.Location, size);
+                if (FrameGeometry.CheckFit(atCurrentPosition, display.Bounds, display.WorkArea, _keepClear).IsFit)
+                {
+                    desired = atCurrentPosition;
+                    keepPosition = true;
+                }
+            }
+            catch (Exception ex) when (IsExpected(ex))
+            {
+                // The window may have become minimized since the list was refreshed; use the display center.
+            }
+        }
+
+        _display = display;
+        _area = saved.Area;
+        _width = saved.Width;
+        _height = saved.Height;
+        _ratio = (double)_width / _height;
+        _preset = ResolutionPreset.Match(_width, _height);
+        _anchor = keepPosition ? null : FrameAnchor.Center;
+        _x = desired.X;
+        _y = desired.Y;
+        SelectOnly(Displays, item => item.DeviceName == display.DeviceName);
+        SelectOnly(MeasureOptions, item => item.Key == saved.Area.ToString());
+        SelectOnly(Presets, item => item.Key == _preset.Id);
+        OnPropertyChanged(nameof(WidthValue));
+        OnPropertyChanged(nameof(HeightValue));
+        OnPropertyChanged(nameof(LogicalSizeNote));
+        OnPropertyChanged(nameof(MeasureNote));
+        OnPropertyChanged(nameof(StageEyebrow));
+        UpdateFrame();
+
+        if (FrameGeometry.CheckFit(desired, display.Bounds, display.WorkArea, _keepClear).IsFit) return true;
+        SetStatus($"The remembered {saved.Width} × {saved.Height} size for {window.ProcessName} does not fit on {display.Title}. " +
+                  "Choose a larger display or a smaller size.", warning: true);
+        return false;
+    }
+
+    private void RememberAppSize(WindowInfo window, Size actual)
+    {
+        if (actual.Width is < MinSize or > MaxSize || actual.Height is < MinSize or > MaxSize ||
+            string.IsNullOrWhiteSpace(window.ProcessName)) return;
+
+        _settings.RememberedAppSizes.RemoveAll(saved =>
+            string.Equals(saved.ProcessName, window.ProcessName, StringComparison.OrdinalIgnoreCase));
+        _settings.RememberedAppSizes.Add(new RememberedAppSize(window.ProcessName, actual.Width, actual.Height, _area));
+        NotifyResizeState();
+        SaveSettings();
+    }
+
+    private void ForgetAppSize()
+    {
+        if (_targetWindow is not { } window) return;
+        int removed = _settings.RememberedAppSizes.RemoveAll(saved =>
+            string.Equals(saved.ProcessName, window.ProcessName, StringComparison.OrdinalIgnoreCase));
+        if (removed == 0) return;
+        NotifyResizeState();
+        SetStatus($"Forgot the size for {window.ProcessName}. Resize it again to save a new size.");
+        SaveSettings();
+    }
+
+    private async Task ResizeTargetAsync(bool rememberSize)
     {
         var window = _targetWindow ?? throw new InvalidOperationException("Choose an open app window first.");
         if (_display is null) throw new InvalidOperationException("No display is available.");
@@ -183,16 +291,19 @@ public sealed partial class MainViewModel
         if (result.Exact)
         {
             SetStatus(restored + $"Verified {actual.Width} × {actual.Height} px at ({actual.X}, {actual.Y}). " +
-                      "The outline follows the app when it moves. Restore original size is available for this session." + exclusion);
+                      "The outline follows the app when it moves. Restore original size is available for this session." +
+                      (rememberSize ? " Size remembered for this app." : " Remembered app size applied.") + exclusion);
         }
         else
         {
             SetStatus(restored + $"Requested {desired.Width} × {desired.Height} at ({desired.X}, {desired.Y}); " +
                       $"the app accepted {actual.Width} × {actual.Height} at ({actual.X}, {actual.Y}). " +
-                      "The outline follows its actual bounds; this app may enforce size or position limits." + exclusion,
+                      "The outline follows its actual bounds; this app may enforce size or position limits." +
+                      (rememberSize ? " Accepted size remembered for this app." : " Remembered app size applied.") + exclusion,
                       warning: true);
         }
         StartFollowingWindow(window);
+        if (rememberSize) RememberAppSize(window, actual.Size);
     }
 
     private async Task RestoreTargetAsync()
@@ -320,9 +431,12 @@ public sealed partial class MainViewModel
     private void NotifyResizeState()
     {
         OnPropertyChanged(nameof(HasTargetWindow));
+        OnPropertyChanged(nameof(HasRememberedAppSize));
+        OnPropertyChanged(nameof(RememberedAppSizeText));
         OnPropertyChanged(nameof(CanRestore));
         OnPropertyChanged(nameof(MeasureNote));
         RestoreCommand.NotifyCanExecuteChanged();
+        ForgetAppSizeCommand.NotifyCanExecuteChanged();
         NotifyStage();
         NotifyFooter();
     }

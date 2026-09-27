@@ -13,6 +13,8 @@ public sealed class AppSettings
 
     public List<FrameProfile> Profiles { get; set; } = [.. FrameProfile.Defaults()];
 
+    public List<RememberedAppSize> RememberedAppSizes { get; set; } = [];
+
     public string? ActiveProfileId { get; set; } = "youtube-1080p";
 
     public HotkeyGesture ToggleOutlineHotkey { get; set; } = HotkeyGesture.CtrlAlt(HotkeyGesture.VkF8);
