@@ -8,7 +8,10 @@ public enum WindowArea
     /// <summary>Visible frame and title bar, excluding Windows' invisible resize borders.</summary>
     VisibleFrame,
 
-    /// <summary>The native client rectangle, excluding the standard title bar and frame.</summary>
+    /// <summary>
+    /// The app's content without its title bar and frame: the native client rectangle, minus any title bar or
+    /// tab strip the app draws inside it, as Chrome, Edge and VS Code do.
+    /// </summary>
     Client,
 
     /// <summary>The visible Chromium render widget viewport, excluding browser toolbars and side panels.</summary>

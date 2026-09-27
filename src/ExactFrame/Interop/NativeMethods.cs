@@ -39,6 +39,7 @@ internal static class NativeMethods
     internal const uint WmSetCursor = 0x0020;
     internal const uint WmMouseActivate = 0x0021;
     internal const uint WmDisplayChange = 0x007E;
+    internal const uint WmNcHitTest = 0x0084;
     internal const uint WmKeyDown = 0x0100;
     internal const uint WmSysKeyDown = 0x0104;
     internal const uint WmMouseMove = 0x0200;
@@ -50,6 +51,25 @@ internal static class NativeMethods
     internal const uint WmDpiChanged = 0x02E0;
     internal const uint WmHotkey = 0x0312;
     internal const int MaNoActivate = 3;
+
+    // WM_NCHITTEST results: which part of a window is at a point
+    internal const int HtClient = 1;
+    internal const int HtCaption = 2;
+    internal const int HtSysMenu = 3;
+    internal const int HtMinButton = 8;
+    internal const int HtMaxButton = 9;
+    internal const int HtTop = 12;
+    internal const int HtTopLeft = 13;
+    internal const int HtTopRight = 14;
+    internal const int HtClose = 20;
+    internal const int HtHelp = 21;
+
+    // SendMessageTimeout
+    internal const uint SmtoAbortIfHung = 0x0002;
+    internal const uint SmtoErrorOnExit = 0x0020;
+
+    // GetAwarenessFromDpiAwarenessContext
+    private const int DpiAwarenessPerMonitorAware = 2;
     internal const int SpiSetWorkArea = 0x002F;
 
     // Layered windows and GDI
@@ -290,6 +310,26 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     internal static extern uint GetDpiForWindow(nint hwnd);
+
+    [DllImport("user32.dll")]
+    private static extern nint GetWindowDpiAwarenessContext(nint hwnd);
+
+    [DllImport("user32.dll")]
+    private static extern int GetAwarenessFromDpiAwarenessContext(nint context);
+
+    /// <summary>Whether the window's app is per-monitor DPI aware, so it reads screen points as physical pixels, like ExactFrame.</summary>
+    internal static bool IsPerMonitorDpiAware(nint hwnd)
+    {
+        nint context = GetWindowDpiAwarenessContext(hwnd);
+        return context != 0 && GetAwarenessFromDpiAwarenessContext(context) == DpiAwarenessPerMonitorAware;
+    }
+
+    [DllImport("user32.dll", EntryPoint = "SendMessageTimeoutW", SetLastError = true)]
+    internal static extern nint SendMessageTimeout(nint hwnd, uint message, nint wParam, nint lParam,
+        uint flags, uint timeoutMs, out nint result);
+
+    /// <summary>Packs a screen point into an lParam like MAKELPARAM, keeping negative coordinates on left or upper displays.</summary>
+    internal static nint PointParam(int x, int y) => (nint)(int)(((uint)(y & 0xFFFF) << 16) | (uint)(x & 0xFFFF));
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
     private static extern nint GetWindowLongPtr64(nint hwnd, int index);

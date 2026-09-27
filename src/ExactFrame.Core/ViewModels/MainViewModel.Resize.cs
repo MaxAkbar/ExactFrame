@@ -48,7 +48,7 @@ public sealed partial class MainViewModel
 
     public string MeasureNote => _area switch
     {
-        WindowArea.Client => $"The native client area will be {_width} × {_height} px. Chrome draws its tabs and toolbar inside this area; choose Web page for page-only sizing.",
+        WindowArea.Client => $"The app’s content will be {_width} × {_height} px, without its title bar and borders. In Chrome or Edge that leaves out the tabs but includes the toolbar; choose Web page to size only the page.",
         WindowArea.PageContent => $"The visible web page will be {_width} × {_height} px. Browser tabs, toolbar and side panels sit outside it. Requires a measurable Chromium page.",
         _ => $"The visible window, title bar included, will be {_width} × {_height} px. Invisible resize borders aren’t counted."
     };

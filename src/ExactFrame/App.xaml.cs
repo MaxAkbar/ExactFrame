@@ -43,6 +43,7 @@ public partial class App : Application
 
         // Platform services (Win32). All are created on the UI thread.
         services.AddSingleton<MessageWindow>();
+        services.AddSingleton<TitleBarDetector>();
         services.AddSingleton<WindowService>();
         services.AddSingleton<IWindowService>(sp => sp.GetRequiredService<WindowService>());
         services.AddSingleton<IDisplayService, DisplayService>();

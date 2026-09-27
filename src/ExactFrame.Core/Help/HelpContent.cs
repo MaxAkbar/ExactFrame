@@ -156,7 +156,7 @@ public static class HelpContent
                 "Select **Resize window** at the top of ExactFrame.",
                         "Choose the app in the list, or select **Pick on screen** and click it. Right-click or Esc cancels.",
                         "Set the size with a preset, the sliders or the boxes.",
-                        "Under **Size applies to**, choose **Client area** for the native client rectangle, **Whole window** " +
+                        "Under **Size applies to**, choose **Client area** for the app without its title bar and borders, **Whole window** " +
                         "for the visible frame, or **Web page** for a Chrome or Edge page without its tabs and toolbar.",
                         "Under **Placement**, choose **Center** or **Keep position**.",
                         "Select **Resize window**.")
@@ -167,7 +167,7 @@ public static class HelpContent
                         "A minimized or maximized app is first restored to a normal window.",
                         "The app is brought to the front, moved to the display, measured, adjusted and checked.",
                         "After a manual resize, ExactFrame remembers the measured size and measurement choice for that app.",
-                        "Chrome draws its tabs and toolbar inside its client area, so Client area and Whole window look similar there. Choose Web page to size only the page.",
+                        "Client area leaves out the title bar even when the app draws its own, like the tab strip in Chrome and Edge or the title bar in VS Code. In a browser it includes the toolbar; choose Web page to size only the page.",
                         "Web page mode prefers the rendered document's Windows accessibility bounds, with a Chromium page HWND or matching page element as fallback. If no page can be measured, ExactFrame shows an error before moving the app. Restore a minimized browser first.",
                         "Selecting that app again applies its remembered size automatically. It keeps the current position if it fits, otherwise centers the app.",
                         "If the remembered size cannot fit on the app's display, ExactFrame leaves the app alone and shows a warning. Select Forget size to remove the saved size.",

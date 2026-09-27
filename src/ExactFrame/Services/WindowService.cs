@@ -27,13 +27,15 @@ internal sealed class WindowService : IWindowService, IDisposable
     private readonly Dictionary<nint, AutomationElement> _accessiblePages = [];
     private readonly Dictionary<nint, AutomationElement> _accessibleDocuments = [];
     private readonly Dictionary<nint, DateTime> _nextDocumentSearch = [];
+    private readonly TitleBarDetector _titleBars;
     private readonly DispatcherQueueTimer _trackingTimer;
     private WindowInfo? _trackedWindow;
     private WindowArea _trackedArea;
     private WindowObservation? _lastObservation;
 
-    public WindowService()
+    public WindowService(TitleBarDetector titleBars)
     {
+        _titleBars = titleBars;
         var dispatcher = DispatcherQueue.GetForCurrentThread()
             ?? throw new InvalidOperationException("Window tracking requires the UI thread.");
         _trackingTimer = dispatcher.CreateTimer();
@@ -89,6 +91,7 @@ internal sealed class WindowService : IWindowService, IDisposable
             _accessiblePages.Remove(window.Handle);
             _accessibleDocuments.Remove(window.Handle);
             _nextDocumentSearch.Remove(window.Handle);
+            _titleBars.Forget(window.Handle);
             return new(WindowObservationKind.Closed, Rectangle.Empty);
         }
         uint thread = NativeMethods.GetWindowThreadProcessId(window.Handle, out uint process);
@@ -97,6 +100,7 @@ internal sealed class WindowService : IWindowService, IDisposable
             _accessiblePages.Remove(window.Handle);
             _accessibleDocuments.Remove(window.Handle);
             _nextDocumentSearch.Remove(window.Handle);
+            _titleBars.Forget(window.Handle);
             return new(WindowObservationKind.Closed, Rectangle.Empty);
         }
 
@@ -318,20 +322,30 @@ internal sealed class WindowService : IWindowService, IDisposable
     private static Rectangle VisibleBounds(nint handle) =>
         VisibleFrameBounds(handle) ?? (NativeMethods.GetWindowRect(handle, out var rect) ? rect.ToRectangle() : Rectangle.Empty);
 
-    private Rectangle CaptureBounds(nint handle, WindowArea area)
+    private Rectangle CaptureBounds(nint handle, WindowArea area) => area switch
     {
-        if (area == WindowArea.PageContent) return PageContentBounds(handle);
-        if (area == WindowArea.VisibleFrame)
-            return VisibleFrameBounds(handle)
-                ?? throw new InvalidOperationException("This window’s visible frame couldn’t be measured. Try Client area.");
-        return NativeClientBounds(handle);
-    }
+        WindowArea.PageContent => PageContentBounds(handle),
+        WindowArea.VisibleFrame => VisibleFrameBounds(handle)
+            ?? throw new InvalidOperationException("This window’s visible frame couldn’t be measured. Try Client area."),
+        _ => ClientBounds(handle)
+    };
 
     private static Rectangle? VisibleFrameBounds(nint handle)
     {
         int result = NativeMethods.DwmGetWindowAttribute(handle, NativeMethods.DwmwaExtendedFrameBounds, out var visible,
             Marshal.SizeOf<NativeMethods.Rect>());
         return result == 0 && visible.Right > visible.Left && visible.Bottom > visible.Top ? visible.ToRectangle() : null;
+    }
+
+    /// <summary>
+    /// The app's content without its title bar. Chrome, Edge, VS Code and similar apps draw their title bar or
+    /// tab strip inside the native client rectangle, so that part is measured and left out too.
+    /// </summary>
+    private Rectangle ClientBounds(nint handle)
+    {
+        var client = NativeClientBounds(handle);
+        int titleBar = _titleBars.HeightInside(handle, client, VisibleFrameBounds(handle) ?? client);
+        return titleBar > 0 ? Rectangle.FromLTRB(client.Left, client.Top + titleBar, client.Right, client.Bottom) : client;
     }
 
     /// <summary>The native client rectangle (GetClientRect) in screen pixels.</summary>

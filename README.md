@@ -62,8 +62,10 @@ cancels). Choose whether the size applies to the **Client area**, the **Whole wi
 whether to center it or keep its current position. Select **Resize window**. A minimized or maximized app is first restored to a normal window, then brought to the front so it lands visibly inside the outline. (A minimized app has no position to keep, so it's centered.) ExactFrame moves the window,
 measures its real borders on that monitor, adjusts, and verifies the result. **Restore original size** puts
 it back as it was before the first resize in this session.
-In Chrome, the tabs and toolbar are drawn inside the native client area, so **Client area** and **Whole window**
-usually differ by only a thin border. **Web page** measures the visible page viewport in supported Chromium windows
+**Client area** leaves out the title bar, including one the app draws itself inside its client area: the tab strip in
+Chrome and Edge, or the title bar in VS Code and Windows Terminal. ExactFrame finds where it ends by asking the app which
+part of the window is at points down its top edge (`WM_NCHITTEST`), the question Windows asks when you drag or snap it.
+In a browser, Client area includes the toolbar. **Web page** measures the visible page viewport in supported Chromium windows
 such as Chrome and Edge, excluding tabs and toolbars. It prefers the rendered document's Windows accessibility bounds,
 then checks Chromium's `Chrome_RenderWidgetHostHWND` child window or another matching accessibility page element.
 These browser interfaces are implementation details. At some display scales Chromium rounds the viewport to nearby
@@ -138,7 +140,7 @@ Inside the app project:
 | `Views/` | The Frame, Style, Profiles and Resize panels, the size editor, and the Help page |
 | `Controls/` | `DisplayMap` (preview) and `KeyChips` (keycaps) |
 | `Hud/` | The floating control bar window |
-| `Services/` | `OutlineOverlay`, `WindowService`, `DisplayService`, `HotkeyService`, `WindowPicker`, dialogs and clipboard |
+| `Services/` | `OutlineOverlay`, `WindowService` (with `TitleBarDetector`), `DisplayService`, `HotkeyService`, `WindowPicker`, dialogs and clipboard |
 | `Native/` | Win32 windows: the draggable border, guide layer, shade panels and the hidden message window |
 | `Interop/` | The P/Invoke boundary |
 
@@ -157,6 +159,8 @@ projections. XAML compilation, rendering and native behavior need a Windows run:
 - Confirm the on-screen bar appears under the frame, shrinks when idle, and never steals focus.
 - Resize Notepad or a browser in both Client area and Whole window modes, including from maximized and
   minimized; then use **Restore original size**.
+- In Client area mode, check that the tab strip of Chrome and Edge (and Edge with vertical tabs) sits outside the
+  outline and the toolbar inside it. Repeat with VS Code, Windows Terminal and Notepad at 100% and 150% scaling.
 - Resize a visible Chrome or Edge page in Web page mode. Verify the page area, rather than the browser window,
   matches the requested physical pixels. Try an app without a usable native or accessibility page area and verify it is not moved.
 - After resizing, drag the app to another position and display, resize it by hand, minimize and restore it,
