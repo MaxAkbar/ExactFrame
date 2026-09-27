@@ -126,7 +126,7 @@ public sealed partial class MainViewModel
         if (profile.Mode == FrameMode.Resize)
         {
             string target = profile.TargetProcessName ?? "a window";
-            return $"Resize {target} · {size} {(profile.Area == WindowArea.Client ? "client area" : "window")}";
+            return $"Resize {target} · {size} {AreaLabel(profile.Area)}";
         }
 
         string display = profile.DisplayDeviceName is null

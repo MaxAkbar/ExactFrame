@@ -35,9 +35,14 @@ internal sealed class FakeWindows : IWindowService
     public static readonly WindowInfo Notes = new(0x3003, 30, 31, "Notes — Notepad", "notepad",
         new Rectangle(300, 200, 1200, 800), IsMinimized: true);
 
+    public static readonly WindowInfo Browser = new(0x4004, 40, 41, "Test page — Edge", "msedge",
+        new Rectangle(300, 200, 1600, 1000));
+
     private readonly HashSet<nint> _saved = [];
 
     public List<WindowInfo> Windows { get; } = [Studio, Terminal, Notes];
+
+    public HashSet<nint> PageSupportedHandles { get; } = [Browser.Handle];
 
     public Rectangle? AcceptedSize { get; set; }
 
@@ -67,9 +72,14 @@ internal sealed class FakeWindows : IWindowService
     public Rectangle Measure(WindowInfo window, WindowArea area)
     {
         if (Current(window).IsMinimized) throw new InvalidOperationException("That window is minimized.");
-        return area == WindowArea.Client
-            ? new Rectangle(window.Bounds.X, window.Bounds.Y + 48, window.Bounds.Width, window.Bounds.Height - 48)
-            : window.Bounds;
+        return area switch
+        {
+            WindowArea.Client => new Rectangle(window.Bounds.X, window.Bounds.Y + 48, window.Bounds.Width, window.Bounds.Height - 48),
+            WindowArea.PageContent when PageSupportedHandles.Contains(window.Handle) =>
+                new Rectangle(window.Bounds.X, window.Bounds.Y + 120, window.Bounds.Width, window.Bounds.Height - 120),
+            WindowArea.PageContent => throw new InvalidOperationException("Web page content could not be measured for this app."),
+            _ => window.Bounds
+        };
     }
 
     private WindowInfo Current(WindowInfo window) => Windows.FirstOrDefault(w => w.IsSameWindow(window)) ?? window;
@@ -78,6 +88,7 @@ internal sealed class FakeWindows : IWindowService
 
     public Task<ResizeResult> ResizeAsync(WindowInfo window, Rectangle desired, WindowArea area, CancellationToken cancellation)
     {
+        if (area == WindowArea.PageContent) _ = Measure(window, area);
         Resizes.Add((window, desired, area));
         _saved.Add(window.Handle);
         var actual = AcceptedSize is { } accepted ? new Rectangle(desired.Location, accepted.Size) : desired;

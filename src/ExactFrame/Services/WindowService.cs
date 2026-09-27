@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Automation;
 using Microsoft.UI.Dispatching;
 using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
@@ -23,6 +24,9 @@ internal sealed class WindowService : IWindowService, IDisposable
     private sealed record SavedWindow(WindowInfo Window, NativeMethods.WindowPlacement Placement);
 
     private readonly Dictionary<nint, SavedWindow> _saved = [];
+    private readonly Dictionary<nint, AutomationElement> _accessiblePages = [];
+    private readonly Dictionary<nint, AutomationElement> _accessibleDocuments = [];
+    private readonly Dictionary<nint, DateTime> _nextDocumentSearch = [];
     private readonly DispatcherQueueTimer _trackingTimer;
     private WindowInfo? _trackedWindow;
     private WindowArea _trackedArea;
@@ -60,6 +64,9 @@ internal sealed class WindowService : IWindowService, IDisposable
     public void Dispose()
     {
         StopTracking();
+        _accessiblePages.Clear();
+        _accessibleDocuments.Clear();
+        _nextDocumentSearch.Clear();
         _trackingTimer.Tick -= OnTrackingTick;
     }
 
@@ -75,13 +82,23 @@ internal sealed class WindowService : IWindowService, IDisposable
         TrackedWindowChanged?.Invoke(this, observation);
     }
 
-    private static WindowObservation Observe(WindowInfo window, WindowArea area)
+    private WindowObservation Observe(WindowInfo window, WindowArea area)
     {
         if (!NativeMethods.IsWindow(window.Handle))
+        {
+            _accessiblePages.Remove(window.Handle);
+            _accessibleDocuments.Remove(window.Handle);
+            _nextDocumentSearch.Remove(window.Handle);
             return new(WindowObservationKind.Closed, Rectangle.Empty);
+        }
         uint thread = NativeMethods.GetWindowThreadProcessId(window.Handle, out uint process);
         if (process != window.ProcessId || thread != window.ThreadId)
+        {
+            _accessiblePages.Remove(window.Handle);
+            _accessibleDocuments.Remove(window.Handle);
+            _nextDocumentSearch.Remove(window.Handle);
             return new(WindowObservationKind.Closed, Rectangle.Empty);
+        }
 
         if (!NativeMethods.IsWindowVisible(window.Handle) || NativeMethods.IsIconic(window.Handle) ||
             NativeMethods.IsHungAppWindow(window.Handle))
@@ -155,6 +172,14 @@ internal sealed class WindowService : IWindowService, IDisposable
     public async Task<ResizeResult> ResizeAsync(WindowInfo window, Rectangle desired, WindowArea area, CancellationToken cancellation)
     {
         Validate(window);
+        // Page mode is based on a Chromium implementation detail. Reject unsupported windows before
+        // saving, restoring, activating or moving them. A minimized page has no reliable viewport bounds.
+        if (area == WindowArea.PageContent)
+        {
+            if (NativeMethods.IsIconic(window.Handle))
+                throw new InvalidOperationException("Restore the browser window before using Web page mode.");
+            _ = CaptureBounds(window.Handle, area);
+        }
         if (!CanRestore(window))
         {
             var placement = NativeMethods.WindowPlacement.Create();
@@ -290,25 +315,28 @@ internal sealed class WindowService : IWindowService, IDisposable
         return NativeMethods.GetWindowPlacement(handle, ref placement) ? placement.NormalPosition.ToRectangle() : Rectangle.Empty;
     }
 
-    private static Rectangle VisibleBounds(nint handle)
+    private static Rectangle VisibleBounds(nint handle) =>
+        VisibleFrameBounds(handle) ?? (NativeMethods.GetWindowRect(handle, out var rect) ? rect.ToRectangle() : Rectangle.Empty);
+
+    private Rectangle CaptureBounds(nint handle, WindowArea area)
+    {
+        if (area == WindowArea.PageContent) return PageContentBounds(handle);
+        if (area == WindowArea.VisibleFrame)
+            return VisibleFrameBounds(handle)
+                ?? throw new InvalidOperationException("This window’s visible frame couldn’t be measured. Try Client area.");
+        return NativeClientBounds(handle);
+    }
+
+    private static Rectangle? VisibleFrameBounds(nint handle)
     {
         int result = NativeMethods.DwmGetWindowAttribute(handle, NativeMethods.DwmwaExtendedFrameBounds, out var visible,
             Marshal.SizeOf<NativeMethods.Rect>());
-        if (result == 0 && visible.Right > visible.Left && visible.Bottom > visible.Top) return visible.ToRectangle();
-        return NativeMethods.GetWindowRect(handle, out var rect) ? rect.ToRectangle() : Rectangle.Empty;
+        return result == 0 && visible.Right > visible.Left && visible.Bottom > visible.Top ? visible.ToRectangle() : null;
     }
 
-    private static Rectangle CaptureBounds(nint handle, WindowArea area)
+    /// <summary>The native client rectangle (GetClientRect) in screen pixels.</summary>
+    private static Rectangle NativeClientBounds(nint handle)
     {
-        if (area == WindowArea.VisibleFrame)
-        {
-            int result = NativeMethods.DwmGetWindowAttribute(handle, NativeMethods.DwmwaExtendedFrameBounds, out var visible,
-                Marshal.SizeOf<NativeMethods.Rect>());
-            if (result != 0 || visible.Right <= visible.Left || visible.Bottom <= visible.Top)
-                throw new InvalidOperationException("This window’s visible frame couldn’t be measured. Try Client area.");
-            return visible.ToRectangle();
-        }
-
         NativeMethods.Check(NativeMethods.GetClientRect(handle, out var client), "measure the content area");
         // Convert both corners. A foreign window may use a different DPI-awareness mode; subtracting
         // converted corners keeps the result in screen pixels.
@@ -318,6 +346,150 @@ internal sealed class WindowService : IWindowService, IDisposable
         NativeMethods.Check(NativeMethods.ClientToScreen(handle, ref end), "locate the content area");
         return Rectangle.FromLTRB(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y),
             Math.Max(start.X, end.X), Math.Max(start.Y, end.Y));
+    }
+
+    private Rectangle PageContentBounds(nint handle)
+    {
+        // Edge still exposes Chromium's legacy content HWND; current Chrome builds may not.
+        // The render host's bounds can include a one-pixel edge. Prefer the accessible document,
+        // which describes the actual rendered viewport, when Chromium exposes it.
+        var client = NativeClientBounds(handle);
+        if (AccessibleDocumentBounds(handle, client) is { } document) return document;
+        var candidates = new List<Rectangle>();
+        NativeMethods.EnumChildWindows(handle, (child, _) =>
+        {
+            if (!NativeMethods.IsWindowVisible(child)) return true;
+            var name = new StringBuilder(128);
+            if (NativeMethods.GetClassName(child, name, name.Capacity) == 0 ||
+                !string.Equals(name.ToString(), "Chrome_RenderWidgetHostHWND", StringComparison.Ordinal)) return true;
+            Rectangle bounds;
+            try { bounds = NativeClientBounds(child); }
+            catch (Win32Exception) { return true; } // Chromium can remove a child during enumeration.
+            if (!IsPlausiblePage(bounds, client)) return true;
+            candidates.Add(bounds);
+            return true;
+        }, 0);
+
+        if (candidates.Count == 1) return candidates[0];
+        if (candidates.Count == 0) candidates.AddRange(AccessiblePageBounds(handle, client));
+        if (candidates.Count == 1) return candidates[0];
+        throw new InvalidOperationException(candidates.Count == 0
+            ? "Web page content could not be measured for this app. Try Client area, or use a visible Chrome or Edge page."
+            : "Several web page areas are visible in this app, so ExactFrame cannot choose one. Try Client area.");
+    }
+
+    private Rectangle? AccessibleDocumentBounds(nint handle, Rectangle client)
+    {
+        if (_accessibleDocuments.TryGetValue(handle, out var cached))
+        {
+            if (TryAccessibleDocumentBounds(cached, client, out var bounds)) return bounds;
+            _accessibleDocuments.Remove(handle);
+        }
+
+        // A browser may not expose its document until accessibility is enabled. Avoid scanning
+        // its full tree on every 50 ms tracking tick when that is the case.
+        if (_nextDocumentSearch.TryGetValue(handle, out var next) && DateTime.UtcNow < next) return null;
+        _nextDocumentSearch[handle] = DateTime.UtcNow.AddSeconds(2);
+        try
+        {
+            var root = AutomationElement.FromHandle(handle);
+            if (root is null) return null;
+            var documents = root.FindAll(TreeScope.Descendants,
+                new PropertyCondition(AutomationElement.AutomationIdProperty, "RootWebArea"));
+            var pages = new List<(AutomationElement Element, Rectangle Bounds)>();
+            foreach (AutomationElement document in documents)
+                if (TryAccessibleDocumentBounds(document, client, out var bounds))
+                    pages.Add((document, bounds));
+
+            if (pages.Count != 1) return null;
+            _accessibleDocuments[handle] = pages[0].Element;
+            return pages[0].Bounds;
+        }
+        catch (Exception ex) when (ex is ElementNotAvailableException or COMException or InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
+    private static bool TryAccessibleDocumentBounds(AutomationElement element, Rectangle client, out Rectangle bounds)
+    {
+        bounds = Rectangle.Empty;
+        try
+        {
+            if (element.Current.IsOffscreen || element.Current.ControlType != ControlType.Document ||
+                element.Current.AutomationId != "RootWebArea") return false;
+            return TryAccessibleRectangle(element.Current.BoundingRectangle, client, out bounds);
+        }
+        catch (Exception ex) when (ex is ElementNotAvailableException or COMException or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    private IReadOnlyList<Rectangle> AccessiblePageBounds(nint handle, Rectangle client)
+    {
+        if (_accessiblePages.TryGetValue(handle, out var cached))
+        {
+            if (TryAccessibleBounds(cached, client, out var bounds)) return [bounds];
+            _accessiblePages.Remove(handle);
+        }
+
+        try
+        {
+            var root = AutomationElement.FromHandle(handle);
+            if (root is null) return [];
+            var containers = root.FindAll(TreeScope.Descendants,
+                new PropertyCondition(AutomationElement.ClassNameProperty, "MultiContentsView"));
+            var pages = new List<(AutomationElement Element, Rectangle Bounds)>();
+            foreach (AutomationElement container in containers)
+            {
+                if (container.Current.IsOffscreen) continue;
+                var views = container.FindAll(TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.ClassNameProperty, "Chrome_WidgetWin_1"));
+                foreach (AutomationElement view in views)
+                    if (TryAccessibleBounds(view, client, out var bounds)) pages.Add((view, bounds));
+            }
+
+            if (pages.Count == 1) _accessiblePages[handle] = pages[0].Element;
+            return pages.Select(page => page.Bounds).ToList();
+        }
+        catch (Exception ex) when (ex is ElementNotAvailableException or COMException or InvalidOperationException)
+        {
+            return [];
+        }
+    }
+
+    private static bool TryAccessibleBounds(AutomationElement element, Rectangle client, out Rectangle bounds)
+    {
+        bounds = Rectangle.Empty;
+        try
+        {
+            if (element.Current.IsOffscreen || element.Current.ClassName != "Chrome_WidgetWin_1") return false;
+            return TryAccessibleRectangle(element.Current.BoundingRectangle, client, out bounds);
+        }
+        catch (Exception ex) when (ex is ElementNotAvailableException or COMException or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    private static bool TryAccessibleRectangle(System.Windows.Rect rect, Rectangle client, out Rectangle bounds)
+    {
+        bounds = Rectangle.Empty;
+        if (rect.IsEmpty || !double.IsFinite(rect.Left) || !double.IsFinite(rect.Top) ||
+            !double.IsFinite(rect.Right) || !double.IsFinite(rect.Bottom)) return false;
+        if (rect.Left < int.MinValue || rect.Top < int.MinValue ||
+            rect.Right > int.MaxValue || rect.Bottom > int.MaxValue) return false;
+        bounds = Rectangle.FromLTRB((int)Math.Round(rect.Left), (int)Math.Round(rect.Top),
+            (int)Math.Round(rect.Right), (int)Math.Round(rect.Bottom));
+        return IsPlausiblePage(bounds, client);
+    }
+
+    private static bool IsPlausiblePage(Rectangle bounds, Rectangle client)
+    {
+        if (bounds.Width < 100 || bounds.Height < 100) return false;
+        var overlap = Rectangle.Intersect(bounds, client);
+        return (long)overlap.Width * overlap.Height >= (long)bounds.Width * bounds.Height * 95 / 100;
     }
 
     private static async Task WaitForLayoutAsync(WindowInfo window, CancellationToken cancellation)

@@ -32,8 +32,12 @@ public sealed class CSharpDbAppStoreTests : IDisposable
             ],
             ActiveProfileId = "recording",
             ToggleOutlineHotkey = HotkeyGesture.CtrlAlt(0x50),
-            RememberedAppSizes = [new RememberedAppSize("devenv", 1600, 900, WindowArea.VisibleFrame)],
-            LastFrame = new FrameProfile { Id = "last", Mode = FrameMode.Resize, TargetProcessName = "devenv" }
+            RememberedAppSizes =
+            [
+                new RememberedAppSize("devenv", 1600, 900, WindowArea.VisibleFrame),
+                new RememberedAppSize("msedge", 1920, 1080, WindowArea.PageContent)
+            ],
+            LastFrame = new FrameProfile { Id = "last", Mode = FrameMode.Resize, TargetProcessName = "msedge", Area = WindowArea.PageContent }
         };
 
         await using (var store = new CSharpDbAppStore(DatabasePath))

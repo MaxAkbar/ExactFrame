@@ -69,7 +69,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         MeasureOptions =
         [
             new ChoiceItem(nameof(WindowArea.Client), "Client area", () => SelectArea(WindowArea.Client)),
-            new ChoiceItem(nameof(WindowArea.VisibleFrame), "Whole window", () => SelectArea(WindowArea.VisibleFrame))
+            new ChoiceItem(nameof(WindowArea.VisibleFrame), "Whole window", () => SelectArea(WindowArea.VisibleFrame)),
+            new ChoiceItem(nameof(WindowArea.PageContent), "Web page", () => SelectArea(WindowArea.PageContent))
         ];
         PlacementOptions =
         [
@@ -222,6 +223,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         if (IsBusy || _mode == mode) return;
         if (_mode == FrameMode.Resize && mode != FrameMode.Resize) StopFollowingWindow();
+        if (mode != FrameMode.Resize) _explicitAreaSelection = false;
         _mode = mode;
         if (_overlay.IsVisible && mode == FrameMode.Resize && _activeFrame is null) _overlay.Hide();
         OnPropertyChanged(nameof(Mode));
@@ -241,7 +243,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _statusWarning ? "Needs attention"
         : IsBusy ? "Updating window"
         : _overlay.IsVisible ? "Outline is live"
-        : IsResizeMode ? (CanRestore ? "Window resized" : "Ready to resize")
+        : IsResizeMode ? (IsChipLive ? "Window resized" : "Ready to resize")
         : "Ready to frame";
 
     public string StatusDetail => _statusMessage;
@@ -249,7 +251,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public StatusKind StatusKind =>
         _statusWarning ? StatusKind.Warning
         : IsBusy ? StatusKind.Busy
-        : _overlay.IsVisible || (IsResizeMode && CanRestore) ? StatusKind.Live
+        : IsChipLive ? StatusKind.Live
         : StatusKind.Ready;
 
     private void SetStatus(string message, bool warning = false)

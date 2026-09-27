@@ -14,6 +14,7 @@ public sealed partial class MainViewModel
     private WindowObservation? _lastTrackedObservation;
     private Rectangle? _lastVisibleTrackedFrame;
     private WindowArea _area = WindowArea.Client;
+    private bool _explicitAreaSelection;
     private string _windowFilter = string.Empty;
 
     public ObservableCollection<WindowItem> Windows { get; } = [];
@@ -39,16 +40,27 @@ public sealed partial class MainViewModel
 
     public string RememberedAppSizeText => _targetWindow is { } window && FindRememberedSize(window.ProcessName) is { } saved
         ? $"Remembered for {window.ProcessName}: {saved.Width} × {saved.Height} px " +
-          $"{(saved.Area == WindowArea.Client ? "client area" : "whole window")}. Applied when you select this app."
+          $"{AreaLabel(saved.Area)}. " +
+          (_area == saved.Area ? "Applied when you select this app." : $"{AreaLabel(_area)} selected for this resize.")
         : string.Empty;
 
     public bool CanRestore => _windowService.CanRestore(_targetWindow);
 
-    public string MeasureNote => _area == WindowArea.Client
-        ? $"The app’s content area will be exactly {_width} × {_height} px. The title bar and borders sit outside it."
-        : $"The visible window, title bar included, will be {_width} × {_height} px. Invisible resize borders aren’t counted.";
+    public string MeasureNote => _area switch
+    {
+        WindowArea.Client => $"The native client area will be {_width} × {_height} px. Chrome draws its tabs and toolbar inside this area; choose Web page for page-only sizing.",
+        WindowArea.PageContent => $"The visible web page will be {_width} × {_height} px. Browser tabs, toolbar and side panels sit outside it. Requires a measurable Chromium page.",
+        _ => $"The visible window, title bar included, will be {_width} × {_height} px. Invisible resize borders aren’t counted."
+    };
 
-    private string AreaName => _area == WindowArea.Client ? "client area" : "window";
+    private string AreaName => AreaLabel(_area);
+
+    private static string AreaLabel(WindowArea area) => area switch
+    {
+        WindowArea.Client => "client area",
+        WindowArea.PageContent => "web page",
+        _ => "whole window"
+    };
 
     private void RefreshWindows()
     {
@@ -82,7 +94,9 @@ public sealed partial class MainViewModel
         SetTarget(window);
         if (IsResizeMode && FindRememberedSize(window.ProcessName) is { } saved)
         {
-            if (!PrepareRememberedSize(window, saved)) return;
+            var area = _explicitAreaSelection ? _area : saved.Area;
+            _explicitAreaSelection = false;
+            if (!PrepareRememberedSize(window, saved, area)) return;
             await RunBusyAsync(() => ResizeTargetAsync(rememberSize: false));
         }
         else if (_anchor is null) KeepWindowPosition();
@@ -106,8 +120,10 @@ public sealed partial class MainViewModel
     private void SelectArea(WindowArea area)
     {
         _area = area;
+        _explicitAreaSelection = true;
         SelectOnly(MeasureOptions, o => o.Key == area.ToString());
         OnPropertyChanged(nameof(MeasureNote));
+        OnPropertyChanged(nameof(RememberedAppSizeText));
         OnPropertyChanged(nameof(StageEyebrow));
         if (_anchor is null && _targetWindow is not null) KeepWindowPosition();
         else UpdateFrame();
@@ -169,10 +185,10 @@ public sealed partial class MainViewModel
         _settings.RememberedAppSizes.LastOrDefault(saved =>
             string.Equals(saved.ProcessName, processName, StringComparison.OrdinalIgnoreCase));
 
-    private bool PrepareRememberedSize(WindowInfo window, RememberedAppSize saved)
+    private bool PrepareRememberedSize(WindowInfo window, RememberedAppSize saved, WindowArea area)
     {
         if (saved.Width is < MinSize or > MaxSize || saved.Height is < MinSize or > MaxSize ||
-            !Enum.IsDefined(saved.Area))
+            !Enum.IsDefined(area))
         {
             SetStatus($"The remembered size for {window.ProcessName} is invalid. Forget it or choose another size.", warning: true);
             return false;
@@ -198,7 +214,7 @@ public sealed partial class MainViewModel
         {
             try
             {
-                var current = _windowService.Measure(window, saved.Area);
+                var current = _windowService.Measure(window, area);
                 var atCurrentPosition = new Rectangle(current.Location, size);
                 if (FrameGeometry.CheckFit(atCurrentPosition, display.Bounds, display.WorkArea, _keepClear).IsFit)
                 {
@@ -213,7 +229,7 @@ public sealed partial class MainViewModel
         }
 
         _display = display;
-        _area = saved.Area;
+        _area = area;
         _width = saved.Width;
         _height = saved.Height;
         _ratio = (double)_width / _height;
@@ -222,12 +238,13 @@ public sealed partial class MainViewModel
         _x = desired.X;
         _y = desired.Y;
         SelectOnly(Displays, item => item.DeviceName == display.DeviceName);
-        SelectOnly(MeasureOptions, item => item.Key == saved.Area.ToString());
+        SelectOnly(MeasureOptions, item => item.Key == area.ToString());
         SelectOnly(Presets, item => item.Key == _preset.Id);
         OnPropertyChanged(nameof(WidthValue));
         OnPropertyChanged(nameof(HeightValue));
         OnPropertyChanged(nameof(LogicalSizeNote));
         OnPropertyChanged(nameof(MeasureNote));
+        OnPropertyChanged(nameof(RememberedAppSizeText));
         OnPropertyChanged(nameof(StageEyebrow));
         UpdateFrame();
 
@@ -296,9 +313,15 @@ public sealed partial class MainViewModel
         }
         else
         {
+            string explanation = _area == WindowArea.PageContent &&
+                                 Math.Abs(actual.Width - desired.Width) <= 2 &&
+                                 Math.Abs(actual.Height - desired.Height) <= 2 &&
+                                 _display.ScalePercent != 100
+                ? "At this display scale, Chromium may round the page to nearby physical pixels."
+                : "This app may enforce size or position limits.";
             SetStatus(restored + $"Requested {desired.Width} × {desired.Height} at ({desired.X}, {desired.Y}); " +
                       $"the app accepted {actual.Width} × {actual.Height} at ({actual.X}, {actual.Y}). " +
-                      "The outline follows its actual bounds; this app may enforce size or position limits." +
+                      $"The outline follows its actual bounds. {explanation}" +
                       (rememberSize ? " Accepted size remembered for this app." : " Remembered app size applied.") + exclusion,
                       warning: true);
         }
@@ -387,7 +410,9 @@ public sealed partial class MainViewModel
             _overlay.Hide();
             _activeFrame = null;
             NotifyFrame();
-            SetStatus($"{window.ProcessName} is hidden or minimized. Its outline will return when it is visible.");
+            SetStatus(_area == WindowArea.PageContent
+                ? $"{window.ProcessName} has no visible measurable web page right now. Its outline will return when the page is available."
+                : $"{window.ProcessName} is hidden or minimized. Its outline will return when it is visible.");
             return;
         }
 

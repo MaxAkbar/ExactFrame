@@ -313,6 +313,102 @@ public sealed class MainViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Web_page_mode_resizes_and_remembers_the_page_viewport()
+    {
+        _windows.Windows.Add(FakeWindows.Browser);
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Browser).SelectCommand.Execute(null);
+        vm.MeasureOptions.Single(o => o.Key == nameof(WindowArea.PageContent)).SelectCommand.Execute(null);
+
+        Assert.Contains("web page", vm.MeasureNote, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("Page", vm.Preview.CaptureLabel);
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        var resize = Assert.Single(_windows.Resizes);
+        Assert.Equal(new Rectangle(960, 540, 1920, 1080), resize.Desired);
+        Assert.Equal(WindowArea.PageContent, resize.Area);
+        Assert.Equal(WindowArea.PageContent, _windows.TrackedArea);
+        Assert.Equal(new RememberedAppSize("msedge", 1920, 1080, WindowArea.PageContent),
+            Assert.Single(_store.Settings.RememberedAppSizes));
+    }
+
+    [Fact]
+    public async Task Web_page_mode_rejects_an_app_without_a_measurable_viewport()
+    {
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        vm.MeasureOptions.Single(o => o.Key == nameof(WindowArea.PageContent)).SelectCommand.Execute(null);
+
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        Assert.Empty(_windows.Resizes);
+        Assert.False(vm.CanRestore);
+        Assert.Equal(StatusKind.Warning, vm.StatusKind);
+        Assert.Contains("could not be measured", vm.StatusDetail);
+    }
+
+    [Fact]
+    public async Task Remembered_web_page_size_is_applied_with_the_page_mode()
+    {
+        _windows.Windows.Add(FakeWindows.Browser);
+        var settings = new AppSettings
+        {
+            RememberedAppSizes = [new RememberedAppSize("msedge", 1280, 720, WindowArea.PageContent)]
+        };
+        var vm = Create(settings);
+        vm.ShowResizeModeCommand.Execute(null);
+
+        await ((IAsyncRelayCommand)vm.Windows.Single(w => w.Window == FakeWindows.Browser).SelectCommand).ExecuteAsync(null);
+
+        var resize = Assert.Single(_windows.Resizes);
+        Assert.Equal(new Rectangle(300, 320, 1280, 720), resize.Desired);
+        Assert.Equal(WindowArea.PageContent, resize.Area);
+        Assert.True(vm.MeasureOptions.Single(o => o.Key == nameof(WindowArea.PageContent)).IsSelected);
+        Assert.Contains("web page", vm.RememberedAppSizeText);
+    }
+
+    [Fact]
+    public async Task Explicit_web_page_choice_is_kept_when_selecting_an_app_with_a_saved_client_size()
+    {
+        _windows.Windows.Add(FakeWindows.Browser);
+        var settings = new AppSettings
+        {
+            RememberedAppSizes = [new RememberedAppSize("msedge", 1280, 720, WindowArea.Client)]
+        };
+        var vm = Create(settings);
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.MeasureOptions.Single(o => o.Key == nameof(WindowArea.PageContent)).SelectCommand.Execute(null);
+
+        await ((IAsyncRelayCommand)vm.Windows.Single(w => w.Window == FakeWindows.Browser).SelectCommand).ExecuteAsync(null);
+
+        Assert.Equal(WindowArea.PageContent, Assert.Single(_windows.Resizes).Area);
+        Assert.True(vm.MeasureOptions.Single(o => o.Key == nameof(WindowArea.PageContent)).IsSelected);
+        Assert.Equal("Applied", vm.ChipText);
+        Assert.Contains("web page selected for this resize", vm.RememberedAppSizeText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Changing_measurement_area_after_resize_returns_the_stage_to_preview()
+    {
+        var settings = new AppSettings
+        {
+            RememberedAppSizes = [new RememberedAppSize("devenv", 1280, 720, WindowArea.Client)]
+        };
+        var vm = Create(settings);
+        vm.ShowResizeModeCommand.Execute(null);
+        await ((IAsyncRelayCommand)vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand).ExecuteAsync(null);
+
+        vm.MeasureOptions.Single(o => o.Key == nameof(WindowArea.VisibleFrame)).SelectCommand.Execute(null);
+
+        Assert.True(vm.CanRestore);
+        Assert.False(_overlay.IsVisible);
+        Assert.Equal("Preview", vm.ChipText);
+        Assert.Equal("Ready to resize", vm.StatusTitle);
+    }
+
+    [Fact]
     public async Task Selecting_a_remembered_app_applies_its_saved_size_automatically()
     {
         var settings = new AppSettings

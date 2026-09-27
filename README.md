@@ -58,15 +58,25 @@ Ctrl + Alt + 1 to 9. **Global hotkeys** shows each shortcut; if another app owns
 **Change** records a new one.
 
 **Resize window.** Choose an app from the list or use **Pick on screen** and click it (right-click or Esc
-cancels). Choose whether the size applies to the **Client area** (content only) or the **Whole window**, and
+cancels). Choose whether the size applies to the **Client area**, the **Whole window**, or the **Web page**, and
 whether to center it or keep its current position. Select **Resize window**. A minimized or maximized app is first restored to a normal window, then brought to the front so it lands visibly inside the outline. (A minimized app has no position to keep, so it's centered.) ExactFrame moves the window,
 measures its real borders on that monitor, adjusts, and verifies the result. **Restore original size** puts
 it back as it was before the first resize in this session.
-ExactFrame remembers the measured size and **Client area** or **Whole window** choice for each app after a
+In Chrome, the tabs and toolbar are drawn inside the native client area, so **Client area** and **Whole window**
+usually differ by only a thin border. **Web page** measures the visible page viewport in supported Chromium windows
+such as Chrome and Edge, excluding tabs and toolbars. It prefers the rendered document's Windows accessibility bounds,
+then checks Chromium's `Chrome_RenderWidgetHostHWND` child window or another matching accessibility page element.
+These browser interfaces are implementation details. At some display scales Chromium rounds the viewport to nearby
+physical pixels; ExactFrame reports the size it accepted.
+If the selected app does not expose one usable visible viewport, ExactFrame reports that
+before moving the window; use **Client area** instead. Restore a minimized browser before using this mode.
+ExactFrame remembers the measured size and measurement mode for each app after a
 manual resize. The next time you select that app from the list or pick it on screen, ExactFrame applies its
 saved size automatically. It keeps the app's current position when that size fits, otherwise centers it on
 the app's display. If the saved size cannot fit, it leaves the app alone and shows a warning. Select
 **Forget size** beside the app to remove its saved size; the next manual resize saves a new one.
+If you choose **Web page** before selecting an app with a remembered Client area size, that choice applies to the
+current resize while retaining the remembered dimensions.
 After resizing, the outline follows that app when it moves or changes size, including across displays. Move
 the app itself; its outline is click-through while following. The outline hides if the app is minimized or
 hidden and returns when it becomes visible. Hiding the outline, choosing another app, editing the requested
@@ -147,6 +157,8 @@ projections. XAML compilation, rendering and native behavior need a Windows run:
 - Confirm the on-screen bar appears under the frame, shrinks when idle, and never steals focus.
 - Resize Notepad or a browser in both Client area and Whole window modes, including from maximized and
   minimized; then use **Restore original size**.
+- Resize a visible Chrome or Edge page in Web page mode. Verify the page area, rather than the browser window,
+  matches the requested physical pixels. Try an app without a usable native or accessibility page area and verify it is not moved.
 - After resizing, drag the app to another position and display, resize it by hand, minimize and restore it,
   then close it. Check that the outline follows, hides and returns at the measured capture bounds.
 - Resize an app, restart ExactFrame, then select the app again. Check that the remembered measurement mode

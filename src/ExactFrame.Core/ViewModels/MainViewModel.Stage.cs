@@ -22,7 +22,12 @@ public sealed partial class MainViewModel
 
     public string StageEyebrow => IsOutlineMode
         ? "Recording frame"
-        : _area == WindowArea.Client ? "Target client area" : "Target window size";
+        : _area switch
+        {
+            WindowArea.Client => "Target client area",
+            WindowArea.PageContent => "Target web page",
+            _ => "Target window size"
+        };
 
     public string SizeText
     {
@@ -41,7 +46,9 @@ public sealed partial class MainViewModel
             if (IsResizeMode)
             {
                 if (_lastTrackedObservation is { Kind: WindowObservationKind.Unavailable } && _targetWindow is { } hidden)
-                    return $"{hidden.ProcessName} · hidden or minimized";
+                    return _area == WindowArea.PageContent
+                        ? $"{hidden.ProcessName} · page unavailable"
+                        : $"{hidden.ProcessName} · hidden or minimized";
                 return _targetWindow switch
                 {
                     null => "Choose a window to resize",
@@ -67,10 +74,10 @@ public sealed partial class MainViewModel
 
     public string FitText => CurrentFit.Message;
 
-    public bool IsChipLive => IsResizeMode ? CanRestore : _overlay.IsVisible;
+    public bool IsChipLive => _overlay.IsVisible && (!IsResizeMode || _activeFrame is not null);
 
     public string ChipText => IsResizeMode
-        ? (CanRestore ? "Applied" : "Preview")
+        ? (IsChipLive ? "Applied" : "Preview")
         : (_overlay.IsVisible ? "Outline live" : "Outline hidden");
 
     public bool ShowRecorderChip => IsOutlineMode && _hideFromRecorders;
@@ -119,9 +126,10 @@ public sealed partial class MainViewModel
                 IsResizeMode,
                 _style,
                 ShowHandles: IsOutlineMode && !_clickThrough,
-                ShowWindowChrome: IsResizeMode && _area == WindowArea.Client && _targetWindow is not null,
-                TitleBarHeight: (int)Math.Round(32 * _display.Scale),
+                ShowWindowChrome: IsResizeMode && _area != WindowArea.VisibleFrame && _targetWindow is not null,
+                TitleBarHeight: (int)Math.Round((_area == WindowArea.PageContent ? 80 : 32) * _display.Scale),
                 ghost,
+                _area == WindowArea.PageContent ? "Page" : _area == WindowArea.Client ? "Client" : "Window",
                 SizeText,
                 IsFit,
                 NestedBounds(CurrentFrame));

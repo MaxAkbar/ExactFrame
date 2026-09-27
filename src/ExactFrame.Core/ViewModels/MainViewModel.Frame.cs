@@ -268,6 +268,7 @@ public sealed partial class MainViewModel
     private void ApplyFrameState(FrameProfile state)
     {
         StopFollowingWindow();
+        _explicitAreaSelection = false;
         _mode = state.Mode;
         _display = (state.DisplayDeviceName is null ? null : _displays.FirstOrDefault(d => d.DeviceName == state.DisplayDeviceName))
             ?? _displays.FirstOrDefault(d => d.IsPrimary)

@@ -14,13 +14,14 @@ public sealed record PreviewState(
     bool ShowWindowChrome,
     int TitleBarHeight,
     Rectangle? Ghost,
+    string CaptureLabel,
     string SizeText,
     bool IsFit,
     IReadOnlyList<NestedFrameBounds> NestedFrames)
 {
     public static PreviewState Empty { get; } = new(
         new Rectangle(0, 0, 1920, 1080), new Rectangle(0, 0, 1920, 1040), new Rectangle(0, 0, 1280, 720),
-        false, new OutlineStyle(), true, false, 32, null, "1280 × 720", true, []);
+        false, new OutlineStyle(), true, false, 32, null, "Window", "1280 × 720", true, []);
 }
 
 public enum SettingsTab

@@ -206,7 +206,7 @@ public sealed class DisplayMap : UserControl
             AddBox(fx + fw * 0.16 + 12, wy + titleBar + 12 + i * 11, (fw * 0.84 - 24) * lines[i], 4, i % 4 == 0 ? "#3A6570" : "#2E5059", null, 0, 2);
 
         AddOutline(fx, fy, fw, fh, mint, 2, dashed: true);
-        string label = (state.ShowWindowChrome ? "Client " : "Window ") + state.SizeText;
+        string label = state.CaptureLabel + " " + state.SizeText;
         AddLabel(label, fx + fw - 8 - MeasureLabel(label), fy + fh - 24, Format.ColorFromHex("#34D5B5"));
     }
 

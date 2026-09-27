@@ -9,7 +9,10 @@ public enum WindowArea
     VisibleFrame,
 
     /// <summary>The native client rectangle, excluding the standard title bar and frame.</summary>
-    Client
+    Client,
+
+    /// <summary>The visible Chromium render widget viewport, excluding browser toolbars and side panels.</summary>
+    PageContent
 }
 
 /// <summary>
