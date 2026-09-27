@@ -161,6 +161,36 @@ public sealed class SliderTests : IDisposable
     }
 
     [Fact]
+    public void Custom_frame_resizes_around_its_center_until_it_reaches_an_edge()
+    {
+        var vm = Create();
+        vm.PrimaryCommand.Execute(null);
+        vm.XValue = 1000;
+        vm.YValue = 500;
+
+        vm.SetWidthFromSlider(2560);
+
+        Assert.Equal(new Rectangle(680, 320, 2560, 1440), vm.CurrentFrame);
+        Assert.Equal(vm.CurrentFrame, _overlay.Frame);
+        Assert.True(_overlay.IsVisible);
+    }
+
+    [Fact]
+    public void Slider_keeps_a_custom_frame_inside_the_right_and_bottom_edges()
+    {
+        var vm = Create();
+        vm.PrimaryCommand.Execute(null);
+        _overlay.Drag(new Point(1920, 1080));
+
+        vm.SetWidthFromSlider(2560);
+
+        Assert.Equal(new Rectangle(1280, 720, 2560, 1440), vm.CurrentFrame);
+        Assert.Equal(vm.CurrentFrame, _overlay.Frame);
+        Assert.True(_overlay.IsVisible);
+        Assert.True(vm.IsFit);
+    }
+
+    [Fact]
     public void Range_changes_are_announced()
     {
         var vm = Create();

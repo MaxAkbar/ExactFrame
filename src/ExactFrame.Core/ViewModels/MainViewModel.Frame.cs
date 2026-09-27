@@ -145,8 +145,28 @@ public sealed partial class MainViewModel
 
     private void ApplySize(int width, int height, bool updateRatio)
     {
+        Rectangle? adjusted = null;
+        if (IsOutlineMode && _anchor is null && _display is not null)
+        {
+            var area = _display.UsableArea(_keepClear);
+            if (width <= area.Width && height <= area.Height)
+            {
+                var previous = CurrentFrame;
+                var centered = new Rectangle(
+                    previous.X + (previous.Width - width) / 2,
+                    previous.Y + (previous.Height - height) / 2,
+                    width, height);
+                adjusted = FrameGeometry.ClampPosition(centered, area);
+            }
+        }
+
         _width = width;
         _height = height;
+        if (adjusted is { } frame)
+        {
+            _x = frame.X;
+            _y = frame.Y;
+        }
         if (updateRatio) _ratio = (double)width / height;
         _preset = ResolutionPreset.Match(width, height);
         SelectOnly(Presets, p => p.Key == _preset.Id);
