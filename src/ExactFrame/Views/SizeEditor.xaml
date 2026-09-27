@@ -1,0 +1,91 @@
+<UserControl
+    x:Class="ExactFrame.Views.SizeEditor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Width and height, each as a slider plus an exact box. The chain button between the rows keeps the
+        aspect ratio. Slider values are pushed from code-behind (see SizeEditor.xaml.cs) so a slider's range
+        is always updated before its value and a clamped value never reaches the view model.
+    -->
+    <Grid ColumnSpacing="10" RowSpacing="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="48" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="92" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Width -->
+        <TextBlock Style="{StaticResource LabelStyle}" Text="Width" />
+        <Slider
+            x:Name="WidthSlider"
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            AutomationProperties.Name="Width"
+            IsThumbToolTipEnabled="False"
+            LargeChange="64"
+            Minimum="100"
+            SmallChange="2"
+            StepFrequency="1"
+            ValueChanged="OnWidthSliderChanged" />
+        <NumberBox
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            AutomationProperties.Name="Width in pixels"
+            Maximum="16384"
+            Minimum="100"
+            Style="{StaticResource PixelBoxStyle}"
+            Value="{x:Bind ViewModel.WidthValue, Mode=TwoWay}" />
+
+        <!-- Height -->
+        <TextBlock Grid.Row="1" Style="{StaticResource LabelStyle}" Text="Height" />
+        <Slider
+            x:Name="HeightSlider"
+            Grid.Row="1"
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            AutomationProperties.Name="Height"
+            IsThumbToolTipEnabled="False"
+            LargeChange="64"
+            Minimum="100"
+            SmallChange="2"
+            StepFrequency="1"
+            ValueChanged="OnHeightSliderChanged" />
+        <NumberBox
+            Grid.Row="1"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            AutomationProperties.Name="Height in pixels"
+            Maximum="16384"
+            Minimum="100"
+            Style="{StaticResource PixelBoxStyle}"
+            Value="{x:Bind ViewModel.HeightValue, Mode=TwoWay}" />
+
+        <!-- Aspect lock: a bracket joins the two rows, with the chain button on it -->
+        <Grid Grid.RowSpan="2" Grid.Column="3" Width="40">
+            <Border
+                Width="12"
+                Margin="0,16"
+                HorizontalAlignment="Left"
+                BorderBrush="{StaticResource InputLineBrush}"
+                BorderThickness="0,1,1,1"
+                CornerRadius="0,4,4,0" />
+            <ToggleButton
+                Width="32"
+                Height="32"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="Lock aspect ratio"
+                IsChecked="{x:Bind ViewModel.IsAspectLocked, Mode=TwoWay}"
+                Style="{StaticResource ChipToggleStyle}"
+                ToolTipService.ToolTip="Keep the width-to-height ratio">
+                <FontIcon FontSize="14" Glyph="&#xE71B;" />
+            </ToggleButton>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,12 @@
+bin/
+obj/
+.vs/
+artifacts/
+*.user
+*.suo
+TestResults/
+
+# Earlier ScreenFrame source copies outside ExactFrame.slnx.
+src/ScreenFrame/
+src/ScreenFrame.Core/
+tests/ScreenFrame.Core.Tests/

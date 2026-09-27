@@ -1,0 +1,177 @@
+<UserControl
+    x:Class="ExactFrame.Views.FramePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:ExactFrame.Views"
+    xmlns:vm="using:ExactFrame.Core.ViewModels">
+
+    <ScrollViewer
+        HorizontalScrollMode="Disabled"
+        IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
+        VerticalScrollBarVisibility="Auto"
+        Visibility="{x:Bind ViewModel.ShowFramePanel, Mode=OneWay}">
+        <StackPanel Padding="20" Spacing="20">
+
+            <!-- Size -->
+            <StackPanel Spacing="12">
+                <Grid>
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Size" />
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource CaptionStyle}"
+                        Text="Physical pixels"
+                        ToolTipService.ToolTip="Sizes stay exact at 125%, 150% or 200% Windows scaling." />
+                </Grid>
+
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Presets}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MaximumRowsOrColumns="3"
+                            MinColumnSpacing="8"
+                            MinItemHeight="46"
+                            MinItemWidth="100"
+                            MinRowSpacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ChoiceItem">
+                            <RadioButton
+                                Command="{x:Bind SelectCommand}"
+                                GroupName="FramePreset"
+                                IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                Style="{StaticResource ChipRadioStyle}">
+                                <StackPanel Spacing="1">
+                                    <TextBlock
+                                        FontFamily="{StaticResource SansSemiBoldFont}"
+                                        FontSize="13"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource InkBrush}"
+                                        Text="{x:Bind Label}" />
+                                    <TextBlock
+                                        FontFamily="{StaticResource MonoFont}"
+                                        FontSize="11"
+                                        Foreground="{StaticResource MutedBrush}"
+                                        Text="{x:Bind Detail}" />
+                                </StackPanel>
+                            </RadioButton>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+
+                <views:SizeEditor ViewModel="{x:Bind ViewModel}" />
+
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.LogicalSizeNote, Mode=OneWay}" />
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- Position -->
+            <StackPanel Spacing="12">
+                <Grid>
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Position" />
+                    <TextBlock HorizontalAlignment="Right" Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.AnchorName, Mode=OneWay}" />
+                </Grid>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="112" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border
+                        VerticalAlignment="Top"
+                        Padding="6"
+                        Background="{StaticResource FooterBrush}"
+                        BorderBrush="{StaticResource LineBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10">
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Anchors}">
+                            <ItemsRepeater.Layout>
+                                <UniformGridLayout
+                                    ItemsStretch="Fill"
+                                    MaximumRowsOrColumns="3"
+                                    MinColumnSpacing="4"
+                                    MinItemHeight="26"
+                                    MinItemWidth="28"
+                                    MinRowSpacing="4" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:AnchorItem">
+                                    <RadioButton
+                                        AutomationProperties.Name="{x:Bind Label}"
+                                        Command="{x:Bind SelectCommand}"
+                                        GroupName="Anchor"
+                                        IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                        Style="{StaticResource AnchorRadioStyle}"
+                                        ToolTipService.ToolTip="{x:Bind Label}" />
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Spacing="12">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <NumberBox
+                                Header="X"
+                                Maximum="100000"
+                                Minimum="-100000"
+                                Style="{StaticResource PixelBoxStyle}"
+                                Value="{x:Bind ViewModel.XValue, Mode=TwoWay}" />
+                            <NumberBox
+                                Grid.Column="1"
+                                Header="Y"
+                                Maximum="100000"
+                                Minimum="-100000"
+                                Style="{StaticResource PixelBoxStyle}"
+                                Value="{x:Bind ViewModel.YValue, Mode=TwoWay}" />
+                        </Grid>
+                        <CheckBox Content="Keep clear of the taskbar" IsChecked="{x:Bind ViewModel.KeepClearOfTaskbar, Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="In the X and Y boxes, arrow keys nudge 1 px and Page Up / Page Down 10 px. You can also drag the outline." />
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- Behavior -->
+            <StackPanel Spacing="4">
+                <TextBlock Margin="0,0,0,4" Style="{StaticResource SectionTitleStyle}" Text="Behavior" />
+                <Grid Padding="0,8" ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock Style="{StaticResource BodyStrongStyle}" Text="Click-through" />
+                        <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.ClickThroughHint, Mode=OneWay}" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        AutomationProperties.Name="Click-through"
+                        IsOn="{x:Bind ViewModel.IsClickThrough, Mode=TwoWay}"
+                        Style="{StaticResource BareSwitchStyle}" />
+                </Grid>
+                <Grid Padding="0,8" ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock Style="{StaticResource BodyStrongStyle}" Text="Hide from recorders" />
+                        <TextBlock Style="{StaticResource CaptionStyle}" Text="Keeps the outline out of captures in apps that honor Windows capture exclusion. Check your recorder’s preview." />
+                    </StackPanel>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        AutomationProperties.Name="Hide from recorders"
+                        IsOn="{x:Bind ViewModel.HideFromRecorders, Mode=TwoWay}"
+                        Style="{StaticResource BareSwitchStyle}" />
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,16 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="ARM64" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/ExactFrame.Core/ExactFrame.Core.csproj" />
+    <Project Path="src/ExactFrame/ExactFrame.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ExactFrame.Core.Tests/ExactFrame.Core.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,190 @@
+<UserControl
+    x:Class="ExactFrame.Views.ResizePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:ExactFrame.Views"
+    xmlns:helpers="using:ExactFrame.Helpers"
+    xmlns:vm="using:ExactFrame.Core.ViewModels">
+
+    <ScrollViewer
+        HorizontalScrollMode="Disabled"
+        IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
+        VerticalScrollBarVisibility="Auto"
+        Visibility="{x:Bind ViewModel.IsResizeMode, Mode=OneWay}">
+        <StackPanel Padding="20,16,20,20" Spacing="18">
+
+            <!-- Window list -->
+            <StackPanel Spacing="8">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox
+                        AutomationProperties.Name="Search open windows"
+                        PlaceholderText="Search open windows"
+                        Text="{x:Bind ViewModel.WindowFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button
+                        Grid.Column="1"
+                        Width="40"
+                        AutomationProperties.Name="Refresh window list"
+                        Command="{x:Bind ViewModel.RefreshWindowsCommand}"
+                        Style="{StaticResource SmallButtonStyle}"
+                        ToolTipService.ToolTip="Refresh the list after opening or closing apps">
+                        <FontIcon FontSize="13" Glyph="&#xE72C;" />
+                    </Button>
+                </Grid>
+
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="No matching windows. Open an app, then refresh." Visibility="{x:Bind ViewModel.HasNoWindows, Mode=OneWay}" />
+
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Windows}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="4" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:WindowItem">
+                            <RadioButton
+                                MinHeight="46"
+                                Padding="10,6"
+                                BorderBrush="Transparent"
+                                Command="{x:Bind SelectCommand}"
+                                GroupName="TargetWindow"
+                                IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                Style="{StaticResource ChipRadioStyle}"
+                                ToolTipService.ToolTip="{x:Bind Title}">
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="28" Height="28" Background="{x:Bind helpers:Format.Brush(Tint)}" CornerRadius="7">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontFamily="{StaticResource SansSemiBoldFont}"
+                                            FontSize="10.5"
+                                            FontWeight="SemiBold"
+                                            Foreground="White"
+                                            Text="{x:Bind Initials}" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock
+                                            FontFamily="{StaticResource SansMediumFont}"
+                                            FontSize="13"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource InkBrush}"
+                                            Text="{x:Bind Title}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock FontSize="11.5" Foreground="{StaticResource MutedBrush}" Text="{x:Bind Meta}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                    <FontIcon
+                                        Grid.Column="2"
+                                        FontSize="14"
+                                        Foreground="{StaticResource AccentBrush}"
+                                        Glyph="&#xE73E;"
+                                        Visibility="{x:Bind IsSelected, Mode=OneWay}" />
+                                </Grid>
+                            </RadioButton>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- Target size -->
+            <StackPanel Spacing="12">
+                <Grid>
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Target size" />
+                    <TextBlock HorizontalAlignment="Right" Style="{StaticResource CaptionStyle}" Text="Physical pixels" />
+                </Grid>
+
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Presets}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MaximumRowsOrColumns="6"
+                            MinColumnSpacing="6"
+                            MinItemHeight="34"
+                            MinItemWidth="50"
+                            MinRowSpacing="6" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ChoiceItem">
+                            <RadioButton
+                                Padding="0"
+                                HorizontalContentAlignment="Center"
+                                Command="{x:Bind SelectCommand}"
+                                CornerRadius="8"
+                                GroupName="ResizePreset"
+                                IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                Style="{StaticResource ChipRadioStyle}"
+                                ToolTipService.ToolTip="{x:Bind Detail}">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontFamily="{StaticResource SansSemiBoldFont}"
+                                    FontSize="12.5"
+                                    FontWeight="SemiBold"
+                                    Foreground="{StaticResource InkBrush}"
+                                    Text="{x:Bind Label}" />
+                            </RadioButton>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+
+                <views:SizeEditor ViewModel="{x:Bind ViewModel}" />
+
+                <Grid MinHeight="36">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Size applies to" />
+                    <Border Style="{StaticResource SegmentTrackStyle}">
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.MeasureOptions}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Horizontal" Spacing="2" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChoiceItem">
+                                    <RadioButton
+                                        Command="{x:Bind SelectCommand}"
+                                        Content="{x:Bind Label}"
+                                        GroupName="Measure"
+                                        IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                        Style="{StaticResource SegmentRadioStyle}" />
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Border>
+                </Grid>
+
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.MeasureNote, Mode=OneWay}" />
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- Placement -->
+            <StackPanel Spacing="10">
+                <Grid MinHeight="36">
+                    <TextBlock VerticalAlignment="Center" Style="{StaticResource SectionTitleStyle}" Text="Placement" />
+                    <Border Style="{StaticResource SegmentTrackStyle}">
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.PlacementOptions}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Horizontal" Spacing="2" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChoiceItem">
+                                    <RadioButton
+                                        Command="{x:Bind SelectCommand}"
+                                        Content="{x:Bind Label}"
+                                        GroupName="Placement"
+                                        IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                        Style="{StaticResource SegmentRadioStyle}" />
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Border>
+                </Grid>
+                <CheckBox Content="Keep clear of the taskbar" IsChecked="{x:Bind ViewModel.KeepClearOfTaskbar, Mode=TwoWay}" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

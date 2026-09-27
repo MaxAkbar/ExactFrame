@@ -1,0 +1,210 @@
+<UserControl
+    x:Class="ExactFrame.Views.StylePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:ExactFrame.Helpers"
+    xmlns:vm="using:ExactFrame.Core.ViewModels">
+
+    <ScrollViewer
+        HorizontalScrollMode="Disabled"
+        VerticalScrollBarVisibility="Auto"
+        Visibility="{x:Bind ViewModel.ShowStylePanel, Mode=OneWay}">
+        <StackPanel Padding="20" Spacing="20">
+
+            <!-- Outline -->
+            <StackPanel Spacing="12">
+                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Outline" />
+
+                <Grid MinHeight="36">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Color" />
+                    <ItemsRepeater HorizontalAlignment="Right" ItemsSource="{x:Bind ViewModel.Swatches}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="6" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SwatchItem">
+                                <RadioButton
+                                    AutomationProperties.Name="{x:Bind Name}"
+                                    Background="{x:Bind helpers:Format.Brush(Hex)}"
+                                    Command="{x:Bind SelectCommand}"
+                                    GroupName="Swatch"
+                                    IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                    Style="{StaticResource SwatchRadioStyle}"
+                                    ToolTipService.ToolTip="{x:Bind Name}" />
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </Grid>
+
+                <Grid MinHeight="36">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Weight" />
+                    <Border Style="{StaticResource SegmentTrackStyle}">
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Thicknesses}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Horizontal" Spacing="2" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChoiceItem">
+                                    <RadioButton
+                                        MinWidth="64"
+                                        Command="{x:Bind SelectCommand}"
+                                        Content="{x:Bind Label}"
+                                        GroupName="Thickness"
+                                        IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                        Style="{StaticResource SegmentRadioStyle}" />
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Border>
+                </Grid>
+
+                <Grid MinHeight="36">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Line" />
+                    <Border Style="{StaticResource SegmentTrackStyle}">
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Lines}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Horizontal" Spacing="2" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChoiceItem">
+                                    <RadioButton
+                                        MinWidth="64"
+                                        Command="{x:Bind SelectCommand}"
+                                        Content="{x:Bind Label}"
+                                        GroupName="Line"
+                                        IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                        Style="{StaticResource SegmentRadioStyle}" />
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Border>
+                </Grid>
+
+                <Grid MinHeight="36">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Size label on the outline" />
+                    <ToggleSwitch
+                        AutomationProperties.Name="Size label on the outline"
+                        IsOn="{x:Bind ViewModel.ShowSizeLabel, Mode=TwoWay}"
+                        Style="{StaticResource BareSwitchStyle}" />
+                </Grid>
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- Dimming -->
+            <StackPanel Spacing="10">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Dim outside the frame" />
+                        <TextBlock Style="{StaticResource CaptionStyle}" Text="Shows at a glance what will be recorded." />
+                    </StackPanel>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        AutomationProperties.Name="Dim outside the frame"
+                        IsOn="{x:Bind ViewModel.DimOutside, Mode=TwoWay}"
+                        Style="{StaticResource BareSwitchStyle}" />
+                </Grid>
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="44" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Amount" />
+                    <Slider
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Dim amount"
+                        IsEnabled="{x:Bind ViewModel.DimOutside, Mode=OneWay}"
+                        Maximum="80"
+                        Minimum="10"
+                        StepFrequency="5"
+                        Value="{x:Bind ViewModel.DimOpacity, Mode=TwoWay}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        FontFamily="{StaticResource MonoFont}"
+                        FontSize="13"
+                        Foreground="{StaticResource InkSoftBrush}"
+                        Text="{x:Bind ViewModel.DimOpacityText, Mode=OneWay}" />
+                </Grid>
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- Guides -->
+            <StackPanel Spacing="12">
+                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Guides" />
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ToggleButton Height="66" IsChecked="{x:Bind ViewModel.ShowThirds, Mode=TwoWay}" Style="{StaticResource ChipToggleStyle}">
+                        <StackPanel Spacing="6">
+                            <Path
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Center"
+                                Data="M 3,5 H 21 V 19 H 3 Z M 9,5 V 19 M 15,5 V 19 M 3,9.7 H 21 M 3,14.3 H 21"
+                                Stroke="{StaticResource InkSoftBrush}"
+                                StrokeThickness="1.4" />
+                            <TextBlock HorizontalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="12.5" Text="Thirds" />
+                        </StackPanel>
+                    </ToggleButton>
+                    <ToggleButton Grid.Column="1" Height="66" IsChecked="{x:Bind ViewModel.ShowCenterMark, Mode=TwoWay}" Style="{StaticResource ChipToggleStyle}">
+                        <StackPanel Spacing="6">
+                            <Path
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Center"
+                                Data="M 3,5 H 21 V 19 H 3 Z M 12,9 V 15 M 9,12 H 15"
+                                Stroke="{StaticResource InkSoftBrush}"
+                                StrokeThickness="1.4" />
+                            <TextBlock HorizontalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="12.5" Text="Center mark" />
+                        </StackPanel>
+                    </ToggleButton>
+                    <ToggleButton Grid.Column="2" Height="66" IsChecked="{x:Bind ViewModel.ShowSafeArea, Mode=TwoWay}" Style="{StaticResource ChipToggleStyle}">
+                        <StackPanel Spacing="6">
+                            <Path
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Center"
+                                Data="M 3,5 H 21 V 19 H 3 Z M 6.5,8 H 17.5 V 16 H 6.5 Z"
+                                Stroke="{StaticResource InkSoftBrush}"
+                                StrokeDashArray="2,1.5"
+                                StrokeThickness="1.4" />
+                            <TextBlock HorizontalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="12.5" Text="Safe area 90%" />
+                        </StackPanel>
+                    </ToggleButton>
+                </Grid>
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="Guides are drawn inside the frame. Keep Hide from recorders on so they stay out of the recording." />
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- HUD -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="On-screen controls" />
+                    <TextBlock Style="{StaticResource CaptionStyle}" Text="A small bar next to the outline. It shrinks to the size readout after 3 seconds without the pointer nearby." />
+                </StackPanel>
+                <ToggleSwitch
+                    Grid.Column="1"
+                    AutomationProperties.Name="On-screen controls"
+                    IsOn="{x:Bind ViewModel.ShowHud, Mode=TwoWay}"
+                    Style="{StaticResource BareSwitchStyle}" />
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

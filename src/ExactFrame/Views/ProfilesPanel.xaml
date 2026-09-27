@@ -1,0 +1,152 @@
+<UserControl
+    x:Class="ExactFrame.Views.ProfilesPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:ExactFrame.Controls"
+    xmlns:helpers="using:ExactFrame.Helpers"
+    xmlns:vm="using:ExactFrame.Core.ViewModels">
+
+    <ScrollViewer
+        HorizontalScrollMode="Disabled"
+        IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
+        VerticalScrollBarVisibility="Auto"
+        Visibility="{x:Bind ViewModel.ShowProfilesPanel, Mode=OneWay}">
+        <StackPanel Padding="20" Spacing="20">
+
+            <!-- Saved profiles -->
+            <StackPanel Spacing="12">
+                <Grid>
+                    <TextBlock VerticalAlignment="Center" Style="{StaticResource SectionTitleStyle}" Text="Saved profiles" />
+                    <Button
+                        HorizontalAlignment="Right"
+                        Command="{x:Bind ViewModel.SaveProfileCommand}"
+                        Style="{StaticResource SmallButtonStyle}"
+                        ToolTipService.ToolTip="Save the current size, position, display and mode">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon FontSize="12" Glyph="&#xE710;" />
+                            <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontWeight="Medium" Text="Save current" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="No profiles yet. Set up a frame, then choose Save current." Visibility="{x:Bind ViewModel.HasNoProfiles, Mode=OneWay}" />
+
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Profiles}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Spacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ProfileItem">
+                            <Grid>
+                                <RadioButton
+                                    Padding="12,10,48,10"
+                                    Command="{x:Bind SelectCommand}"
+                                    GroupName="Profile"
+                                    IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                    Style="{StaticResource ChipRadioStyle}">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="36" Height="36" Background="{x:Bind helpers:Format.SelectedTileBrush(IsSelected), Mode=OneWay}" CornerRadius="8">
+                                            <Border
+                                                Width="{x:Bind GlyphWidth}"
+                                                Height="{x:Bind GlyphHeight}"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                BorderBrush="{x:Bind helpers:Format.SelectedBrush(IsSelected), Mode=OneWay}"
+                                                BorderThickness="1.5"
+                                                CornerRadius="2" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                            <TextBlock
+                                                FontFamily="{StaticResource SansSemiBoldFont}"
+                                                FontSize="14"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource InkBrush}"
+                                                Text="{x:Bind Name}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBlock
+                                                FontSize="12"
+                                                Foreground="{StaticResource MutedBrush}"
+                                                Text="{x:Bind Summary}"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <controls:KeyChips
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Keys="{x:Bind Keys}"
+                                            Opacity="{x:Bind KeysOpacity}"
+                                            ToolTipService.ToolTip="{x:Bind HotkeyTip}"
+                                            Visibility="{x:Bind HasKeys}" />
+                                    </Grid>
+                                </RadioButton>
+                                <Button
+                                    Width="32"
+                                    Margin="0,0,8,0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="Delete profile"
+                                    Command="{x:Bind DeleteCommand}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    ToolTipService.ToolTip="Delete profile">
+                                    <FontIcon FontSize="13" Glyph="&#xE74D;" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- Hotkeys -->
+            <StackPanel Spacing="4">
+                <TextBlock Margin="0,0,0,6" Style="{StaticResource SectionTitleStyle}" Text="Global hotkeys" />
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Hotkeys}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:HotkeyItem">
+                            <Grid
+                                MinHeight="50"
+                                Padding="0,6"
+                                BorderBrush="{StaticResource DividerBrush}"
+                                BorderThickness="0,0,0,1"
+                                ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock FontSize="13.5" Foreground="{StaticResource InkBrush}" Text="{x:Bind Label}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="5" Visibility="{x:Bind HasConflict}">
+                                        <FontIcon FontSize="12" Foreground="{StaticResource WarnTextBrush}" Glyph="&#xE7BA;" />
+                                        <TextBlock
+                                            FontFamily="{StaticResource SansMediumFont}"
+                                            FontSize="12"
+                                            FontWeight="Medium"
+                                            Foreground="{StaticResource WarnTextBrush}"
+                                            Text="Taken by another app" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
+                                    <controls:KeyChips VerticalAlignment="Center" IsWarning="{x:Bind HasConflict}" Keys="{x:Bind Keys}" />
+                                    <Button
+                                        MinHeight="30"
+                                        Command="{x:Bind ChangeCommand}"
+                                        Content="Change"
+                                        Style="{StaticResource SmallButtonStyle}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <TextBlock Margin="0,8,0,0" Style="{StaticResource CaptionStyle}" Text="The first nine profiles also get Ctrl + Alt + 1 to 9. Shortcuts work while another app has focus." />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

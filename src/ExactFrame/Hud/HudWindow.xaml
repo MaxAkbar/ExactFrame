@@ -1,0 +1,136 @@
+<Window
+    x:Class="ExactFrame.Hud.HudWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:ExactFrame.Controls"
+    Title="ExactFrame controls">
+
+    <Grid x:Name="Root" Background="{StaticResource HudBrush}">
+        <StackPanel
+            x:Name="Pill"
+            Height="48"
+            Padding="6,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Orientation="Horizontal">
+
+            <!-- Grip (the whole bar is a handle for the eye; dragging moves the outline, not the bar) -->
+            <Grid Width="22" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="5" />
+                </Grid.RowDefinitions>
+                <Ellipse Width="3" Height="3" Fill="#6F8A88" />
+                <Ellipse Grid.Column="1" Width="3" Height="3" Fill="#6F8A88" />
+                <Ellipse Grid.Row="1" Width="3" Height="3" Fill="#6F8A88" />
+                <Ellipse Grid.Row="1" Grid.Column="1" Width="3" Height="3" Fill="#6F8A88" />
+                <Ellipse Grid.Row="2" Width="3" Height="3" Fill="#6F8A88" />
+                <Ellipse Grid.Row="2" Grid.Column="1" Width="3" Height="3" Fill="#6F8A88" />
+            </Grid>
+
+            <!-- Size readout: always visible, the idle state shows only this -->
+            <Border
+                Height="36"
+                Margin="4,0,0,0"
+                Padding="12,0"
+                VerticalAlignment="Center"
+                Background="#0FFFFFFF"
+                CornerRadius="9">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontFamily="{StaticResource MonoSemiBoldFont}"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    Foreground="{StaticResource StageBrightBrush}"
+                    Text="{x:Bind ViewModel.SizeText, Mode=OneWay}" />
+            </Border>
+
+            <!-- Full controls -->
+            <StackPanel x:Name="FullControls" VerticalAlignment="Center" Orientation="Horizontal" Spacing="2">
+                <TextBlock
+                    Margin="10,0"
+                    VerticalAlignment="Center"
+                    FontFamily="{StaticResource MonoFont}"
+                    FontSize="12"
+                    Foreground="{StaticResource StageMutedBrush}"
+                    Text="{x:Bind ViewModel.HudPositionText, Mode=OneWay}" />
+                <Border Width="1" Height="22" Margin="4,0" Background="#1FFFFFFF" />
+                <Button
+                    AutomationProperties.Name="Center on display"
+                    Command="{x:Bind ViewModel.CenterCommand}"
+                    Style="{StaticResource HudButtonStyle}"
+                    ToolTipService.ToolTip="Center on display">
+                    <Path
+                        Width="18"
+                        Height="18"
+                        Data="M 9,1.5 V 5 M 9,13 V 16.5 M 1.5,9 H 5 M 13,9 H 16.5 M 9,7.6 A 1.4,1.4 0 1 1 8.99,7.6"
+                        Stroke="{StaticResource StageSoftBrush}"
+                        StrokeEndLineCap="Round"
+                        StrokeStartLineCap="Round"
+                        StrokeThickness="1.6" />
+                </Button>
+                <ToggleButton
+                    AutomationProperties.Name="Rule-of-thirds guides"
+                    IsChecked="{x:Bind ViewModel.ShowThirds, Mode=TwoWay}"
+                    Style="{StaticResource HudToggleStyle}"
+                    ToolTipService.ToolTip="Rule-of-thirds guides">
+                    <FontIcon FontSize="16" Glyph="&#xE8A9;" />
+                </ToggleButton>
+                <ToggleButton
+                    AutomationProperties.Name="Click-through"
+                    IsChecked="{x:Bind ViewModel.IsClickThrough, Mode=TwoWay}"
+                    Style="{StaticResource HudToggleStyle}"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.ClickThroughHint, Mode=OneWay}">
+                    <FontIcon FontSize="16" Glyph="&#xE72E;" />
+                </ToggleButton>
+                <ToggleButton
+                    AutomationProperties.Name="Hide from recorders"
+                    IsChecked="{x:Bind ViewModel.HideFromRecorders, Mode=TwoWay}"
+                    Style="{StaticResource HudToggleStyle}"
+                    ToolTipService.ToolTip="Hide the outline from recorders">
+                    <FontIcon FontSize="16" Glyph="&#xED1A;" />
+                </ToggleButton>
+                <Button
+                        AutomationProperties.Name="Open ExactFrame"
+                    Click="OnOpenMainClick"
+                    Style="{StaticResource HudButtonStyle}"
+                        ToolTipService.ToolTip="Open ExactFrame">
+                    <FontIcon FontSize="16" Glyph="&#xE713;" />
+                </Button>
+                <Border Width="1" Height="22" Margin="4,0" Background="#1FFFFFFF" />
+                <Button
+                    AutomationProperties.Name="Hide outline"
+                    Command="{x:Bind ViewModel.HideOutlineCommand}"
+                    Style="{StaticResource HudButtonStyle}"
+                    ToolTipService.ToolTip="Hide outline">
+                    <FontIcon FontSize="13" Glyph="&#xE711;" />
+                </Button>
+            </StackPanel>
+
+            <!-- Click-through: only the unlock hint -->
+            <Button
+                x:Name="LockedHint"
+                Height="36"
+                Margin="6,0,0,0"
+                Padding="10,0"
+                VerticalAlignment="Center"
+                Command="{x:Bind ViewModel.ToggleClickThroughCommand}"
+                Style="{StaticResource HudButtonStyle}"
+                ToolTipService.ToolTip="Turn click-through off"
+                Visibility="Collapsed"
+                Width="Auto">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <FontIcon FontSize="15" Foreground="{StaticResource MintBrush}" Glyph="&#xE72E;" />
+                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="13" Foreground="{StaticResource StageTextBrush}" Text="Click-through" />
+                    <controls:KeyChips VerticalAlignment="Center" Keys="{x:Bind ViewModel.LockHotkeyKeys, Mode=OneWay}" Variant="Dark" />
+                    <TextBlock VerticalAlignment="Center" FontSize="12.5" Foreground="{StaticResource StageMutedBrush}" Text="to unlock" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,75 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Fonts: IBM Plex (SIL OFL, bundled in Assets/Fonts). Each weight is its own family so weights never get synthesized. -->
+    <FontFamily x:Key="SansFont">ms-appx:///Assets/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans, Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="SansMediumFont">ms-appx:///Assets/Fonts/IBMPlexSans-Medium.ttf#IBM Plex Sans, ms-appx:///Assets/Fonts/IBMPlexSans-Medium.ttf#IBM Plex Sans Medm, Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="SansSemiBoldFont">ms-appx:///Assets/Fonts/IBMPlexSans-SemiBold.ttf#IBM Plex Sans, ms-appx:///Assets/Fonts/IBMPlexSans-SemiBold.ttf#IBM Plex Sans SmBld, Segoe UI Variable Display, Segoe UI</FontFamily>
+    <FontFamily x:Key="MonoFont">ms-appx:///Assets/Fonts/IBMPlexMono-Regular.ttf#IBM Plex Mono, Cascadia Mono, Consolas</FontFamily>
+    <FontFamily x:Key="MonoMediumFont">ms-appx:///Assets/Fonts/IBMPlexMono-Medium.ttf#IBM Plex Mono, ms-appx:///Assets/Fonts/IBMPlexMono-Medium.ttf#IBM Plex Mono Medm, Cascadia Mono, Consolas</FontFamily>
+    <FontFamily x:Key="MonoSemiBoldFont">ms-appx:///Assets/Fonts/IBMPlexMono-SemiBold.ttf#IBM Plex Mono, ms-appx:///Assets/Fonts/IBMPlexMono-SemiBold.ttf#IBM Plex Mono SmBld, Cascadia Mono, Consolas</FontFamily>
+
+    <!-- Controls (buttons, text boxes, toggles) pick this up everywhere. -->
+    <FontFamily x:Key="ContentControlThemeFontFamily">ms-appx:///Assets/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans, Segoe UI Variable Text, Segoe UI</FontFamily>
+
+    <!-- Teal accent for switches, sliders, focus and selection. -->
+    <Color x:Key="SystemAccentColor">#0E7A6D</Color>
+    <Color x:Key="SystemAccentColorLight1">#2D9C8C</Color>
+    <Color x:Key="SystemAccentColorLight2">#5FBFB0</Color>
+    <Color x:Key="SystemAccentColorLight3">#9ED3C8</Color>
+    <Color x:Key="SystemAccentColorDark1">#0E7A6D</Color>
+    <Color x:Key="SystemAccentColorDark2">#0A5F55</Color>
+    <Color x:Key="SystemAccentColorDark3">#084B43</Color>
+
+    <!-- Light surfaces -->
+    <SolidColorBrush x:Key="GroundBrush" Color="#EDF1F0" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="FooterBrush" Color="#F6F8F7" />
+    <SolidColorBrush x:Key="TrackBrush" Color="#EEF2F1" />
+    <SolidColorBrush x:Key="TitleTrackBrush" Color="#DDE5E3" />
+    <SolidColorBrush x:Key="LineBrush" Color="#D9E1DF" />
+    <SolidColorBrush x:Key="DividerBrush" Color="#E3E9E8" />
+    <SolidColorBrush x:Key="InputLineBrush" Color="#A7B5B3" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#0D122422" />
+    <SolidColorBrush x:Key="PressedBrush" Color="#1A122422" />
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="InkBrush" Color="#122422" />
+    <SolidColorBrush x:Key="InkSoftBrush" Color="#3C4F4D" />
+    <SolidColorBrush x:Key="SegmentTextBrush" Color="#44585A" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#5E706E" />
+
+    <!-- Accent -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#0E7A6D" />
+    <SolidColorBrush x:Key="AccentStrongBrush" Color="#0A5F55" />
+    <SolidColorBrush x:Key="AccentTintBrush" Color="#E2F2EE" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#F1F9F7" />
+    <SolidColorBrush x:Key="AccentLineBrush" Color="#9ED3C8" />
+
+    <!-- Warnings -->
+    <SolidColorBrush x:Key="WarnTextBrush" Color="#8A5100" />
+    <SolidColorBrush x:Key="WarnFillBrush" Color="#FDF5E6" />
+    <SolidColorBrush x:Key="WarnLineBrush" Color="#E0B25C" />
+
+    <!-- Dark preview stage -->
+    <SolidColorBrush x:Key="StageBrush" Color="#0F1E22" />
+    <SolidColorBrush x:Key="StageWallpaperBrush" Color="#14272C" />
+    <SolidColorBrush x:Key="StageLineBrush" Color="#2A4147" />
+    <SolidColorBrush x:Key="StageTextBrush" Color="#E6F0EE" />
+    <SolidColorBrush x:Key="StageBrightBrush" Color="#F2F8F7" />
+    <SolidColorBrush x:Key="StageMutedBrush" Color="#93AEAB" />
+    <SolidColorBrush x:Key="StageSoftBrush" Color="#B8CBC9" />
+    <SolidColorBrush x:Key="StageChipBrush" Color="#0FFFFFFF" />
+    <SolidColorBrush x:Key="StageHoverBrush" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="MintBrush" Color="#34D5B5" />
+    <SolidColorBrush x:Key="MintTextBrush" Color="#7FE0C9" />
+    <SolidColorBrush x:Key="MintTintBrush" Color="#2434D5B5" />
+    <SolidColorBrush x:Key="StageWarnBrush" Color="#F5B84A" />
+
+    <!-- On-screen HUD -->
+    <SolidColorBrush x:Key="HudBrush" Color="#0D1A1E" />
+    <SolidColorBrush x:Key="HudLineBrush" Color="#17FFFFFF" />
+    <SolidColorBrush x:Key="HudActiveBrush" Color="#2934D5B5" />
+
+</ResourceDictionary>
