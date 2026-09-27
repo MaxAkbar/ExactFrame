@@ -40,6 +40,9 @@ public sealed record OutlineStyle
 
     public bool ShowSafeArea { get; init; }
 
+    /// <summary>Show a magnified view of screen pixels while the pointer is near an outline edge.</summary>
+    public bool ShowEdgeMagnifier { get; init; }
+
     public bool ShowHud { get; init; } = true;
 
     public bool HasGuides => ShowThirds || ShowCenterMark || ShowSafeArea;

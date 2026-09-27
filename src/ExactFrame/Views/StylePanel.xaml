@@ -189,6 +189,25 @@
 
             <Border Style="{StaticResource DividerStyle}" />
 
+            <!-- Edge inspection -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Edge magnifier" />
+                    <TextBlock Style="{StaticResource CaptionStyle}" Text="Hover over or drag an outline edge to inspect nearby screen pixels at 8×." TextWrapping="Wrap" />
+                </StackPanel>
+                <ToggleSwitch
+                    Grid.Column="1"
+                    AutomationProperties.Name="Edge magnifier"
+                    IsOn="{x:Bind ViewModel.ShowEdgeMagnifier, Mode=TwoWay}"
+                    Style="{StaticResource BareSwitchStyle}" />
+            </Grid>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
             <!-- HUD -->
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>

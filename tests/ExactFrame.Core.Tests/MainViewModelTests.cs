@@ -178,10 +178,13 @@ public sealed class MainViewModelTests : IDisposable
 
         vm.Swatches.Single(s => s.Color == OutlineColor.Amber).SelectCommand.Execute(null);
         vm.ShowThirds = true;
+        vm.ShowEdgeMagnifier = true;
 
         Assert.Equal(OutlineColor.Amber, _overlay.Style!.Color);
         Assert.True(_overlay.Style.ShowThirds);
+        Assert.True(_overlay.Style.ShowEdgeMagnifier);
         Assert.True(vm.Preview.Style.ShowThirds);
+        Assert.True(_store.Settings.Style.ShowEdgeMagnifier);
         Assert.True(_store.SaveCount > saves);
         Assert.True(vm.Swatches.Single(s => s.Color == OutlineColor.Amber).IsSelected);
     }

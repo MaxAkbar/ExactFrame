@@ -3,6 +3,7 @@ using Microsoft.UI.Dispatching;
 using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
 using ExactFrame.Core.Services;
+using ExactFrame.Interop;
 using ExactFrame.Native;
 
 namespace ExactFrame.Services;
@@ -19,6 +20,7 @@ internal sealed class OutlineOverlay : IOutlineOverlay
     private GuideWindow? _guides;
     private NestedFramesWindow? _nested;
     private FrameBorderWindow? _border;
+    private EdgeMagnifierWindow? _magnifier;
     private IReadOnlyList<NestedFrameBounds> _nestedFrames = [];
     private OutlineStyle _style = new();
     private DisplayInfo? _display;
@@ -28,6 +30,16 @@ internal sealed class OutlineOverlay : IOutlineOverlay
     private bool _disposed;
     private bool _layoutQueued;
     private readonly DispatcherQueue? _dispatcher = DispatcherQueue.GetForCurrentThread();
+    private readonly DispatcherQueueTimer? _magnifierTimer;
+
+    public OutlineOverlay()
+    {
+        if (_dispatcher is null) return;
+        _magnifierTimer = _dispatcher.CreateTimer();
+        _magnifierTimer.Interval = TimeSpan.FromMilliseconds(100);
+        _magnifierTimer.IsRepeating = true;
+        _magnifierTimer.Tick += OnMagnifierTick;
+    }
 
     public event EventHandler? FrameMoved;
 
@@ -64,6 +76,7 @@ internal sealed class OutlineOverlay : IOutlineOverlay
         IsVisible = true;
         ShowLayers();
         ApplyCaptureExclusion();
+        UpdateMagnifierTimer();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -75,6 +88,7 @@ internal sealed class OutlineOverlay : IOutlineOverlay
         _guides?.Hide();
         _nested?.Hide();
         _border?.Hide();
+        UpdateMagnifierTimer();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -84,6 +98,7 @@ internal sealed class OutlineOverlay : IOutlineOverlay
         if (!IsVisible) return;
         Layout();
         ShowLayers();
+        UpdateMagnifierTimer();
     }
 
     public void SetLocked(bool locked)
@@ -102,10 +117,16 @@ internal sealed class OutlineOverlay : IOutlineOverlay
     {
         if (_disposed) return;
         _disposed = true;
+        if (_magnifierTimer is not null)
+        {
+            _magnifierTimer.Stop();
+            _magnifierTimer.Tick -= OnMagnifierTick;
+        }
         if (_border is not null) _border.Dragged -= OnBorderDragged;
         _border?.Dispose();
         _guides?.Dispose();
         _nested?.Dispose();
+        _magnifier?.Dispose();
         foreach (var shade in _shades ?? []) shade.Dispose();
     }
 
@@ -132,6 +153,7 @@ internal sealed class OutlineOverlay : IOutlineOverlay
         _guides = new GuideWindow();
         _nested = new NestedFramesWindow();
         _border = new FrameBorderWindow();
+        _magnifier = new EdgeMagnifierWindow();
         _border.Dragged += OnBorderDragged;
     }
 
@@ -174,8 +196,53 @@ internal sealed class OutlineOverlay : IOutlineOverlay
         bool ok = _border.SetCaptureExclusion(_excludeFromCapture);
         ok &= _guides.SetCaptureExclusion(_excludeFromCapture);
         ok &= _nested.SetCaptureExclusion(_excludeFromCapture);
+        if (_magnifier is not null) ok &= _magnifier.SetCaptureExclusion(_excludeFromCapture);
         foreach (var shade in _shades) ok &= shade.SetCaptureExclusion(_excludeFromCapture);
         CaptureExclusionApplied = !_excludeFromCapture || ok;
+    }
+
+    private void UpdateMagnifierTimer()
+    {
+        if (_magnifierTimer is null) return;
+        _magnifierTimer.Stop();
+        if (!IsVisible || !_style.ShowEdgeMagnifier)
+        {
+            _magnifier?.Hide();
+            return;
+        }
+
+        _magnifierTimer.Start();
+        UpdateMagnifier();
+    }
+
+    private void OnMagnifierTick(DispatcherQueueTimer sender, object args) => UpdateMagnifier();
+
+    private void UpdateMagnifier()
+    {
+        if (!IsVisible || !_style.ShowEdgeMagnifier || _magnifier is null || _display is null ||
+            !NativeMethods.GetCursorPos(out var cursor))
+        {
+            _magnifier?.Hide();
+            return;
+        }
+
+        var pointer = new Point(cursor.X, cursor.Y);
+        if (!EdgeMagnifierGeometry.TryNearestEdge(Frame, pointer, 14, out var edge))
+        {
+            _magnifier.Hide();
+            return;
+        }
+
+        try
+        {
+            _magnifier.Update(Frame, pointer, edge, _display.Bounds);
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or
+                                   System.Runtime.InteropServices.ExternalException or ArgumentException)
+        {
+            // Screen pixels may be temporarily unavailable (for example on a secure desktop).
+            _magnifier.Hide();
+        }
     }
 
     private void OnBorderDragged(object? sender, Rectangle proposed)

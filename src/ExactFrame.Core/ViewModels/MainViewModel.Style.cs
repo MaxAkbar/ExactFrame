@@ -8,7 +8,7 @@ public sealed partial class MainViewModel
     private static readonly string[] StyleProperties =
     [
         nameof(Style), nameof(ShowSizeLabel), nameof(DimOutside), nameof(DimOpacity), nameof(DimOpacityText),
-        nameof(ShowThirds), nameof(ShowCenterMark), nameof(ShowSafeArea), nameof(ShowHud)
+        nameof(ShowThirds), nameof(ShowCenterMark), nameof(ShowSafeArea), nameof(ShowEdgeMagnifier), nameof(ShowHud)
     ];
 
     private OutlineStyle _style;
@@ -61,6 +61,12 @@ public sealed partial class MainViewModel
     {
         get => _style.ShowSafeArea;
         set => UpdateStyle(_style with { ShowSafeArea = value });
+    }
+
+    public bool ShowEdgeMagnifier
+    {
+        get => _style.ShowEdgeMagnifier;
+        set => UpdateStyle(_style with { ShowEdgeMagnifier = value });
     }
 
     public bool ShowHud
