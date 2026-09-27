@@ -6,6 +6,7 @@ or resize another app so its content is an exact size.
 Version 2.0 is a WinUI 3 rewrite of the Windows Forms app. It adds a
 to-scale display preview, a 3 × 3 anchor grid, outline styles and guides, dimming outside the frame,
 saved profiles with hotkeys, and a floating control bar next to the outline.
+It can also show several capture guides at once, such as a vertical Shorts frame inside a landscape frame.
 
 ## Requirements
 
@@ -43,10 +44,16 @@ that runs without installing .NET or the Windows App SDK. For ARM64, replace `wi
 Choose where the frame sits with the anchor grid, or type X and Y. Choose a display under the preview.
 Select **Show outline** (Ctrl + Alt + F8). Drag the border to move it; Esc hides it while ExactFrame has focus.
 
+**Additional frames.** In the Frame tab, add a **9:16**, **1:1**, **4:5** or custom guide inside the main frame.
+Each guide has an editable aspect ratio, scale percentage and position within the main frame. The displayed
+width, height, X and Y are physical pixels. Extra guides stay inside the main frame and follow it when it
+moves or resizes. Use **Copy bounds** to copy a labeled region for every frame; set up each region in your
+recorder or editing workflow. You can add several guides and remove them individually.
+
 **Style tab.** Outline color, weight (2, 4 or 6 px) and line (solid, dashed or corners only), the size label,
 dimming outside the frame, rule-of-thirds, center-mark and 90% safe-area guides, and the on-screen controls.
 
-**Profiles tab.** **Save current** stores the size, position, display and mode. The first nine profiles get
+**Profiles tab.** **Save current** stores the size, position, display, mode and additional frames. The first nine profiles get
 Ctrl + Alt + 1 to 9. **Global hotkeys** shows each shortcut; if another app owns one, it says so and
 **Change** records a new one.
 
@@ -84,6 +91,7 @@ Settings and profiles are saved to `%LOCALAPPDATA%\ExactFrame\settings.json`.
 - The colored border is drawn **inside** the frame, so the frame's outer edges are the capture rectangle.
   A 6 px invisible band just outside the frame makes the edge easy to grab; it's outside the recorded area.
 - The middle of the frame is click-through. With **Click-through** on, the border is too.
+- Additional frame outlines are always click-through. Their colored borders stay inside their exact capture bounds.
 - Dimming, guides and the size label are click-through layers. Guides are drawn inside the frame, so keep
   **Hide from recorders** on while they're visible.
 - **Hide from recorders** uses `SetWindowDisplayAffinity` with `WDA_EXCLUDEFROMCAPTURE`. Recorder support
@@ -128,6 +136,8 @@ projections. XAML compilation, rendering and native behavior need a Windows run:
   minimized; then use **Restore original size**.
 - Repeat on a second monitor with different scaling and a negative origin.
 - Record a new shortcut, and save, apply and delete a profile.
+- Add a 9:16 guide inside a 16:9 frame; move and resize the main outline, adjust the guide's scale and position,
+  copy both bounds, and confirm a saved profile restores the guide. Check the nested outline in a recorder preview.
 - Check capture exclusion with the recorder and capture method you actually use.
 
 ## API references

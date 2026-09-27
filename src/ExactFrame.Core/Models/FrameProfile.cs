@@ -21,6 +21,9 @@ public sealed record FrameProfile
 
     public int Height { get; init; } = 1080;
 
+    /// <summary>Additional recording guides that move and scale with the main frame.</summary>
+    public List<NestedFrame> NestedFrames { get; init; } = [];
+
     /// <summary>Anchor inside the display, or <c>null</c> for the exact <see cref="X"/>/<see cref="Y"/> position.</summary>
     public FrameAnchor? Anchor { get; init; } = FrameAnchor.Center;
 
@@ -37,6 +40,31 @@ public sealed record FrameProfile
 
     /// <summary>Process name to select in Resize window mode, such as <c>devenv</c>.</summary>
     public string? TargetProcessName { get; init; }
+
+    public bool Equals(FrameProfile? other) => other is not null &&
+        Id == other.Id && Name == other.Name && Mode == other.Mode && Width == other.Width && Height == other.Height &&
+        (NestedFrames ?? []).SequenceEqual(other.NestedFrames ?? []) && Anchor == other.Anchor && X == other.X &&
+        Y == other.Y && DisplayDeviceName == other.DisplayDeviceName && KeepClearOfTaskbar == other.KeepClearOfTaskbar &&
+        Area == other.Area && TargetProcessName == other.TargetProcessName;
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(Id);
+        hash.Add(Name);
+        hash.Add(Mode);
+        hash.Add(Width);
+        hash.Add(Height);
+        foreach (var frame in NestedFrames ?? []) hash.Add(frame);
+        hash.Add(Anchor);
+        hash.Add(X);
+        hash.Add(Y);
+        hash.Add(DisplayDeviceName);
+        hash.Add(KeepClearOfTaskbar);
+        hash.Add(Area);
+        hash.Add(TargetProcessName);
+        return hash.ToHashCode();
+    }
 
     public static IReadOnlyList<FrameProfile> Defaults() =>
     [

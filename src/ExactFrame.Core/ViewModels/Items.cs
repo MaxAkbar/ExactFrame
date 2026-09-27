@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Drawing;
 using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
 
@@ -36,6 +37,80 @@ public sealed class AnchorItem(FrameAnchor anchor, Action select) : SelectableIt
     public FrameAnchor Anchor { get; } = anchor;
 
     public string Label { get; } = anchor.DisplayName();
+}
+
+/// <summary>Editable controls for one guide inside the main recording frame.</summary>
+public sealed class NestedFrameItem : ObservableObject
+{
+    private NestedFrame _frame;
+    private string _dimensions = string.Empty;
+    private readonly Action<NestedFrame> _changed;
+
+    public NestedFrameItem(NestedFrame frame, Action<NestedFrame> changed, Action remove)
+    {
+        _frame = frame;
+        _changed = changed;
+        RemoveCommand = new RelayCommand(remove);
+    }
+
+    public NestedFrame Frame => _frame;
+
+    public string Name => _frame.Name;
+
+    public string ColorHex => OutlinePalette.Hex(_frame.Color);
+
+    public string Dimensions => _dimensions;
+
+    public IRelayCommand RemoveCommand { get; }
+
+    public double AspectWidth
+    {
+        get => _frame.AspectWidth;
+        set { if (ValidNumber(value, 1, 32, out int number)) Change(_frame with { AspectWidth = number }); }
+    }
+
+    public double AspectHeight
+    {
+        get => _frame.AspectHeight;
+        set { if (ValidNumber(value, 1, 32, out int number)) Change(_frame with { AspectHeight = number }); }
+    }
+
+    public double ScalePercent
+    {
+        get => _frame.ScalePercent;
+        set { if (ValidNumber(value, 10, 100, out int number)) Change(_frame with { ScalePercent = number }); }
+    }
+
+    public int AnchorIndex
+    {
+        get => (int)_frame.Anchor;
+        set { if (value is >= 0 and <= 8) Change(_frame with { Anchor = (FrameAnchor)value }); }
+    }
+
+    public void UpdateBounds(Rectangle bounds)
+    {
+        string dimensions = bounds.IsEmpty ? "Does not fit" : $"{bounds.Width} × {bounds.Height} px · X={bounds.X}, Y={bounds.Y}";
+        SetProperty(ref _dimensions, dimensions);
+    }
+
+    private void Change(NestedFrame frame)
+    {
+        if (frame == _frame) return;
+        _frame = frame;
+        OnPropertyChanged(nameof(AspectWidth));
+        OnPropertyChanged(nameof(AspectHeight));
+        OnPropertyChanged(nameof(ScalePercent));
+        OnPropertyChanged(nameof(AnchorIndex));
+        _changed(frame);
+    }
+
+    private static bool ValidNumber(double value, int min, int max, out int number)
+    {
+        number = 0;
+        if (double.IsNaN(value) || double.IsInfinity(value)) return false;
+        number = (int)Math.Clamp(Math.Round(value), min, max);
+        return true;
+    }
 }
 
 public sealed class SwatchItem(OutlineColor color, Action select) : SelectableItem(select)

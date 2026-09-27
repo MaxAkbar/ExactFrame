@@ -77,7 +77,7 @@ internal sealed class FrameBorderWindow : LayeredWindow
         }
     }
 
-    private static void FillRing(Graphics graphics, Brush brush, Rectangle outer, Rectangle inner)
+    internal static void FillRing(Graphics graphics, Brush brush, Rectangle outer, Rectangle inner)
     {
         graphics.FillRectangle(brush, outer.Left, outer.Top, outer.Width, inner.Top - outer.Top);
         graphics.FillRectangle(brush, outer.Left, inner.Bottom, outer.Width, outer.Bottom - inner.Bottom);
@@ -85,7 +85,7 @@ internal sealed class FrameBorderWindow : LayeredWindow
         graphics.FillRectangle(brush, inner.Right, inner.Top, outer.Right - inner.Right, inner.Height);
     }
 
-    private static void DrawDashed(Graphics graphics, Brush brush, Rectangle r, int t)
+    internal static void DrawDashed(Graphics graphics, Brush brush, Rectangle r, int t)
     {
         int dash = Math.Max(10, t * 4);
         int gap = Math.Max(6, t * 3);
@@ -103,7 +103,7 @@ internal sealed class FrameBorderWindow : LayeredWindow
         }
     }
 
-    private static void DrawCorners(Graphics graphics, Brush brush, Rectangle r, int t)
+    internal static void DrawCorners(Graphics graphics, Brush brush, Rectangle r, int t)
     {
         int length = Math.Min(Math.Max(28, t * 10), Math.Min(r.Width, r.Height) / 3);
         graphics.FillRectangle(brush, r.Left, r.Top, length, t);
@@ -146,6 +146,80 @@ internal sealed class FrameBorderWindow : LayeredWindow
                 break;
         }
         return base.WndProc(hwnd, message, wParam, lParam);
+    }
+}
+
+/// <summary>Click-through outlines for every frame nested inside the draggable main frame.</summary>
+internal sealed class NestedFramesWindow : LayeredWindow
+{
+    private IReadOnlyList<NestedFrameBounds> _frames = [];
+    private OutlineStyle _style = new();
+    private double _scale = 1;
+
+    public NestedFramesWindow() : base(clickThrough: true)
+    {
+    }
+
+    public void Update(Rectangle parent, IReadOnlyList<NestedFrameBounds> frames, OutlineStyle style, double scale)
+    {
+        var relative = frames.Select(frame => frame with
+        {
+            Bounds = new Rectangle(frame.Bounds.X - parent.X, frame.Bounds.Y - parent.Y,
+                frame.Bounds.Width, frame.Bounds.Height)
+        }).ToArray();
+        bool redraw = Bounds.Size != parent.Size || style != _style || Math.Abs(scale - _scale) > 0.001 ||
+            !_frames.SequenceEqual(relative);
+        _frames = relative;
+        _style = style;
+        _scale = scale;
+        if (redraw) Render(parent, Draw);
+        else MoveTo(parent.Location);
+    }
+
+    private void Draw(Graphics graphics)
+    {
+        foreach (var frame in _frames)
+        {
+            var bounds = frame.Bounds;
+            if (bounds.Width < 2 || bounds.Height < 2) continue;
+            var color = Color.FromArgb(unchecked((int)OutlinePalette.Argb(frame.Color)));
+            using var brush = new SolidBrush(color);
+            int thickness = Math.Clamp(_style.Thickness, 1, Math.Max(1, Math.Min(bounds.Width, bounds.Height) / 4));
+            switch (_style.Line)
+            {
+                case OutlineLine.Dashed:
+                    FrameBorderWindow.DrawDashed(graphics, brush, bounds, thickness);
+                    break;
+                case OutlineLine.Corners:
+                    FrameBorderWindow.DrawCorners(graphics, brush, bounds, thickness);
+                    break;
+                default:
+                    FrameBorderWindow.FillRing(graphics, brush, bounds, Rectangle.Inflate(bounds, -thickness, -thickness));
+                    break;
+            }
+
+            if (_style.ShowSizeLabel) DrawLabel(graphics, frame, color, thickness);
+        }
+    }
+
+    private void DrawLabel(Graphics graphics, NestedFrameBounds frame, Color color, int thickness)
+    {
+        graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+        string text = $"{frame.Name}  {frame.Bounds.Width} × {frame.Bounds.Height}";
+        using var font = new Font("Segoe UI Semibold", (float)(12 * _scale), FontStyle.Regular, GraphicsUnit.Pixel);
+        int height = (int)Math.Round(22 * _scale);
+        int padding = (int)Math.Round(6 * _scale);
+        int width = Math.Min(frame.Bounds.Width - thickness * 2,
+            (int)Math.Ceiling(graphics.MeasureString(text, font).Width) + padding * 2);
+        if (width <= 0 || frame.Bounds.Height < height + thickness) return;
+        var box = new Rectangle(frame.Bounds.Left + thickness, frame.Bounds.Top + thickness, width, height);
+        using var fill = new SolidBrush(color);
+        using var ink = new SolidBrush(Color.FromArgb(255, 6, 32, 28));
+        graphics.FillRectangle(fill, box);
+        var state = graphics.Save();
+        graphics.SetClip(box);
+        graphics.DrawString(text, font, ink, box.Left + padding, box.Top + (height - font.Height) / 2f);
+        graphics.Restore(state);
     }
 }
 

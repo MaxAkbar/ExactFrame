@@ -48,7 +48,9 @@ public sealed partial class MainViewModel
                 };
             }
             string display = _display?.Title ?? "No display";
-            return $"{AspectRatio.Describe(frame.Width, frame.Height)} · {AspectRatio.Orientation(frame.Width, frame.Height)} · {display}";
+            string nested = NestedFrames.Count > 0
+                ? $" · {NestedFrames.Count} extra {(NestedFrames.Count == 1 ? "frame" : "frames")}" : string.Empty;
+            return $"{AspectRatio.Describe(frame.Width, frame.Height)} · {AspectRatio.Orientation(frame.Width, frame.Height)} · {display}{nested}";
         }
     }
 
@@ -117,7 +119,8 @@ public sealed partial class MainViewModel
                 TitleBarHeight: (int)Math.Round(32 * _display.Scale),
                 ghost,
                 SizeText,
-                IsFit);
+                IsFit,
+                NestedBounds(CurrentFrame));
         }
     }
 

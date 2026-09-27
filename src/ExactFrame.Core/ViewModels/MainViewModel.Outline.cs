@@ -92,7 +92,7 @@ public sealed partial class MainViewModel
         }
 
         _overlay.SetLocked(_clickThrough);
-        _overlay.Show(frame, _display, _keepClear);
+        _overlay.Show(frame, _display, _keepClear, NestedBounds(frame));
 
         if (_hideFromRecorders && !_overlay.CaptureExclusionApplied)
             SetStatus("Windows couldn’t exclude the outline from capture. Hide it before recording.", warning: true);
@@ -120,6 +120,8 @@ public sealed partial class MainViewModel
         _x = frame.X;
         _y = frame.Y;
         _activeFrame = frame;
+        if (_display is not null && IsOutlineMode)
+            _overlay.Show(frame, _display, _keepClear, NestedBounds(frame));
         NotifyFrame();
         SetStatus($"Moved to {frame.X}, {frame.Y}.");
     }
@@ -127,9 +129,16 @@ public sealed partial class MainViewModel
     private async Task CopyBoundsAsync()
     {
         var frame = CurrentFrame;
+        static string BoundsLine(Rectangle bounds) =>
+            $"X={bounds.X}, Y={bounds.Y}, Width={bounds.Width}, Height={bounds.Height}";
+        string text = BoundsLine(frame);
+        var nested = NestedBounds(frame);
+        if (nested.Count > 0)
+            text = "Main: " + text + Environment.NewLine +
+                   string.Join(Environment.NewLine, nested.Select(item => $"{item.Name}: {BoundsLine(item.Bounds)}"));
         try
         {
-            _clipboard.SetText($"X={frame.X}, Y={frame.Y}, Width={frame.Width}, Height={frame.Height}");
+            _clipboard.SetText(text);
         }
         catch (Exception ex) when (IsExpected(ex))
         {
@@ -137,7 +146,9 @@ public sealed partial class MainViewModel
             return;
         }
 
-        SetStatus("Frame bounds copied. Paste them into your recorder’s region settings.");
+        SetStatus(nested.Count > 0
+            ? "All frame bounds copied. Paste each region into your recorder’s settings."
+            : "Frame bounds copied. Paste them into your recorder’s region settings.");
         IsCopied = true;
         int version = ++_copyVersion;
         try

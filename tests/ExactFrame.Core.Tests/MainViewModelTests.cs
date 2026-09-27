@@ -123,6 +123,53 @@ public sealed class MainViewModelTests : IDisposable
     }
 
     [Fact]
+    public void Additional_frames_follow_the_main_frame_and_can_be_edited_or_removed()
+    {
+        var vm = Create();
+        vm.AddShortsFrameCommand.Execute(null);
+        vm.AddSquareFrameCommand.Execute(null);
+        Assert.Equal(2, vm.NestedFrames.Count);
+        Assert.Equal(new Rectangle(1623, 552, 594, 1056), vm.Preview.NestedFrames[0].Bounds);
+
+        vm.PrimaryCommand.Execute(null);
+        Assert.Equal(2, _overlay.NestedFrames.Count);
+        _overlay.Drag(new Point(400, 300));
+        Assert.Equal(new Rectangle(1063, 312, 594, 1056), _overlay.NestedFrames[0].Bounds);
+
+        vm.WidthValue = 1280;
+        var shorts = vm.NestedFrames[0];
+        shorts.ScalePercent = 50;
+        shorts.AnchorIndex = (int)Geometry.FrameAnchor.Right;
+        Assert.Equal(new Size(198, 352), _overlay.NestedFrames[0].Bounds.Size);
+        Assert.Equal(vm.CurrentFrame.Right - 8, _overlay.NestedFrames[0].Bounds.Right);
+
+        shorts.RemoveCommand.Execute(null);
+        Assert.Single(_overlay.NestedFrames);
+        Assert.Single(vm.Preview.NestedFrames);
+    }
+
+    [Fact]
+    public async Task Additional_frames_are_copied_and_restored_with_a_profile()
+    {
+        var vm = Create();
+        vm.AddShortsFrameCommand.Execute(null);
+        await vm.CopyBoundsCommand.ExecuteAsync(null);
+        Assert.Contains("Main: X=960, Y=540, Width=1920, Height=1080", _clipboard.Text);
+        Assert.Contains("Shorts 9:16: X=1623, Y=552, Width=594, Height=1056", _clipboard.Text);
+
+        _dialogs.ProfileName = "Landscape and Shorts";
+        await vm.SaveProfileCommand.ExecuteAsync(null);
+        Assert.Equal("Profile", vm.ProfileEyebrow);
+        Assert.Single(_store.Settings.Profiles[^1].NestedFrames);
+
+        vm.NestedFrames[0].ScalePercent = 50;
+        Assert.Equal("Profile · edited", vm.ProfileEyebrow);
+        vm.Profiles.Single(p => p.Name == "Landscape and Shorts").SelectCommand.Execute(null);
+        Assert.Equal("Profile", vm.ProfileEyebrow);
+        Assert.Equal(100, vm.NestedFrames[0].ScalePercent);
+    }
+
+    [Fact]
     public void Style_changes_reach_the_overlay_and_are_saved()
     {
         var vm = Create();

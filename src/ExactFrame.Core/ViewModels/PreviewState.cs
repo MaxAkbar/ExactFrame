@@ -3,7 +3,7 @@ using ExactFrame.Core.Models;
 
 namespace ExactFrame.Core.ViewModels;
 
-/// <summary>Everything the to-scale display map needs to draw one frame, in physical pixels.</summary>
+/// <summary>Everything the to-scale display map needs to draw the main and nested frames, in physical pixels.</summary>
 public sealed record PreviewState(
     Rectangle DisplayBounds,
     Rectangle WorkArea,
@@ -15,11 +15,12 @@ public sealed record PreviewState(
     int TitleBarHeight,
     Rectangle? Ghost,
     string SizeText,
-    bool IsFit)
+    bool IsFit,
+    IReadOnlyList<NestedFrameBounds> NestedFrames)
 {
     public static PreviewState Empty { get; } = new(
         new Rectangle(0, 0, 1920, 1080), new Rectangle(0, 0, 1920, 1040), new Rectangle(0, 0, 1280, 720),
-        false, new OutlineStyle(), true, false, 32, null, "1280 × 720", true);
+        false, new OutlineStyle(), true, false, 32, null, "1280 × 720", true, []);
 }
 
 public enum SettingsTab

@@ -142,16 +142,23 @@ public sealed class DisplayMap : UserControl
 
         if (style.Line == OutlineLine.Corners)
         {
-            double arm = Math.Clamp(Math.Min(fw, fh) / 5, 6, 18);
-            double t = stroke + 0.5;
-            AddFill(fx, fy, arm, t, brush); AddFill(fx, fy, t, arm, brush);
-            AddFill(fx + fw - arm, fy, arm, t, brush); AddFill(fx + fw - t, fy, t, arm, brush);
-            AddFill(fx, fy + fh - t, arm, t, brush); AddFill(fx, fy + fh - arm, t, arm, brush);
-            AddFill(fx + fw - arm, fy + fh - t, arm, t, brush); AddFill(fx + fw - t, fy + fh - arm, t, arm, brush);
+            DrawCorners(fx, fy, fw, fh, brush, stroke);
         }
         else
         {
             AddOutline(fx, fy, fw, fh, brush, stroke, dashed: style.Line == OutlineLine.Dashed);
+        }
+
+        foreach (var nested in state.NestedFrames)
+        {
+            var (nx, ny, nw, nh) = Map(nested.Bounds);
+            var nestedColor = Format.Opaque(OutlinePalette.Argb(nested.Color));
+            var nestedBrush = new SolidColorBrush(nestedColor);
+            if (style.Line == OutlineLine.Corners) DrawCorners(nx, ny, nw, nh, nestedBrush, stroke);
+            else AddOutline(nx, ny, nw, nh, nestedBrush, stroke, dashed: style.Line == OutlineLine.Dashed);
+            if (style.ShowSizeLabel && nw >= 68 && nh >= 26)
+                AddText($"{nested.Bounds.Width} × {nested.Bounds.Height}", nx + 4, ny + 4,
+                    OutlinePalette.Hex(nested.Color), 10);
         }
 
         if (state.ShowHandles)
@@ -232,6 +239,17 @@ public sealed class DisplayMap : UserControl
         if (w <= 0 || h <= 0) return;
         var rect = new Shapes.Rectangle { Width = w, Height = h, Fill = fill };
         Place(rect, x, y);
+    }
+
+    private void DrawCorners(double x, double y, double w, double h, Brush brush, double stroke)
+    {
+        double arm = Math.Clamp(Math.Min(w, h) / 5, 6, 18);
+        double thickness = stroke + 0.5;
+        AddFill(x, y, arm, thickness, brush); AddFill(x, y, thickness, arm, brush);
+        AddFill(x + w - arm, y, arm, thickness, brush); AddFill(x + w - thickness, y, thickness, arm, brush);
+        AddFill(x, y + h - thickness, arm, thickness, brush); AddFill(x, y + h - arm, thickness, arm, brush);
+        AddFill(x + w - arm, y + h - thickness, arm, thickness, brush);
+        AddFill(x + w - thickness, y + h - arm, thickness, arm, brush);
     }
 
     private void AddOutline(double x, double y, double w, double h, Brush stroke, double thickness, bool dashed)

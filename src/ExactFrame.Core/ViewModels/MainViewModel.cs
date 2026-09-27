@@ -13,7 +13,7 @@ namespace ExactFrame.Core.ViewModels;
 
 /// <summary>
 /// State and behavior behind the main window and the on-screen HUD. Split by concern across partial files:
-/// Frame (size, position, display), Stage (read-only preview values), Outline, Style, Profiles and Resize.
+/// Frame (size, position, display), NestedFrames, Stage (read-only preview values), Outline, Style, Profiles and Resize.
 /// All members are expected to run on the UI thread.
 /// </summary>
 public sealed partial class MainViewModel : ObservableObject, IDisposable
@@ -92,6 +92,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ToggleHideFromRecordersCommand = new RelayCommand(() => HideFromRecorders = !HideFromRecorders);
         ToggleThirdsCommand = new RelayCommand(() => ShowThirds = !ShowThirds);
         SaveProfileCommand = new AsyncRelayCommand(SaveProfileAsync);
+        AddShortsFrameCommand = new RelayCommand(() => AddNestedFrame("Shorts 9:16", 9, 16));
+        AddSquareFrameCommand = new RelayCommand(() => AddNestedFrame("Square 1:1", 1, 1));
+        AddPortraitFrameCommand = new RelayCommand(() => AddNestedFrame("Portrait 4:5", 4, 5));
+        AddCustomFrameCommand = new RelayCommand(() => AddNestedFrame("Custom frame", 16, 9));
         RefreshWindowsCommand = new RelayCommand(() => Guard(RefreshWindows));
         PickWindowCommand = new AsyncRelayCommand(PickWindowAsync);
 

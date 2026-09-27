@@ -23,7 +23,7 @@ public interface IOutlineOverlay : IDisposable
     bool CaptureExclusionApplied { get; }
 
     /// <summary>Shows the outline, or moves it when already visible. Dragging stays inside the usable area.</summary>
-    void Show(Rectangle frame, DisplayInfo display, bool keepClearOfTaskbar);
+    void Show(Rectangle frame, DisplayInfo display, bool keepClearOfTaskbar, IReadOnlyList<NestedFrameBounds> nestedFrames);
 
     void Hide();
 

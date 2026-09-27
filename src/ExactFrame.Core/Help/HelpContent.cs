@@ -60,6 +60,15 @@ public static class HelpContent
                         "Pick a display under the preview. Negative positions are normal on displays left of or above the main one.",
                         "**Keep clear of the taskbar** keeps the frame inside the area the taskbar doesn't cover.")
                 ]),
+                new("Additional frames",
+                [
+                    Bullets(
+                        "Add a **9:16** guide for Shorts inside a 16:9 main frame, or add **1:1**, **4:5** and custom guides.",
+                        "Set each guide's aspect ratio, scale and position inside the main frame. The dimensions and coordinates are physical pixels.",
+                        "Move or resize the main frame and the extra guides follow it. Their borders are click-through.",
+                        "**Copy bounds** copies a labeled region for every frame. Set up each region in your recorder or editor.",
+                        "Save the setup as a profile to restore all its guides together.")
+                ]),
                 new("On screen",
                 [
                     Bullets(
@@ -114,7 +123,7 @@ public static class HelpContent
                         "Open the **Profiles** tab and select **Save current**.",
                         "Name the profile. Using an existing name updates that profile."),
                     Bullets(
-                        "A profile remembers the size, position, display and mode. In Resize window mode it also remembers the app.",
+                        "A profile remembers the size, position, display, mode and additional frames. In Resize window mode it also remembers the app.",
                         "Select a profile to apply it. The profile button in the title bar shows which one is active, and says " +
                         "**edited** once you change something.",
                         "The first nine profiles get Ctrl + Alt + 1 to 9, and the **Next profile** shortcut cycles through them.",

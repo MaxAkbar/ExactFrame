@@ -133,7 +133,9 @@ public sealed partial class MainViewModel
             ? _displays.FirstOrDefault(d => d.IsPrimary)?.Title ?? "Primary display"
             : _displays.FirstOrDefault(d => d.DeviceName == profile.DisplayDeviceName)?.Title ?? "Disconnected display";
         string position = profile.Anchor?.DisplayName() ?? $"At {profile.X}, {profile.Y}";
-        return $"{size} · {position} · {display}";
+        string nested = profile.NestedFrames is { Count: > 0 } frames
+            ? $" · {frames.Count} extra {(frames.Count == 1 ? "frame" : "frames")}" : string.Empty;
+        return $"{size} · {position} · {display}{nested}";
     }
 
     private void NotifyProfileHeader()

@@ -104,10 +104,13 @@ internal sealed class FakeOverlay : IOutlineOverlay
 
     public int ShowCount { get; private set; }
 
-    public void Show(Rectangle frame, DisplayInfo display, bool keepClearOfTaskbar)
+    public IReadOnlyList<NestedFrameBounds> NestedFrames { get; private set; } = [];
+
+    public void Show(Rectangle frame, DisplayInfo display, bool keepClearOfTaskbar, IReadOnlyList<NestedFrameBounds> nestedFrames)
     {
         Frame = frame;
         Display = display;
+        NestedFrames = nestedFrames;
         ShowCount++;
         if (IsVisible) return;
         IsVisible = true;

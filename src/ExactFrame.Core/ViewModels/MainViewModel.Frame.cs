@@ -228,7 +228,7 @@ public sealed partial class MainViewModel
 
         var frame = RequestedFrame;
         if (FrameGeometry.CheckFit(frame, _display.Bounds, _display.WorkArea, _keepClear).IsFit)
-            _overlay.Show(frame, _display, _keepClear);
+            _overlay.Show(frame, _display, _keepClear, NestedBounds(frame));
         else
             _overlay.Hide();
     }
@@ -248,6 +248,7 @@ public sealed partial class MainViewModel
 
     private void NotifyFrame()
     {
+        UpdateNestedBounds(CurrentFrame);
         SelectOnly(Anchors, a => a.Anchor == _anchor);
         SelectOnly(PlacementOptions, o => o.Key == (_anchor == FrameAnchor.Center ? "center" : _anchor is null ? "keep" : string.Empty));
         OnPropertyChanged(nameof(XValue));
@@ -276,6 +277,8 @@ public sealed partial class MainViewModel
         _anchor = state.Anchor;
         _x = state.X;
         _y = state.Y;
+        _activeFrame = null;
+        LoadNestedFrames(state.NestedFrames);
         if (state.Mode == FrameMode.Resize) _area = state.Area;
 
         if (state.Mode == FrameMode.Resize && !string.IsNullOrEmpty(state.TargetProcessName))
@@ -298,6 +301,7 @@ public sealed partial class MainViewModel
         Mode = _mode,
         Width = _width,
         Height = _height,
+        NestedFrames = [.. NestedFrames.Select(item => item.Frame)],
         Anchor = _anchor,
         X = _x,
         Y = _y,
