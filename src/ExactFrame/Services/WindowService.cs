@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.UI.Dispatching;
 using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
 using ExactFrame.Core.Services;
@@ -13,7 +15,7 @@ namespace ExactFrame.Services;
 /// Window discovery, measured resize, verification and restore. Ported from the WinForms version:
 /// the resize loop measures real physical insets on the destination monitor and verifies the result.
 /// </summary>
-internal sealed class WindowService : IWindowService
+internal sealed class WindowService : IWindowService, IDisposable
 {
     private const uint PositionFlags = NativeMethods.SwpNoZOrder | NativeMethods.SwpNoActivate |
                                        NativeMethods.SwpNoOwnerZOrder | NativeMethods.SwpAsyncWindowPos;
@@ -21,6 +23,85 @@ internal sealed class WindowService : IWindowService
     private sealed record SavedWindow(WindowInfo Window, NativeMethods.WindowPlacement Placement);
 
     private readonly Dictionary<nint, SavedWindow> _saved = [];
+    private readonly DispatcherQueueTimer _trackingTimer;
+    private WindowInfo? _trackedWindow;
+    private WindowArea _trackedArea;
+    private WindowObservation? _lastObservation;
+
+    public WindowService()
+    {
+        var dispatcher = DispatcherQueue.GetForCurrentThread()
+            ?? throw new InvalidOperationException("Window tracking requires the UI thread.");
+        _trackingTimer = dispatcher.CreateTimer();
+        _trackingTimer.Interval = TimeSpan.FromMilliseconds(50);
+        _trackingTimer.IsRepeating = true;
+        _trackingTimer.Tick += OnTrackingTick;
+    }
+
+    public event EventHandler<WindowObservation>? TrackedWindowChanged;
+
+    public void StartTracking(WindowInfo window, WindowArea area)
+    {
+        StopTracking();
+        Validate(window);
+        _trackedWindow = window;
+        _trackedArea = area;
+        _trackingTimer.Start();
+        PollTrackedWindow();
+    }
+
+    public void StopTracking()
+    {
+        _trackingTimer.Stop();
+        _trackedWindow = null;
+        _lastObservation = null;
+    }
+
+    public void Dispose()
+    {
+        StopTracking();
+        _trackingTimer.Tick -= OnTrackingTick;
+    }
+
+    private void OnTrackingTick(DispatcherQueueTimer sender, object args) => PollTrackedWindow();
+
+    private void PollTrackedWindow()
+    {
+        if (_trackedWindow is not { } window) return;
+        var observation = Observe(window, _trackedArea);
+        if (observation == _lastObservation) return;
+        _lastObservation = observation;
+        if (observation.Kind == WindowObservationKind.Closed) StopTracking();
+        TrackedWindowChanged?.Invoke(this, observation);
+    }
+
+    private static WindowObservation Observe(WindowInfo window, WindowArea area)
+    {
+        if (!NativeMethods.IsWindow(window.Handle))
+            return new(WindowObservationKind.Closed, Rectangle.Empty);
+        uint thread = NativeMethods.GetWindowThreadProcessId(window.Handle, out uint process);
+        if (process != window.ProcessId || thread != window.ThreadId)
+            return new(WindowObservationKind.Closed, Rectangle.Empty);
+
+        if (!NativeMethods.IsWindowVisible(window.Handle) || NativeMethods.IsIconic(window.Handle) ||
+            NativeMethods.IsHungAppWindow(window.Handle))
+            return new(WindowObservationKind.Unavailable, Rectangle.Empty);
+        if (NativeMethods.DwmGetWindowAttributeInt(window.Handle, NativeMethods.DwmwaCloaked,
+                out int cloaked, sizeof(int)) == 0 && cloaked != 0)
+            return new(WindowObservationKind.Unavailable, Rectangle.Empty);
+
+        try
+        {
+            var bounds = CaptureBounds(window.Handle, area);
+            return bounds.Width > 0 && bounds.Height > 0
+                ? new(WindowObservationKind.Visible, bounds)
+                : new(WindowObservationKind.Unavailable, Rectangle.Empty);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+        {
+            return new(WindowObservationKind.Unavailable, Rectangle.Empty);
+        }
+    }
 
     public IReadOnlyList<WindowInfo> GetWindows()
     {

@@ -64,6 +64,7 @@
                     AutomationProperties.Name="Center on display"
                     Command="{x:Bind ViewModel.CenterCommand}"
                     Style="{StaticResource HudButtonStyle}"
+                    Visibility="{x:Bind ViewModel.IsOutlineMode, Mode=OneWay}"
                     ToolTipService.ToolTip="Center on display">
                     <Path
                         Width="18"
@@ -85,6 +86,7 @@
                     AutomationProperties.Name="Click-through"
                     IsChecked="{x:Bind ViewModel.IsClickThrough, Mode=TwoWay}"
                     Style="{StaticResource HudToggleStyle}"
+                    Visibility="{x:Bind ViewModel.IsOutlineMode, Mode=OneWay}"
                     ToolTipService.ToolTip="{x:Bind ViewModel.ClickThroughHint, Mode=OneWay}">
                     <FontIcon FontSize="16" Glyph="&#xE72E;" />
                 </ToggleButton>

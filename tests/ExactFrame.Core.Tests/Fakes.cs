@@ -24,6 +24,8 @@ internal sealed class FakeDisplays : IDisplayService
 
 internal sealed class FakeWindows : IWindowService
 {
+    public event EventHandler<WindowObservation>? TrackedWindowChanged;
+
     public static readonly WindowInfo Studio = new(0x1001, 10, 11, "ExactFrame — Microsoft Visual Studio", "devenv",
         new Rectangle(240, 180, 2880, 1720));
 
@@ -40,6 +42,25 @@ internal sealed class FakeWindows : IWindowService
     public Rectangle? AcceptedSize { get; set; }
 
     public List<(WindowInfo Window, Rectangle Desired, WindowArea Area)> Resizes { get; } = [];
+
+    public WindowInfo? TrackedWindow { get; private set; }
+
+    public WindowArea? TrackedArea { get; private set; }
+
+    public void StartTracking(WindowInfo window, WindowArea area)
+    {
+        TrackedWindow = window;
+        TrackedArea = area;
+    }
+
+    public void StopTracking()
+    {
+        TrackedWindow = null;
+        TrackedArea = null;
+    }
+
+    public void RaiseTracked(WindowObservationKind kind, Rectangle bounds = default) =>
+        TrackedWindowChanged?.Invoke(this, new WindowObservation(kind, bounds));
 
     public IReadOnlyList<WindowInfo> GetWindows() => Windows;
 

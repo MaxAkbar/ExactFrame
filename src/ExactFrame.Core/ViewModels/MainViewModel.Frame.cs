@@ -190,7 +190,10 @@ public sealed partial class MainViewModel
     private void OnDisplaysChanged(object? sender, EventArgs e) => Guard(() =>
     {
         RefreshDisplays();
-        UpdateFrame("Display settings changed, so the frame was recalculated.");
+        if (IsResizeMode && _followedWindow is not null)
+            RefreshTrackedOutline();
+        else
+            UpdateFrame("Display settings changed, so the frame was recalculated.");
     });
 
     /// <summary>Recomputes the requested frame after any edit, keeps a visible outline in sync and refreshes the UI.</summary>
@@ -217,6 +220,7 @@ public sealed partial class MainViewModel
 
     private void SyncOverlayToRequest()
     {
+        if (IsResizeMode) StopFollowingWindow();
         if (!_overlay.IsVisible || _display is null) return;
 
         // In Resize window mode the outline marks the measured window; a new request invalidates it.
@@ -263,6 +267,7 @@ public sealed partial class MainViewModel
     /// <summary>Loads a saved frame (a profile or the last session) without announcing it.</summary>
     private void ApplyFrameState(FrameProfile state)
     {
+        StopFollowingWindow();
         _mode = state.Mode;
         _display = (state.DisplayDeviceName is null ? null : _displays.FirstOrDefault(d => d.DeviceName == state.DisplayDeviceName))
             ?? _displays.FirstOrDefault(d => d.IsPrimary)

@@ -40,11 +40,13 @@ public sealed partial class MainViewModel
             var frame = CurrentFrame;
             if (IsResizeMode)
             {
+                if (_lastTrackedObservation is { Kind: WindowObservationKind.Unavailable } && _targetWindow is { } hidden)
+                    return $"{hidden.ProcessName} · hidden or minimized";
                 return _targetWindow switch
                 {
                     null => "Choose a window to resize",
                     { IsMinimized: true } => $"{_targetWindow.ProcessName} · minimized, it will be restored",
-                    _ => $"{_targetWindow.ProcessName} · currently {_targetWindow.Bounds.Width} × {_targetWindow.Bounds.Height}"
+                    _ => $"{_targetWindow.ProcessName} · currently {(_activeFrame ?? _targetWindow.Bounds).Width} × {(_activeFrame ?? _targetWindow.Bounds).Height}"
                 };
             }
             string display = _display?.Title ?? "No display";
@@ -107,7 +109,9 @@ public sealed partial class MainViewModel
         {
             if (_display is null) return PreviewState.Empty;
             // A minimized window has no on-screen rectangle to show.
-            var ghost = IsResizeMode && _targetWindow is { IsMinimized: false } target ? target.Bounds : (System.Drawing.Rectangle?)null;
+            var ghost = IsResizeMode && _lastTrackedObservation is not { Kind: WindowObservationKind.Unavailable } &&
+                _targetWindow is { IsMinimized: false } target
+                ? _activeFrame ?? target.Bounds : (System.Drawing.Rectangle?)null;
             return new PreviewState(
                 _display.Bounds,
                 _display.WorkArea,

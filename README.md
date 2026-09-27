@@ -62,6 +62,10 @@ cancels). Choose whether the size applies to the **Client area** (content only) 
 whether to center it or keep its current position. Select **Resize window**. A minimized or maximized app is first restored to a normal window, then brought to the front so it lands visibly inside the outline. (A minimized app has no position to keep, so it's centered.) ExactFrame moves the window,
 measures its real borders on that monitor, adjusts, and verifies the result. **Restore original size** puts
 it back as it was before the first resize in this session.
+After resizing, the outline follows that app when it moves or changes size, including across displays. Move
+the app itself; its outline is click-through while following. The outline hides if the app is minimized or
+hidden and returns when it becomes visible. Hiding the outline, choosing another app, editing the requested
+frame or restoring the original size stops following.
 
 **On-screen controls.** While the outline is visible, a small bar sits under it (or above it when there's no
 room) with the size, position, center, guides, click-through, hide-from-recorders, open ExactFrame and hide.
@@ -134,6 +138,8 @@ projections. XAML compilation, rendering and native behavior need a Windows run:
 - Confirm the on-screen bar appears under the frame, shrinks when idle, and never steals focus.
 - Resize Notepad or a browser in both Client area and Whole window modes, including from maximized and
   minimized; then use **Restore original size**.
+- After resizing, drag the app to another position and display, resize it by hand, minimize and restore it,
+  then close it. Check that the outline follows, hides and returns at the measured capture bounds.
 - Repeat on a second monitor with different scaling and a negative origin.
 - Record a new shortcut, and save, apply and delete a profile.
 - Add a 9:16 guide inside a 16:9 frame; move and resize the main outline, adjust the guide's scale and position,

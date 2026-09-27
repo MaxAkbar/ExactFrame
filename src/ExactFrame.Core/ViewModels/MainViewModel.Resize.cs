@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Drawing;
 using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
 
@@ -9,6 +10,9 @@ public sealed partial class MainViewModel
 {
     private IReadOnlyList<WindowInfo> _allWindows = [];
     private WindowInfo? _targetWindow;
+    private WindowInfo? _followedWindow;
+    private WindowObservation? _lastTrackedObservation;
+    private Rectangle? _lastVisibleTrackedFrame;
     private WindowArea _area = WindowArea.Client;
     private string _windowFilter = string.Empty;
 
@@ -74,6 +78,12 @@ public sealed partial class MainViewModel
 
     private void SetTarget(WindowInfo? window)
     {
+        if (_followedWindow is not null && !_followedWindow.IsSameWindow(window))
+        {
+            StopFollowingWindow();
+            if (IsResizeMode) _overlay.Hide();
+            _activeFrame = null;
+        }
         _targetWindow = window;
         SelectOnly(Windows, w => w.Window.IsSameWindow(window));
         PrimaryCommand.NotifyCanExecuteChanged();
@@ -146,6 +156,7 @@ public sealed partial class MainViewModel
     {
         var window = _targetWindow ?? throw new InvalidOperationException("Choose an open app window first.");
         if (_display is null) throw new InvalidOperationException("No display is available.");
+        StopFollowingWindow();
 
         var desired = RequestedFrame;
         var fit = FrameGeometry.CheckFit(desired, _display.Bounds, _display.WorkArea, _keepClear);
@@ -172,26 +183,138 @@ public sealed partial class MainViewModel
         if (result.Exact)
         {
             SetStatus(restored + $"Verified {actual.Width} × {actual.Height} px at ({actual.X}, {actual.Y}). " +
-                      "Restore original size is available for this session." + exclusion);
+                      "The outline follows the app when it moves. Restore original size is available for this session." + exclusion);
         }
         else
         {
             SetStatus(restored + $"Requested {desired.Width} × {desired.Height} at ({desired.X}, {desired.Y}); " +
                       $"the app accepted {actual.Width} × {actual.Height} at ({actual.X}, {actual.Y}). " +
-                      "The outline shows its actual bounds; this app may enforce size or position limits." + exclusion,
+                      "The outline follows its actual bounds; this app may enforce size or position limits." + exclusion,
                       warning: true);
         }
+        StartFollowingWindow(window);
     }
 
     private async Task RestoreTargetAsync()
     {
         var window = _targetWindow ?? throw new InvalidOperationException("Choose an open app window first.");
+        StopFollowingWindow();
         await _windowService.RestoreAsync(window, _lifetime.Token);
         _activeFrame = null;
         if (_overlay.IsVisible) _overlay.Hide();
         Guard(RefreshWindows);
         NotifyFrame();
         SetStatus("The app’s original size, position and minimized or maximized state were restored.");
+    }
+
+    private void StartFollowingWindow(WindowInfo window)
+    {
+        _followedWindow = window;
+        _lastVisibleTrackedFrame = _activeFrame;
+        try
+        {
+            _windowService.StartTracking(window, _area);
+            if (_followedWindow is not null) _overlay.SetLocked(true);
+        }
+        catch (Exception ex) when (IsExpected(ex))
+        {
+            StopFollowingWindow();
+            SetStatus($"The app was resized, but its outline could not follow it: {ex.Message}", warning: true);
+        }
+    }
+
+    private void StopFollowingWindow()
+    {
+        if (_followedWindow is null) return;
+        _windowService.StopTracking();
+        _followedWindow = null;
+        _lastTrackedObservation = null;
+        _lastVisibleTrackedFrame = null;
+        _overlay.SetLocked(_clickThrough);
+    }
+
+    private void OnTrackedWindowChanged(object? sender, WindowObservation observation)
+    {
+        if (_disposed || _followedWindow is null || !IsResizeMode) return;
+        _lastTrackedObservation = observation;
+        try
+        {
+            ApplyTrackedObservation(observation);
+        }
+        catch (Exception ex) when (IsExpected(ex))
+        {
+            StopFollowingWindow();
+            _overlay.Hide();
+            ReportError(ex);
+        }
+    }
+
+    private void RefreshTrackedOutline()
+    {
+        if (_lastTrackedObservation is { } observation)
+            ApplyTrackedObservation(observation, force: true);
+        else if (_activeFrame is { } frame)
+            ApplyTrackedObservation(new WindowObservation(WindowObservationKind.Visible, frame), force: true);
+    }
+
+    private void ApplyTrackedObservation(WindowObservation observation, bool force = false)
+    {
+        if (_followedWindow is not { } window) return;
+        if (observation.Kind == WindowObservationKind.Closed)
+        {
+            StopFollowingWindow();
+            _overlay.Hide();
+            _activeFrame = null;
+            Guard(RefreshWindows);
+            NotifyFrame();
+            SetStatus($"{window.ProcessName} closed. Choose another window to resize.", warning: true);
+            return;
+        }
+
+        if (observation.Kind == WindowObservationKind.Unavailable)
+        {
+            _overlay.Hide();
+            _activeFrame = null;
+            NotifyFrame();
+            SetStatus($"{window.ProcessName} is hidden or minimized. Its outline will return when it is visible.");
+            return;
+        }
+
+        var bounds = observation.Bounds;
+        if (bounds.Width <= 0 || bounds.Height <= 0) return;
+        bool moved = _lastVisibleTrackedFrame is { } previous && previous.Location != bounds.Location;
+        bool changed = force || _activeFrame != bounds || !_overlay.IsVisible;
+        _activeFrame = bounds;
+        _lastVisibleTrackedFrame = bounds;
+        if (moved)
+        {
+            _anchor = null;
+            _x = bounds.X;
+            _y = bounds.Y;
+        }
+
+        var display = _displays
+            .Select(item => (Display: item, Area: Rectangle.Intersect(item.Bounds, bounds)))
+            .Where(item => item.Area.Width > 0 && item.Area.Height > 0)
+            .OrderByDescending(item => (long)item.Area.Width * item.Area.Height)
+            .Select(item => item.Display)
+            .FirstOrDefault();
+        if (display is not null && display != _display)
+        {
+            _display = display;
+            SelectOnly(Displays, item => item.DeviceName == display.DeviceName);
+            OnPropertyChanged(nameof(LogicalSizeNote));
+            changed = true;
+        }
+
+        if (!changed) return;
+        if (_display is not null) _overlay.Show(bounds, _display, _keepClear, []);
+        NotifyFrame();
+        bool exclusionFailed = _hideFromRecorders && !_overlay.CaptureExclusionApplied;
+        SetStatus(exclusionFailed
+            ? "The outline is following the app, but capture exclusion is unavailable. Hide it before recording."
+            : $"Following {window.ProcessName} at {bounds.X}, {bounds.Y} ({bounds.Width} × {bounds.Height} px).",
+            warning: exclusionFailed);
     }
 
     private void NotifyResizeState()

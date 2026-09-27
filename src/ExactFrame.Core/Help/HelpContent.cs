@@ -166,7 +166,10 @@ public static class HelpContent
                     Bullets(
                         "A minimized or maximized app is first restored to a normal window.",
                         "The app is brought to the front, moved to the display, measured, adjusted and checked.",
-                        "The outline then marks the app's actual size and position.",
+                        "The outline marks the app's actual size and position, then follows it when it moves or changes size.",
+                        "Move the app itself; the outline's border is click-through while following. It also follows the app across displays.",
+                        "If the app is minimized or hidden, the outline disappears and returns when the app is visible again.",
+                        "Hiding the outline, choosing another app, changing the requested frame or restoring the original size stops following.",
                         "If the app won't take that exact size, the status bar shows what you asked for and what it accepted.")
                 ]),
                 new("Undo a resize",

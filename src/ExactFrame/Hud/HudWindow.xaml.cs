@@ -91,6 +91,7 @@ public sealed partial class HudWindow : Window
         {
             case nameof(MainViewModel.ShowHud):
             case nameof(MainViewModel.IsClickThrough):
+            case nameof(MainViewModel.IsOutlineMode):
             case nameof(MainViewModel.HideFromRecorders):
             case nameof(MainViewModel.SizeText):
             case "":
@@ -109,7 +110,7 @@ public sealed partial class HudWindow : Window
         }
 
         ApplyCaptureExclusion();
-        if (ViewModel.IsClickThrough) SetState(HudState.Locked);
+        if (ViewModel.IsClickThrough && ViewModel.IsOutlineMode) SetState(HudState.Locked);
         else if (_state == HudState.Locked || !_shown) SetState(HudState.Full);
 
         Place();

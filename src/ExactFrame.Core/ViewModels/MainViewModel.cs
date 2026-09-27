@@ -101,6 +101,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         _overlay.FrameMoved += OnOverlayFrameMoved;
         _overlay.VisibilityChanged += OnOverlayVisibilityChanged;
+        _windowService.TrackedWindowChanged += OnTrackedWindowChanged;
         _displayService.DisplaysChanged += OnDisplaysChanged;
         _hotkeys.Pressed += OnHotkeyPressed;
 
@@ -193,6 +194,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>Remembers the current frame and hides the outline. Call when the main window closes.</summary>
     public void Shutdown()
     {
+        StopFollowingWindow();
         _settings.LastFrame = Snapshot("last-session", "Last session");
         SaveSettings();
         if (_overlay.IsVisible) _overlay.Hide();
@@ -204,6 +206,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _disposed = true;
         _overlay.FrameMoved -= OnOverlayFrameMoved;
         _overlay.VisibilityChanged -= OnOverlayVisibilityChanged;
+        _windowService.TrackedWindowChanged -= OnTrackedWindowChanged;
+        StopFollowingWindow();
         _displayService.DisplaysChanged -= OnDisplaysChanged;
         _hotkeys.Pressed -= OnHotkeyPressed;
         _lifetime.Cancel();
@@ -213,6 +217,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void SetMode(FrameMode mode)
     {
         if (IsBusy || _mode == mode) return;
+        if (_mode == FrameMode.Resize && mode != FrameMode.Resize) StopFollowingWindow();
         _mode = mode;
         if (_overlay.IsVisible && mode == FrameMode.Resize && _activeFrame is null) _overlay.Hide();
         OnPropertyChanged(nameof(Mode));

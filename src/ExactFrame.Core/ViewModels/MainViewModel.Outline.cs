@@ -19,12 +19,13 @@ public sealed partial class MainViewModel
         set
         {
             if (!SetProperty(ref _clickThrough, value)) return;
-            _overlay.SetLocked(value);
+            _overlay.SetLocked(value || _followedWindow is not null);
             NotifyStage();
             if (_initialized)
             {
-                SetStatus(value
-                    ? "Click-through is on. Clicks pass through the outline."
+                SetStatus(_followedWindow is not null
+                    ? "Move the app window to move its outline. The border stays click-through while following."
+                    : value ? "Click-through is on. Clicks pass through the outline."
                     : "Click-through is off. Drag the border to move the frame.");
             }
         }
@@ -102,6 +103,7 @@ public sealed partial class MainViewModel
 
     private void HideOutline()
     {
+        StopFollowingWindow();
         if (!_overlay.IsVisible) return;
         _overlay.Hide();
         if (IsOutlineMode && !_statusWarning) SetStatus(Summary());
@@ -115,6 +117,12 @@ public sealed partial class MainViewModel
 
     private void OnOverlayFrameMoved(object? sender, EventArgs e)
     {
+        if (IsResizeMode && _followedWindow is not null)
+        {
+            if (_lastVisibleTrackedFrame is { } tracked && _display is not null)
+                _overlay.Show(tracked, _display, _keepClear, []);
+            return;
+        }
         var frame = _overlay.Frame;
         _anchor = null;
         _x = frame.X;

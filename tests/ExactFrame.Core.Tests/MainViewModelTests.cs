@@ -294,6 +294,131 @@ public sealed class MainViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Resized_outline_follows_window_moves_and_external_size_changes()
+    {
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        Assert.True(_windows.TrackedWindow!.IsSameWindow(FakeWindows.Studio));
+        Assert.Equal(WindowArea.Client, _windows.TrackedArea);
+        Assert.True(_overlay.Locked);
+        _overlay.Drag(new Point(50, 50));
+        Assert.Equal(new Rectangle(960, 540, 1920, 1080), _overlay.Frame);
+        _windows.RaiseTracked(WindowObservationKind.Visible, new Rectangle(500, 600, 1920, 1080));
+
+        Assert.Equal(new Rectangle(500, 600, 1920, 1080), _overlay.Frame);
+        Assert.Equal("Custom position", vm.AnchorName);
+        Assert.Equal("500, 600, 1920, 1080", vm.BoundsText);
+
+        _windows.RaiseTracked(WindowObservationKind.Visible, new Rectangle(500, 600, 1280, 720));
+        Assert.Equal(new Rectangle(500, 600, 1280, 720), _overlay.Frame);
+        Assert.Equal("1280 × 720", vm.SizeText);
+        Assert.Contains("currently 1280 × 720", vm.StageSubtitle);
+    }
+
+    [Fact]
+    public async Task Tracking_hides_for_a_minimized_window_and_returns_on_restore()
+    {
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        _windows.RaiseTracked(WindowObservationKind.Unavailable);
+        Assert.False(_overlay.IsVisible);
+        Assert.NotNull(_windows.TrackedWindow);
+
+        _windows.RaiseTracked(WindowObservationKind.Visible, new Rectangle(400, 300, 1920, 1080));
+        Assert.True(_overlay.IsVisible);
+        Assert.Equal(new Rectangle(400, 300, 1920, 1080), _overlay.Frame);
+
+        await vm.RestoreCommand.ExecuteAsync(null);
+        Assert.False(_overlay.IsVisible);
+        Assert.Null(_windows.TrackedWindow);
+    }
+
+    [Fact]
+    public async Task Moving_to_another_display_updates_the_outline_display()
+    {
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        _windows.RaiseTracked(WindowObservationKind.Visible, new Rectangle(4200, 100, 1920, 1080));
+
+        Assert.Equal(FakeDisplays.Secondary.DeviceName, _overlay.Display?.DeviceName);
+        Assert.Contains("Display 2", vm.DisplayLabel);
+        Assert.Equal(4200, vm.XValue);
+    }
+
+    [Fact]
+    public async Task Hiding_the_outline_stops_following_the_app()
+    {
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        vm.HideOutlineCommand.Execute(null);
+        _windows.RaiseTracked(WindowObservationKind.Visible, new Rectangle(400, 300, 1920, 1080));
+
+        Assert.Null(_windows.TrackedWindow);
+        Assert.False(_overlay.IsVisible);
+        Assert.False(_overlay.Locked);
+    }
+
+    [Fact]
+    public async Task Choosing_another_app_stops_following_the_previous_one()
+    {
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        vm.Windows.Single(w => w.Window == FakeWindows.Terminal).SelectCommand.Execute(null);
+
+        Assert.Null(_windows.TrackedWindow);
+        Assert.False(_overlay.IsVisible);
+        Assert.False(_overlay.Locked);
+    }
+
+    [Fact]
+    public async Task Editing_the_requested_frame_while_the_app_is_hidden_stops_following()
+    {
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        await vm.PrimaryCommand.ExecuteAsync(null);
+        _windows.RaiseTracked(WindowObservationKind.Unavailable);
+
+        vm.WidthValue = 1280;
+        _windows.RaiseTracked(WindowObservationKind.Visible, new Rectangle(400, 300, 1280, 720));
+
+        Assert.Null(_windows.TrackedWindow);
+        Assert.False(_overlay.IsVisible);
+    }
+
+    [Fact]
+    public async Task Closing_the_tracked_app_clears_its_outline_and_target()
+    {
+        var vm = Create();
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+        await vm.PrimaryCommand.ExecuteAsync(null);
+
+        _windows.Windows.RemoveAll(w => w.IsSameWindow(FakeWindows.Studio));
+        _windows.RaiseTracked(WindowObservationKind.Closed);
+
+        Assert.Null(_windows.TrackedWindow);
+        Assert.False(_overlay.IsVisible);
+        Assert.False(vm.HasTargetWindow);
+        Assert.Equal(StatusKind.Warning, vm.StatusKind);
+    }
+
+    [Fact]
     public async Task Resize_reports_when_the_app_rejects_the_size()
     {
         var vm = Create();
