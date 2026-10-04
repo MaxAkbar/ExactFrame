@@ -32,6 +32,9 @@ public sealed class CSharpDbAppStoreTests : IDisposable
             ],
             ActiveProfileId = "recording",
             ToggleOutlineHotkey = HotkeyGesture.CtrlAlt(0x50),
+            ProfileHotkeyModifiers = HotkeyModifiers.Control | HotkeyModifiers.Shift,
+            KeepRunningInBackground = false,
+            BackgroundHintShown = true,
             RememberedAppSizes =
             [
                 new RememberedAppSize("devenv", 1600, 900, WindowArea.VisibleFrame),
@@ -54,6 +57,9 @@ public sealed class CSharpDbAppStoreTests : IDisposable
             Assert.Equal(settings.Profiles, loaded.Profiles);
             Assert.Equal("recording", loaded.ActiveProfileId);
             Assert.Equal(settings.ToggleOutlineHotkey, loaded.ToggleOutlineHotkey);
+            Assert.Equal(HotkeyModifiers.Control | HotkeyModifiers.Shift, loaded.ProfileHotkeyModifiers);
+            Assert.False(loaded.KeepRunningInBackground);
+            Assert.True(loaded.BackgroundHintShown);
             Assert.Equal(settings.RememberedAppSizes, loaded.RememberedAppSizes);
             Assert.Equal(settings.LastFrame, loaded.LastFrame);
         }

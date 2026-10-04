@@ -10,7 +10,7 @@ namespace ExactFrame.Native;
 /// </summary>
 internal abstract class NativeWindow : IDisposable
 {
-    private const string DefaultClass = "ExactFrame.NativeWindow";
+    internal const string DefaultClass = "ExactFrame.NativeWindow";
     private const string BlackClass = "ExactFrame.ShadeWindow";
 
     // Keep the delegate alive for the lifetime of the process; Windows holds a raw pointer to it.
@@ -23,8 +23,11 @@ internal abstract class NativeWindow : IDisposable
 
     protected bool IsDisposed { get; private set; }
 
-    /// <summary>Creates the window. <paramref name="blackBackground"/> paints the client area black.</summary>
-    protected void CreateHandle(int exStyle, int style, bool blackBackground = false)
+    /// <summary>
+    /// Creates the window. <paramref name="blackBackground"/> paints the client area black. <paramref name="name"/> is
+    /// the window title, which lets another process find it with FindWindow.
+    /// </summary>
+    protected void CreateHandle(int exStyle, int style, bool blackBackground = false, string name = "")
     {
         string className = blackBackground ? BlackClass : DefaultClass;
         EnsureClass(className, blackBackground);
@@ -32,7 +35,7 @@ internal abstract class NativeWindow : IDisposable
         _creating = this;
         try
         {
-            nint handle = NativeMethods.CreateWindowEx(exStyle, className, string.Empty, style,
+            nint handle = NativeMethods.CreateWindowEx(exStyle, className, name, style,
                 0, 0, 1, 1, 0, 0, NativeMethods.GetModuleHandle(null), 0);
             if (handle == 0) throw new Win32Exception(Marshal.GetLastWin32Error(), "Windows could not create an overlay window.");
             Handle = handle;

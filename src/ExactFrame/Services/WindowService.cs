@@ -128,10 +128,11 @@ internal sealed class WindowService : IWindowService, IDisposable
     {
         var windows = new List<WindowInfo>();
         var processNames = new Dictionary<uint, string>();
+        // EnumWindows goes from the frontmost window back, which gives each window its z-order.
         NativeMethods.Check(NativeMethods.EnumWindows((hwnd, _) =>
         {
             var window = Describe(hwnd, processNames);
-            if (window is not null) windows.Add(window);
+            if (window is not null) windows.Add(window with { ZOrder = windows.Count });
             return true;
         }, 0), "list open windows");
         return windows.OrderBy(w => w.Title, StringComparer.CurrentCultureIgnoreCase).ToList();

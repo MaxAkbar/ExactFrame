@@ -179,7 +179,12 @@ internal sealed class FakeHotkeys : IHotkeyService
 
     public HashSet<HotkeyGesture> Taken { get; } = [];
 
+    /// <summary>Shortcuts that type a character on the keyboard, as AltGr combinations do on many layouts.</summary>
+    public Dictionary<HotkeyGesture, string> Characters { get; } = [];
+
     public event EventHandler<int>? Pressed;
+
+    public string? TypedCharacter(HotkeyGesture gesture) => Characters.GetValueOrDefault(gesture);
 
     public bool Register(int id, HotkeyGesture gesture)
     {
@@ -212,11 +217,30 @@ internal sealed class FakeDialogs : IDialogService
 
     public bool Confirm { get; set; } = true;
 
+    public string? LastHotkeyAction { get; private set; }
+
     public Task<string?> PromptProfileNameAsync(string suggestion) => Task.FromResult(ProfileName);
 
-    public Task<HotkeyGesture?> RecordHotkeyAsync(string actionName, HotkeyGesture current) => Task.FromResult(RecordedHotkey);
+    public Task<HotkeyGesture?> RecordHotkeyAsync(string actionName, HotkeyGesture current, string? instructions = null)
+    {
+        LastHotkeyAction = actionName;
+        return Task.FromResult(RecordedHotkey);
+    }
 
     public Task<bool> ConfirmAsync(string title, string message, string confirmLabel) => Task.FromResult(Confirm);
+}
+
+internal sealed class FakeStartup : IStartupService
+{
+    public bool IsEnabled { get; private set; }
+
+    public bool Fail { get; set; }
+
+    public void SetEnabled(bool enabled)
+    {
+        if (Fail) throw new UnauthorizedAccessException("Access to the registry key is denied.");
+        IsEnabled = enabled;
+    }
 }
 
 internal sealed class MemoryStore : ISettingsStore

@@ -15,7 +15,7 @@ public sealed class SliderTests : IDisposable
     private MainViewModel Create()
     {
         _vm = new MainViewModel(_displays, new FakeWindows(), new FakePicker(), _overlay, new FakeHotkeys(),
-            new FakeClipboard(), new FakeDialogs(), _store);
+            new FakeClipboard(), new FakeDialogs(), _store, new FakeStartup());
         _vm.Initialize();
         return _vm;
     }

@@ -35,9 +35,12 @@ internal static class NativeMethods
     internal static readonly nint HwndTopmost = new(-1);
 
     // Messages
+    internal const uint WmNull = 0x0000;
     internal const uint WmSettingChange = 0x001A;
     internal const uint WmSetCursor = 0x0020;
     internal const uint WmMouseActivate = 0x0021;
+    internal const uint WmCopyData = 0x004A;
+    internal const uint WmContextMenu = 0x007B;
     internal const uint WmDisplayChange = 0x007E;
     internal const uint WmNcHitTest = 0x0084;
     internal const uint WmKeyDown = 0x0100;
@@ -50,7 +53,9 @@ internal static class NativeMethods
     internal const uint WmCaptureChanged = 0x0215;
     internal const uint WmDpiChanged = 0x02E0;
     internal const uint WmHotkey = 0x0312;
+    internal const uint WmApp = 0x8000;
     internal const int MaNoActivate = 3;
+    internal const uint MsgfltAllow = 1;
 
     // WM_NCHITTEST results: which part of a window is at a point
     internal const int HtClient = 1;
@@ -93,6 +98,44 @@ internal static class NativeMethods
     internal const int DwmwcpRound = 2;
     internal const uint WdaNone = 0x0;
     internal const uint WdaExcludeFromCapture = 0x11;
+
+    // Notification area icon (Shell_NotifyIcon, version 4), its menu and icon
+    internal const uint NimAdd = 0x0;
+    internal const uint NimModify = 0x1;
+    internal const uint NimDelete = 0x2;
+    internal const uint NimSetVersion = 0x4;
+    internal const uint NifMessage = 0x01;
+    internal const uint NifIcon = 0x02;
+    internal const uint NifTip = 0x04;
+    internal const uint NifInfo = 0x10;
+    internal const uint NifShowTip = 0x80;
+    internal const uint NiifInfo = 0x01;
+    internal const uint NiifRespectQuietTime = 0x80;
+    internal const uint NotifyIconVersion4 = 4;
+    internal const uint NinSelect = 0x400;
+    internal const uint NinKeySelect = 0x401;
+    internal const uint MfString = 0x0;
+    internal const uint MfGrayed = 0x1;
+    internal const uint MfChecked = 0x8;
+    internal const uint MfPopup = 0x10;
+    internal const uint MfSeparator = 0x800;
+    internal const uint TpmRightButton = 0x2;
+    internal const uint TpmNoNotify = 0x80;
+    internal const uint TpmReturnCmd = 0x100;
+    internal const uint ImageIcon = 1;
+    internal const uint LrLoadFromFile = 0x10;
+    internal const int SmCxSmIcon = 49;
+    internal const int IdiApplication = 32512;
+
+    // Keyboard layouts
+    internal const uint MapVkToVsc = 0;
+    internal const uint ToUnicodeKeepKeyboardState = 0x4;
+    internal const int VkShift = 0x10;
+    internal const int VkControl = 0x11;
+    internal const int VkMenu = 0x12;
+    internal const int VkLShift = 0xA0;
+    internal const int VkLControl = 0xA2;
+    internal const int VkRMenu = 0xA5;
 
     internal delegate nint WndProc(nint hwnd, uint message, nint wParam, nint lParam);
     internal delegate nint HookProc(int code, nint wParam, nint lParam);
@@ -192,6 +235,38 @@ internal static class NativeMethods
         public Point Point;
         public uint MouseData, Flags, Time;
         public nint ExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    internal struct NotifyIconData
+    {
+        public uint Size;
+        public nint Window;
+        public uint Id;
+        public uint Flags;
+        public uint CallbackMessage;
+        public nint Icon;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string Tip;
+        public uint State;
+        public uint StateMask;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string Info;
+        public uint TimeoutOrVersion;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string InfoTitle;
+        public uint InfoFlags;
+        public Guid Item;
+        public nint BalloonIcon;
+    }
+
+    /// <summary>COPYDATASTRUCT: the payload of WM_COPYDATA.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct CopyData
+    {
+        public nint Id;
+        public uint Size;
+        public nint Data;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -324,6 +399,24 @@ internal static class NativeMethods
         return context != 0 && GetAwarenessFromDpiAwarenessContext(context) == DpiAwarenessPerMonitorAware;
     }
 
+    [DllImport("user32.dll", EntryPoint = "FindWindowW", CharSet = CharSet.Unicode)]
+    internal static extern nint FindWindow(string? className, string? windowName);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool AllowSetForegroundWindow(uint processId);
+
+    [DllImport("user32.dll", EntryPoint = "PostMessageW")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool PostMessage(nint hwnd, uint message, nint wParam, nint lParam);
+
+    [DllImport("user32.dll", EntryPoint = "RegisterWindowMessageW", CharSet = CharSet.Unicode)]
+    internal static extern uint RegisterWindowMessage(string name);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool ChangeWindowMessageFilterEx(nint hwnd, uint message, uint action, nint changeFilter);
+
     [DllImport("user32.dll", EntryPoint = "SendMessageTimeoutW", SetLastError = true)]
     internal static extern nint SendMessageTimeout(nint hwnd, uint message, nint wParam, nint lParam,
         uint flags, uint timeoutMs, out nint result);
@@ -347,6 +440,46 @@ internal static class NativeMethods
             throw new Win32Exception(Marshal.GetLastPInvokeError());
     }
 
+    // ---- Notification area, menus and icons -------------------------------------------------
+
+    [DllImport("shell32.dll", EntryPoint = "Shell_NotifyIconW", CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool ShellNotifyIcon(uint message, ref NotifyIconData data);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern nint CreatePopupMenu();
+
+    [DllImport("user32.dll", EntryPoint = "AppendMenuW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool AppendMenu(nint menu, uint flags, nint idOrSubmenu, string? text);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SetMenuDefaultItem(nint menu, uint item, uint byPosition);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern int TrackPopupMenuEx(nint menu, uint flags, int x, int y, nint hwnd, nint parameters);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DestroyMenu(nint menu);
+
+    [DllImport("user32.dll", EntryPoint = "LoadImageW", CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern nint LoadImage(nint instance, string name, uint type, int width, int height, uint flags);
+
+    [DllImport("user32.dll", EntryPoint = "LoadIconW")]
+    internal static extern nint LoadIcon(nint instance, nint name);
+
+    [DllImport("shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode)]
+    internal static extern uint ExtractIconEx(string file, int index, nint largeIcons, out nint smallIcon, uint count);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DestroyIcon(nint icon);
+
+    [DllImport("user32.dll")]
+    internal static extern int GetSystemMetrics(int index);
+
     // ---- Input ------------------------------------------------------------------------------
 
     [DllImport("user32.dll")]
@@ -367,6 +500,16 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool UnregisterHotKey(nint hwnd, int id);
+
+    [DllImport("user32.dll")]
+    internal static extern int GetKeyboardLayoutList(int count, [Out] nint[]? layouts);
+
+    [DllImport("user32.dll", EntryPoint = "MapVirtualKeyExW")]
+    internal static extern uint MapVirtualKeyEx(uint code, uint mapType, nint layout);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern int ToUnicodeEx(uint virtualKey, uint scanCode, byte[] keyState,
+        [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] char[] buffer, int bufferSize, uint flags, nint layout);
 
     [DllImport("user32.dll", EntryPoint = "SetWindowsHookExW", SetLastError = true)]
     internal static extern nint SetWindowsHookEx(int hookId, HookProc callback, nint module, uint threadId);

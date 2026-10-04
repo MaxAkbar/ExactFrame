@@ -130,7 +130,8 @@
                                             FontSize="12"
                                             FontWeight="Medium"
                                             Foreground="{StaticResource WarnTextBrush}"
-                                            Text="Taken by another app" />
+                                            Text="{x:Bind Problem}"
+                                            TextWrapping="Wrap" />
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
@@ -145,7 +146,44 @@
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
-                <TextBlock Margin="0,8,0,0" Style="{StaticResource CaptionStyle}" Text="The first nine profiles also get Ctrl + Alt + 1 to 9. Shortcuts work while another app has focus." />
+                <TextBlock Margin="0,8,0,0" Style="{StaticResource CaptionStyle}" Text="Shortcuts work while another app has focus. The first nine profiles get a number in list order." TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Border Style="{StaticResource DividerStyle}" />
+
+            <!-- Background -->
+            <StackPanel Spacing="4">
+                <TextBlock Margin="0,0,0,4" Style="{StaticResource SectionTitleStyle}" Text="Background" />
+                <Grid Padding="0,8" ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock Style="{StaticResource BodyStrongStyle}" Text="Keep running when closed" />
+                        <TextBlock Style="{StaticResource CaptionStyle}" Text="Closing the window leaves ExactFrame in the notification area, so shortcuts and the outline keep working." TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        AutomationProperties.Name="Keep running when closed"
+                        IsOn="{x:Bind ViewModel.KeepRunningInBackground, Mode=TwoWay}"
+                        Style="{StaticResource BareSwitchStyle}" />
+                </Grid>
+                <Grid Padding="0,8" ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="2">
+                        <TextBlock Style="{StaticResource BodyStrongStyle}" Text="Start with Windows" />
+                        <TextBlock Style="{StaticResource CaptionStyle}" Text="Starts ExactFrame in the notification area when you sign in." TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        Grid.Column="1"
+                        AutomationProperties.Name="Start with Windows"
+                        IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}"
+                        Style="{StaticResource BareSwitchStyle}" />
+                </Grid>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

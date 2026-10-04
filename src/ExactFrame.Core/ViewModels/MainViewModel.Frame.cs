@@ -307,12 +307,9 @@ public sealed partial class MainViewModel
         LoadNestedFrames(state.NestedFrames);
         if (state.Mode == FrameMode.Resize) _area = state.Area;
 
+        // Never leave another app selected: applying the profile resizes the selected window.
         if (state.Mode == FrameMode.Resize && !string.IsNullOrEmpty(state.TargetProcessName))
-        {
-            var match = _allWindows.FirstOrDefault(w =>
-                string.Equals(w.ProcessName, state.TargetProcessName, StringComparison.OrdinalIgnoreCase));
-            if (match is not null) SetTarget(match);
-        }
+            SetTarget(FindAppWindow(state.TargetProcessName));
 
         SyncSelections();
         PrimaryCommand.NotifyCanExecuteChanged();

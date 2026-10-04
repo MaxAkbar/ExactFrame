@@ -126,8 +126,22 @@ public static class HelpContent
                         "A profile remembers the size, position, display, mode and additional frames. In Resize window mode it also remembers the app.",
                         "Select a profile to apply it. The profile button in the title bar shows which one is active, and says " +
                         "**edited** once you change something.",
-                        "The first nine profiles get Ctrl + Alt + 1 to 9, and the **Next profile** shortcut cycles through them.",
+                        "Applying a Resize window profile resizes its app straight away, including from the profile's shortcut " +
+                        "while another app has focus. If the app has several windows, ExactFrame uses the selected one, otherwise " +
+                        "the one in front. If the app isn't open, nothing is resized.",
+                        "The first nine profiles get Ctrl + Alt + 1 to 9 in list order, and the **Next profile** shortcut cycles " +
+                        "through them. To hold other keys with the number, select **Change** next to **Apply profile 1 to 9**.",
                         "Select the trash button on a profile to delete it.")
+                ]),
+                new("Keep running in the background",
+                [
+                    Bullets(
+                        "With **Keep running when closed** on, closing the window leaves ExactFrame in the notification area, " +
+                        "so shortcuts and the outline keep working.",
+                        "Select the ExactFrame icon in the notification area to open it. Right-click the icon to show or hide " +
+                        "the outline, apply a profile, or quit.",
+                        "**Start with Windows** starts ExactFrame in the notification area when you sign in.",
+                        "Only one copy runs at a time. Starting ExactFrame again opens the copy that's already running.")
                 ])
             ]),
 
@@ -142,7 +156,10 @@ public static class HelpContent
                         "Press the new keys and select **Use shortcut**."),
                     Bullets(
                         "A shortcut needs Ctrl, Alt or Win, so ordinary typing never triggers it.",
-                        "**Taken by another app** means Windows gave that shortcut to another app. Choose different keys.")
+                        "**Taken by another app** means Windows gave that shortcut to another app. Choose different keys.",
+                        "Windows treats AltGr as Ctrl + Alt, so on some keyboards a Ctrl + Alt shortcut is a character, such " +
+                        "as AltGr + 2 for @ on a Spanish keyboard. ExactFrame doesn't use a shortcut that types a character on " +
+                        "one of your keyboard layouts, so you can still type it. Those show **Types … on your keyboard**.")
                 ])
             ],
             HelpTopicExtra.Shortcuts),
@@ -199,6 +216,17 @@ public static class HelpContent
                 [
                     Paragraph("Another app registered those keys first. Select **Change** next to it in the **Profiles** tab and pick different keys.")
                 ]),
+                new("A shortcut says it types a character on my keyboard",
+                [
+                    Paragraph("On your keyboard, AltGr with that key types a character, and Windows sends AltGr as Ctrl + Alt. " +
+                              "ExactFrame leaves the shortcut unused so the character still types. Select **Change** next to it " +
+                              "in the **Profiles** tab and choose keys with Shift or Win, such as Ctrl + Shift + 1.")
+                ]),
+                new("Shortcuts stop working after I close the window",
+                [
+                    Paragraph("Turn on **Keep running when closed** in the **Profiles** tab. Closing the window then leaves " +
+                              "ExactFrame in the notification area, and its shortcuts keep working until you quit it from the icon.")
+                ]),
                 new("An app won't resize, or ends up a different size",
                 [
                     Bullets(
@@ -240,8 +268,7 @@ public static class HelpContent
     /// <summary>Fixed shortcuts, shown after the changeable global hotkeys.</summary>
     public static IReadOnlyList<ShortcutRow> FixedShortcuts { get; } =
     [
-        new("Apply profile 1 to 9", ["Ctrl", "Alt", "1 … 9"]),
-            new("Hide the outline while ExactFrame has focus", ["Esc"]),
+        new("Hide the outline while ExactFrame has focus", ["Esc"]),
         new("Open help", ["F1"]),
         new("Nudge X or Y by 1 px, or 10 px", ["↑ ↓", "Page Up / Down"]),
         new("Move a size slider by 2 px, or 64 px", ["← →", "Page Up / Down"])

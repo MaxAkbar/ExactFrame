@@ -179,13 +179,16 @@ public sealed class WindowItem(WindowInfo window, Func<Task> select) : Selectabl
 
 public sealed class ProfileItem : SelectableItem
 {
-    public ProfileItem(FrameProfile profile, string summary, IReadOnlyList<string> keys, bool hotkeyRegistered,
-        Action apply, Func<Task> delete) : base(apply)
+    private readonly string? _hotkeyProblem;
+
+    /// <param name="hotkeyProblem">Why the profile's shortcut isn't registered, or <c>null</c> when it works.</param>
+    public ProfileItem(FrameProfile profile, string summary, IReadOnlyList<string> keys, string? hotkeyProblem,
+        Func<Task> apply, Func<Task> delete) : base(apply)
     {
         Profile = profile;
         Summary = summary;
         Keys = keys;
-        HotkeyRegistered = hotkeyRegistered;
+        _hotkeyProblem = hotkeyProblem;
         DeleteCommand = new AsyncRelayCommand(delete);
 
         double ratio = profile.Height == 0 ? 1 : (double)profile.Width / profile.Height;
@@ -203,13 +206,13 @@ public sealed class ProfileItem : SelectableItem
 
     public bool HasKeys => Keys.Count > 0;
 
-    public bool HotkeyRegistered { get; }
+    public bool HotkeyRegistered => HasKeys && _hotkeyProblem is null;
 
     public double KeysOpacity => HotkeyRegistered ? 1 : 0.45;
 
     public string HotkeyTip => !HasKeys
         ? "Only the first nine profiles get a shortcut."
-        : HotkeyRegistered ? "Applies this profile from any app." : "Windows couldn’t register this shortcut; another app may be using it.";
+        : _hotkeyProblem ?? "Applies this profile from any app.";
 
     public double GlyphWidth { get; }
 
@@ -218,17 +221,21 @@ public sealed class ProfileItem : SelectableItem
     public IAsyncRelayCommand DeleteCommand { get; }
 }
 
-public sealed class HotkeyItem(string label, HotkeyGesture gesture, bool isRegistered, Func<Task> change) : ObservableObject
+/// <param name="problem">Why the shortcut isn't working, such as "Taken by another app", or <c>null</c> when it works.</param>
+public sealed class HotkeyItem(string label, IReadOnlyList<string> keys, string? problem, Func<Task> change) : ObservableObject
 {
     public string Label { get; } = label;
 
-    public HotkeyGesture Gesture { get; } = gesture;
+    public IReadOnlyList<string> Keys { get; } = keys;
 
-    public IReadOnlyList<string> Keys { get; } = gesture.Keys;
+    public string? Problem { get; } = problem;
 
-    public bool IsRegistered { get; } = isRegistered;
+    public bool IsRegistered => Problem is null;
 
-    public bool HasConflict => !IsRegistered;
+    public bool HasConflict => Problem is not null;
+
+    /// <summary>The problem with where to fix it, for help, which has no Change button.</summary>
+    public string ProblemHelp => Problem is null ? string.Empty : $"{Problem}. Change the keys in the Profiles tab.";
 
     public IAsyncRelayCommand ChangeCommand { get; } = new AsyncRelayCommand(change);
 }

@@ -11,5 +11,11 @@ public interface IHotkeyService : IDisposable
     /// <summary>Returns <c>false</c> when Windows refuses, usually because another app owns the shortcut.</summary>
     bool Register(int id, HotkeyGesture gesture);
 
+    /// <summary>
+    /// The character the shortcut types on one of the installed keyboard layouts, or <c>null</c>. Windows treats
+    /// AltGr as Ctrl + Alt, so Ctrl + Alt + 2 is @ on a Spanish keyboard; registering it would stop @ being typed.
+    /// </summary>
+    string? TypedCharacter(HotkeyGesture gesture);
+
     void Unregister(int id);
 }

@@ -16,12 +16,13 @@ public sealed class MainViewModelTests : IDisposable
     private readonly FakeClipboard _clipboard = new();
     private readonly FakeDialogs _dialogs = new();
     private readonly MemoryStore _store = new();
+    private readonly FakeStartup _startup = new();
     private MainViewModel? _vm;
 
     private MainViewModel Create(AppSettings? settings = null)
     {
         if (settings is not null) _store.Settings = settings;
-        _vm = new MainViewModel(_displays, _windows, _picker, _overlay, _hotkeys, _clipboard, _dialogs, _store);
+        _vm = new MainViewModel(_displays, _windows, _picker, _overlay, _hotkeys, _clipboard, _dialogs, _store, _startup);
         _vm.Initialize();
         return _vm;
     }
@@ -718,6 +719,201 @@ public sealed class MainViewModelTests : IDisposable
         vm.Shutdown();
         Assert.Equal(1080, _store.Settings.LastFrame!.Width);
     }
+
+    // ---- Shortcuts that type characters -----------------------------------------------------
+
+    [Fact]
+    public void Shortcuts_that_type_a_character_are_not_registered()
+    {
+        // On a Spanish keyboard AltGr + 2 is @ and AltGr + 3 is #, and Windows sends AltGr as Ctrl + Alt.
+        _hotkeys.Characters[HotkeyGesture.CtrlAlt(0x32)] = "@";
+        _hotkeys.Characters[HotkeyGesture.CtrlAlt(0x33)] = "#";
+        var vm = Create();
+
+        Assert.Contains(HotkeyGesture.CtrlAlt(0x31), _hotkeys.Registered.Values);
+        Assert.DoesNotContain(HotkeyGesture.CtrlAlt(0x32), _hotkeys.Registered.Values);
+        Assert.True(vm.Profiles[0].HotkeyRegistered);
+        Assert.False(vm.Profiles[1].HotkeyRegistered);
+        Assert.Contains("Ctrl + Alt + 2 types “@” on your keyboard", vm.Profiles[1].HotkeyTip);
+
+        var profileKeys = vm.Hotkeys.Single(h => h.Label == "Apply profile 1 to 9");
+        Assert.Equal(["Ctrl", "Alt", "1 … 9"], profileKeys.Keys);
+        Assert.Equal("2 of these type characters on your keyboard", profileKeys.Problem);
+    }
+
+    [Fact]
+    public async Task Recording_a_shortcut_that_types_a_character_is_refused()
+    {
+        var altGrQ = HotkeyGesture.CtrlAlt(0x51); // @ on a German keyboard
+        _hotkeys.Characters[altGrQ] = "@";
+        var vm = Create();
+        _dialogs.RecordedHotkey = altGrQ;
+
+        await vm.Hotkeys[0].ChangeCommand.ExecuteAsync(null);
+
+        Assert.Equal(HotkeyGesture.CtrlAlt(HotkeyGesture.VkF8), _store.Settings.ToggleOutlineHotkey);
+        Assert.DoesNotContain(altGrQ, _hotkeys.Registered.Values);
+        Assert.Equal(StatusKind.Warning, vm.StatusKind);
+        Assert.Contains("Ctrl + Alt + Q types “@”", vm.StatusDetail);
+    }
+
+    [Fact]
+    public async Task Profile_shortcuts_can_use_other_keys()
+    {
+        var ctrlShift = HotkeyModifiers.Control | HotkeyModifiers.Shift;
+        _hotkeys.Characters[HotkeyGesture.CtrlAlt(0x32)] = "@";
+        var vm = Create();
+        _dialogs.RecordedHotkey = new HotkeyGesture(ctrlShift, 0x31);
+
+        await vm.Hotkeys.Single(h => h.Label == "Apply profile 1 to 9").ChangeCommand.ExecuteAsync(null);
+
+        Assert.Equal("Apply profile 1 to 9", _dialogs.LastHotkeyAction);
+        Assert.Equal(ctrlShift, _store.Settings.ProfileHotkeyModifiers);
+        Assert.Contains(new HotkeyGesture(ctrlShift, 0x32), _hotkeys.Registered.Values);
+        Assert.DoesNotContain(HotkeyGesture.CtrlAlt(0x31), _hotkeys.Registered.Values);
+        Assert.Equal(["Ctrl", "Shift", "2"], vm.Profiles[1].Keys);
+        Assert.True(vm.Profiles[1].HotkeyRegistered);
+        Assert.False(vm.Hotkeys.Single(h => h.Label == "Apply profile 1 to 9").HasConflict);
+        Assert.Equal("Profiles now use Ctrl + Shift + 1 … 9.", vm.StatusDetail);
+    }
+
+    [Fact]
+    public async Task Profile_keys_that_type_a_character_are_refused()
+    {
+        var altGrShift = HotkeyModifiers.Control | HotkeyModifiers.Alt | HotkeyModifiers.Shift;
+        _hotkeys.Characters[new HotkeyGesture(altGrShift, 0x37)] = "{";
+        var vm = Create();
+        _dialogs.RecordedHotkey = new HotkeyGesture(altGrShift, 0x31);
+
+        await vm.Hotkeys.Single(h => h.Label == "Apply profile 1 to 9").ChangeCommand.ExecuteAsync(null);
+
+        Assert.Equal(HotkeyModifiers.Control | HotkeyModifiers.Alt, _store.Settings.ProfileHotkeyModifiers);
+        Assert.Equal(StatusKind.Warning, vm.StatusKind);
+        Assert.Contains("Ctrl + Alt + Shift + 7 types “{”", vm.StatusDetail);
+    }
+
+    // ---- Resize window profiles -------------------------------------------------------------
+
+    private static FrameProfile TerminalProfile => new()
+    {
+        Id = "terminal-720p",
+        Name = "Terminal 720p",
+        Mode = FrameMode.Resize,
+        Width = 1280,
+        Height = 720,
+        Area = WindowArea.Client,
+        TargetProcessName = "WindowsTerminal"
+    };
+
+    [Fact]
+    public async Task Applying_a_resize_profile_resizes_its_app()
+    {
+        var vm = Create(new AppSettings { Profiles = [TerminalProfile] });
+
+        await ((IAsyncRelayCommand)vm.Profiles[0].SelectCommand).ExecuteAsync(null);
+
+        var (window, desired, area) = Assert.Single(_windows.Resizes);
+        Assert.True(window.IsSameWindow(FakeWindows.Terminal));
+        Assert.Equal(new Rectangle(1280, 720, 1280, 720), desired);
+        Assert.Equal(WindowArea.Client, area);
+        Assert.True(vm.IsResizeMode);
+        Assert.True(_overlay.IsVisible);
+        Assert.EndsWith("Applied “Terminal 720p”.", vm.StatusDetail);
+        Assert.Empty(_store.Settings.RememberedAppSizes);
+    }
+
+    [Fact]
+    public void A_resize_profile_shortcut_resizes_its_app_from_any_app()
+    {
+        Create(new AppSettings { Profiles = [TerminalProfile] });
+
+        _hotkeys.Press(100);
+
+        Assert.True(Assert.Single(_windows.Resizes).Window.IsSameWindow(FakeWindows.Terminal));
+    }
+
+    [Fact]
+    public async Task A_resize_profile_for_an_app_that_is_not_open_resizes_nothing()
+    {
+        var vm = Create(new AppSettings { Profiles = [TerminalProfile with { TargetProcessName = "slack" }] });
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window == FakeWindows.Studio).SelectCommand.Execute(null);
+
+        await ((IAsyncRelayCommand)vm.Profiles[0].SelectCommand).ExecuteAsync(null);
+
+        Assert.Empty(_windows.Resizes);
+        Assert.False(vm.HasTargetWindow);
+        Assert.Equal(StatusKind.Warning, vm.StatusKind);
+        Assert.Contains("slack, which isn’t open", vm.StatusDetail);
+    }
+
+    [Fact]
+    public async Task A_resize_profile_uses_the_frontmost_window_of_its_app()
+    {
+        var behind = FakeWindows.Terminal with { Handle = 0x2102, Title = "Build", ZOrder = 7 };
+        var front = FakeWindows.Terminal with { Handle = 0x2202, Title = "Logs", ZOrder = 2 };
+        _windows.Windows.Remove(FakeWindows.Terminal);
+        _windows.Windows.AddRange([behind, front]);
+        var vm = Create(new AppSettings { Profiles = [TerminalProfile] });
+
+        await ((IAsyncRelayCommand)vm.Profiles[0].SelectCommand).ExecuteAsync(null);
+
+        Assert.True(Assert.Single(_windows.Resizes).Window.IsSameWindow(front));
+    }
+
+    [Fact]
+    public async Task A_resize_profile_keeps_the_selected_window_of_its_app()
+    {
+        var other = FakeWindows.Terminal with { Handle = 0x2102, Title = "Build", ZOrder = 5 };
+        _windows.Windows.Add(other);
+        var vm = Create(new AppSettings { Profiles = [TerminalProfile] });
+        vm.ShowResizeModeCommand.Execute(null);
+        vm.Windows.Single(w => w.Window.IsSameWindow(other)).SelectCommand.Execute(null);
+
+        await ((IAsyncRelayCommand)vm.Profiles[0].SelectCommand).ExecuteAsync(null);
+
+        Assert.True(Assert.Single(_windows.Resizes).Window.IsSameWindow(other));
+    }
+
+    // ---- Running in the background ----------------------------------------------------------
+
+    [Fact]
+    public void Closing_to_the_background_saves_the_session_and_explains_once()
+    {
+        var vm = Create();
+        vm.WidthValue = 1280;
+
+        Assert.True(vm.KeepRunningInBackground);
+        Assert.True(vm.MoveToBackground());
+        Assert.Equal(1280, _store.Settings.LastFrame!.Width);
+        Assert.False(vm.MoveToBackground());
+    }
+
+    [Fact]
+    public void Background_settings_are_saved()
+    {
+        var vm = Create();
+
+        vm.KeepRunningInBackground = false;
+        vm.StartWithWindows = true;
+
+        Assert.False(_store.Settings.KeepRunningInBackground);
+        Assert.True(_startup.IsEnabled);
+        Assert.True(vm.StartWithWindows);
+    }
+
+    [Fact]
+    public void Start_with_windows_failure_is_reported()
+    {
+        _startup.Fail = true;
+        var vm = Create();
+
+        vm.StartWithWindows = true;
+
+        Assert.False(vm.StartWithWindows);
+        Assert.Equal(StatusKind.Warning, vm.StatusKind);
+        Assert.Contains("Start with Windows couldn’t be changed", vm.StatusDetail);
+    }
 }
 
 public sealed class MinimizedWindowTests : IDisposable
@@ -729,7 +925,7 @@ public sealed class MinimizedWindowTests : IDisposable
     private MainViewModel CreateInResizeMode()
     {
         _vm = new MainViewModel(new FakeDisplays(), _windows, new FakePicker(), _overlay, new FakeHotkeys(),
-            new FakeClipboard(), new FakeDialogs(), new MemoryStore());
+            new FakeClipboard(), new FakeDialogs(), new MemoryStore(), new FakeStartup());
         _vm.Initialize();
         _vm.ShowResizeModeCommand.Execute(null);
         return _vm;

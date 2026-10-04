@@ -15,7 +15,8 @@ namespace ExactFrame.Core.ViewModels;
 
 /// <summary>
 /// State and behavior behind the main window and the on-screen HUD. Split by concern across partial files:
-/// Frame (size, position, display), NestedFrames, Stage (read-only preview values), Outline, Style, Profiles and Resize.
+/// Frame (size, position, display), NestedFrames, Stage (read-only preview values), Outline, Style, Profiles, Resize
+/// and Background.
 /// All members are expected to run on the UI thread.
 /// </summary>
 public sealed partial class MainViewModel : ObservableObject, IDisposable
@@ -28,6 +29,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IClipboardService _clipboard;
     private readonly IDialogService _dialogs;
     private readonly ISettingsStore _store;
+    private readonly IStartupService _startup;
     private readonly AppSettings _settings;
     private readonly CancellationTokenSource _lifetime = new();
 
@@ -47,7 +49,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IHotkeyService hotkeys,
         IClipboardService clipboard,
         IDialogService dialogs,
-        ISettingsStore store)
+        ISettingsStore store,
+        IStartupService startup)
     {
         _displayService = displayService;
         _windowService = windowService;
@@ -57,6 +60,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _clipboard = clipboard;
         _dialogs = dialogs;
         _store = store;
+        _startup = startup;
         _settings = store.Load();
         _style = _settings.Style;
         _hideFromRecorders = _settings.HideFromRecorders;

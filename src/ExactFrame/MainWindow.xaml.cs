@@ -49,9 +49,10 @@ public sealed partial class MainWindow : Window
 
     public HelpViewModel Help { get; }
 
-    /// <summary>Restores the window if minimized and brings it to the front.</summary>
+    /// <summary>Shows the window if it's in the notification area or minimized, and brings it to the front.</summary>
     public void BringToFront()
     {
+        if (!AppWindow.IsVisible) AppWindow.Show();
         if (AppWindow.Presenter is OverlappedPresenter { State: OverlappedPresenterState.Minimized } presenter)
             presenter.Restore();
         Activate();

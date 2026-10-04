@@ -136,7 +136,8 @@
                                                         FontFamily="{StaticResource SansMediumFont}"
                                                         FontSize="12"
                                                         Foreground="{StaticResource WarnTextBrush}"
-                                                        Text="Taken by another app. Change it in the Profiles tab."
+                                                        Text="{x:Bind ProblemHelp}"
+                                                        TextWrapping="Wrap"
                                                         Visibility="{x:Bind HasConflict}" />
                                                 </StackPanel>
                                                 <controls:KeyChips

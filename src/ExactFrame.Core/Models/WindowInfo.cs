@@ -21,9 +21,11 @@ public enum WindowArea
 /// <summary>
 /// An open top-level window. Handle, process and thread together identify it safely.
 /// For a minimized window, <see cref="Bounds"/> is the size it restores to.
+/// <see cref="ZOrder"/> is 0 for the frontmost window when the list was read.
 /// </summary>
 public sealed record WindowInfo(
-    nint Handle, uint ProcessId, uint ThreadId, string Title, string ProcessName, Rectangle Bounds, bool IsMinimized = false)
+    nint Handle, uint ProcessId, uint ThreadId, string Title, string ProcessName, Rectangle Bounds, bool IsMinimized = false,
+    int ZOrder = 0)
 {
     public bool IsSameWindow(WindowInfo? other) =>
         other is not null && other.Handle == Handle && other.ProcessId == ProcessId && other.ThreadId == ThreadId;

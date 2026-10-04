@@ -8,6 +8,14 @@ namespace ExactFrame.Core.ViewModels;
 // Resize window mode: choosing, measuring, resizing and restoring another app's window.
 public sealed partial class MainViewModel
 {
+    /// <summary>What started a resize. Only a manual resize updates the app's remembered size.</summary>
+    private enum ResizeReason
+    {
+        Manual,
+        RememberedSize,
+        Profile
+    }
+
     private IReadOnlyList<WindowInfo> _allWindows = [];
     private WindowInfo? _targetWindow;
     private WindowInfo? _followedWindow;
@@ -97,7 +105,7 @@ public sealed partial class MainViewModel
             var area = _explicitAreaSelection ? _area : saved.Area;
             _explicitAreaSelection = false;
             if (!PrepareRememberedSize(window, saved, area)) return;
-            await RunBusyAsync(() => ResizeTargetAsync(rememberSize: false));
+            await RunBusyAsync(() => ResizeTargetAsync(ResizeReason.RememberedSize));
         }
         else if (_anchor is null) KeepWindowPosition();
         else UpdateFrame();
@@ -179,6 +187,16 @@ public sealed partial class MainViewModel
         WindowFilter = string.Empty;
         Guard(RefreshWindows);
         await SelectWindowAsync(_allWindows.FirstOrDefault(w => w.IsSameWindow(picked)) ?? picked);
+    }
+
+    /// <summary>
+    /// The open window of the app a profile names: the selected window when it belongs to that app,
+    /// otherwise the app's frontmost window.
+    /// </summary>
+    private WindowInfo? FindAppWindow(string processName)
+    {
+        var windows = _allWindows.Where(w => string.Equals(w.ProcessName, processName, StringComparison.OrdinalIgnoreCase)).ToList();
+        return windows.FirstOrDefault(w => w.IsSameWindow(_targetWindow)) ?? windows.MinBy(w => w.ZOrder);
     }
 
     private RememberedAppSize? FindRememberedSize(string processName) =>
@@ -277,7 +295,8 @@ public sealed partial class MainViewModel
         SaveSettings();
     }
 
-    private async Task ResizeTargetAsync(bool rememberSize)
+    /// <param name="profileName">The profile being applied, for <see cref="ResizeReason.Profile"/>.</param>
+    private async Task ResizeTargetAsync(ResizeReason reason, string? profileName = null)
     {
         var window = _targetWindow ?? throw new InvalidOperationException("Choose an open app window first.");
         if (_display is null) throw new InvalidOperationException("No display is available.");
@@ -305,11 +324,17 @@ public sealed partial class MainViewModel
         string exclusion = _hideFromRecorders && !_overlay.CaptureExclusionApplied
             ? " Hide the outline before recording; capture exclusion was unavailable."
             : string.Empty;
+        string source = reason switch
+        {
+            ResizeReason.Manual => result.Exact ? " Size remembered for this app." : " Accepted size remembered for this app.",
+            ResizeReason.Profile => $" Applied “{profileName}”.",
+            _ => " Remembered app size applied."
+        };
         if (result.Exact)
         {
             SetStatus(restored + $"Verified {actual.Width} × {actual.Height} px at ({actual.X}, {actual.Y}). " +
                       "The outline follows the app when it moves. Restore original size is available for this session." +
-                      (rememberSize ? " Size remembered for this app." : " Remembered app size applied.") + exclusion);
+                      source + exclusion);
         }
         else
         {
@@ -321,12 +346,11 @@ public sealed partial class MainViewModel
                 : "This app may enforce size or position limits.";
             SetStatus(restored + $"Requested {desired.Width} × {desired.Height} at ({desired.X}, {desired.Y}); " +
                       $"the app accepted {actual.Width} × {actual.Height} at ({actual.X}, {actual.Y}). " +
-                      $"The outline follows its actual bounds. {explanation}" +
-                      (rememberSize ? " Accepted size remembered for this app." : " Remembered app size applied.") + exclusion,
+                      $"The outline follows its actual bounds. {explanation}" + source + exclusion,
                       warning: true);
         }
         StartFollowingWindow(window);
-        if (rememberSize) RememberAppSize(window, actual.Size);
+        if (reason == ResizeReason.Manual) RememberAppSize(window, actual.Size);
     }
 
     private async Task RestoreTargetAsync()

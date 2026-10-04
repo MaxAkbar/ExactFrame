@@ -54,8 +54,22 @@ recorder or editing workflow. You can add several guides and remove them individ
 dimming outside the frame, rule-of-thirds, center-mark and 90% safe-area guides, and the on-screen controls.
 
 **Profiles tab.** **Save current** stores the size, position, display, mode and additional frames. The first nine profiles get
-Ctrl + Alt + 1 to 9. **Global hotkeys** shows each shortcut; if another app owns one, it says so and
-**Change** records a new one.
+Ctrl + Alt + 1 to 9 in list order; **Change** next to **Apply profile 1 to 9** picks other keys to hold with the number.
+Applying a Resize window profile resizes its app straight away, including from its shortcut while another app has focus.
+If the app has several windows, ExactFrame uses the selected one, otherwise the one in front; if the app isn't open,
+nothing is resized. **Global hotkeys** shows each shortcut; if another app owns one, it says so and **Change** records a
+new one.
+
+Windows sends AltGr as Ctrl + Alt, so on many keyboards a Ctrl + Alt shortcut is a character: AltGr + 2 is @ on a Spanish
+keyboard and AltGr + 7 is { on a German one. ExactFrame asks each installed keyboard layout what a shortcut types
+(`ToUnicodeEx`) and leaves any that type a character unregistered, marked **Types … on your keyboard**, so typing keeps
+working. It also refuses to record such a shortcut.
+
+**Running in the background.** ExactFrame has an icon in the notification area: select it to open the window, or right-click
+it to show or hide the outline, apply a profile or quit. With **Keep running when closed** on (the default), closing the
+window leaves ExactFrame running so shortcuts and the outline keep working; the first time, a notification says so.
+**Start with Windows** adds a Run entry for the current user that starts ExactFrame with `--background`, in the notification
+area only. Only one copy runs per Windows session: starting it again opens the running copy instead.
 
 **Resize window.** Choose an app from the list or use **Pick on screen** and click it (right-click or Esc
 cancels). Choose whether the size applies to the **Client area**, the **Whole window**, or the **Web page**, and
@@ -101,7 +115,7 @@ keep it in step with this README.
 | Ctrl + Alt + F8 | Show or hide the outline |
 | Ctrl + Alt + F9 | Turn click-through on or off |
 | Ctrl + Alt + F10 | Apply the next profile |
-| Ctrl + Alt + 1 … 9 | Apply profile 1 to 9 |
+| Ctrl + Alt + 1 … 9 | Apply profile 1 to 9 (the held keys can be changed) |
 | Esc | Close help, or hide the outline (while ExactFrame has focus) |
 
 Settings, profiles and app-specific sizes are saved in the CSharpDB database at
@@ -141,7 +155,7 @@ Inside the app project:
 | `Controls/` | `DisplayMap` (preview) and `KeyChips` (keycaps) |
 | `Hud/` | The floating control bar window |
 | `Services/` | `OutlineOverlay`, `WindowService` (with `TitleBarDetector`), `DisplayService`, `HotkeyService`, `WindowPicker`, dialogs and clipboard |
-| `Native/` | Win32 windows: the draggable border, guide layer, shade panels and the hidden message window |
+| `Native/` | Win32 windows: the draggable border, guide layer, shade panels, the hidden message window, the notification-area icon and the single-instance hand-off |
 | `Interop/` | The P/Invoke boundary |
 
 `App.xaml.cs` is the composition root (Microsoft.Extensions.DependencyInjection). The view model only
@@ -169,6 +183,14 @@ projections. XAML compilation, rendering and native behavior need a Windows run:
   and size apply automatically; use **Forget size** and confirm selection no longer resizes it.
 - Repeat on a second monitor with different scaling and a negative origin.
 - Record a new shortcut, and save, apply and delete a profile.
+- Save a Resize window profile, move and resize the app by hand, then press the profile's shortcut from another app and
+  check the app is resized. Close the app and press it again: nothing else should be resized.
+- Add a Spanish or German keyboard layout. Check that Ctrl + Alt + 2 shows **Types “@” on your keyboard** (Spanish) and that
+  AltGr + 2 still types @ while ExactFrame runs. Change the profile keys to Ctrl + Shift and check they register.
+- Close the window: ExactFrame stays in the notification area, shows the notice once, and Ctrl + Alt + F8 still works.
+  Select the icon to reopen it; use **Quit ExactFrame** from its menu. Start ExactFrame twice: one copy, brought to front.
+- Turn on **Start with Windows**, sign out and in, and check ExactFrame starts with only the icon. Turn it off in Windows
+  Settings > Apps > Startup and check the switch shows off.
 - Add a 9:16 guide inside a 16:9 frame; move and resize the main outline, adjust the guide's scale and position,
   copy both bounds, and confirm a saved profile restores the guide. Check the nested outline in a recorder preview.
 - Check capture exclusion with the recorder and capture method you actually use.

@@ -23,6 +23,15 @@ public sealed class AppSettings
 
     public HotkeyGesture NextProfileHotkey { get; set; } = HotkeyGesture.CtrlAlt(HotkeyGesture.VkF10);
 
-/// <summary>The frame as it was when ExactFrame last closed.</summary>
+    /// <summary>The keys held with 1 to 9 to apply the first nine profiles.</summary>
+    public HotkeyModifiers ProfileHotkeyModifiers { get; set; } = HotkeyModifiers.Control | HotkeyModifiers.Alt;
+
+    /// <summary>Closing the main window leaves ExactFrame running in the notification area.</summary>
+    public bool KeepRunningInBackground { get; set; } = true;
+
+    /// <summary>Whether the user has been told that closing the window keeps ExactFrame running.</summary>
+    public bool BackgroundHintShown { get; set; }
+
+    /// <summary>The frame as it was when ExactFrame last closed.</summary>
     public FrameProfile? LastFrame { get; set; }
 }

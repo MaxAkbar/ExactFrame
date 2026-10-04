@@ -43,11 +43,11 @@ internal sealed class DialogService : IDialogService
         return await ShowAsync(dialog) == ContentDialogResult.Primary ? name.Text.Trim() : null;
     }
 
-    public async Task<HotkeyGesture?> RecordHotkeyAsync(string actionName, HotkeyGesture current)
+    public async Task<HotkeyGesture?> RecordHotkeyAsync(string actionName, HotkeyGesture current, string? instructions = null)
     {
         HotkeyGesture? recorded = null;
         var keys = new KeyChips { Keys = current.Keys, HorizontalAlignment = HorizontalAlignment.Left };
-        var hint = Caption("Press the new shortcut. Use Ctrl, Alt or Win with another key.");
+        var hint = Caption(instructions ?? "Press the new shortcut. Use Ctrl, Alt or Win with another key.");
 
         var dialog = Create(actionName, "Use shortcut", new StackPanel { Spacing = 14, Children = { hint, keys } });
         dialog.IsPrimaryButtonEnabled = false;
