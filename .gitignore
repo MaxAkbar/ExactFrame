@@ -5,6 +5,7 @@ artifacts/
 *.user
 *.suo
 TestResults/
+__pycache__/
 
 # Earlier ScreenFrame source copies outside ExactFrame.slnx.
 src/ScreenFrame/

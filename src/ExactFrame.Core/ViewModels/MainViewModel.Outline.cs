@@ -41,8 +41,8 @@ public sealed partial class MainViewModel
             SaveSettings();
             _overlay.SetCaptureExclusion(value);
             NotifyStage();
-            if (value && _overlay.IsVisible && !_overlay.CaptureExclusionApplied)
-                SetStatus("Capture exclusion is unavailable. Hide the outline before recording.", warning: true);
+            if (value && _overlay.IsVisible && (!_overlay.CaptureExclusionApplied || HudCaptureExclusionFailed))
+                SetStatus(CaptureExclusionStatusText, warning: true);
         }
     }
 
@@ -95,8 +95,8 @@ public sealed partial class MainViewModel
         _overlay.SetLocked(_clickThrough);
         _overlay.Show(frame, _display, _keepClear, NestedBounds(frame));
 
-        if (_hideFromRecorders && !_overlay.CaptureExclusionApplied)
-            SetStatus("Windows couldn’t exclude the outline from capture. Hide it before recording.", warning: true);
+        if (_hideFromRecorders && (!_overlay.CaptureExclusionApplied || HudCaptureExclusionFailed))
+            SetStatus(CaptureExclusionStatusText, warning: true);
         else if (IsOutlineMode)
             SetStatus($"Outline shown at {frame.X}, {frame.Y}. Drag the border to move it.");
     }

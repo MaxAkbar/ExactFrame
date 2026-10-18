@@ -321,8 +321,8 @@ public sealed partial class MainViewModel
         NotifyFrame();
 
         string restored = result.WasRestored ? $"Restored {window.ProcessName} to a normal window first. " : string.Empty;
-        string exclusion = _hideFromRecorders && !_overlay.CaptureExclusionApplied
-            ? " Hide the outline before recording; capture exclusion was unavailable."
+        string exclusion = _hideFromRecorders && (!_overlay.CaptureExclusionApplied || HudCaptureExclusionFailed)
+            ? " " + CaptureExclusionStatusText
             : string.Empty;
         string source = reason switch
         {
@@ -332,7 +332,7 @@ public sealed partial class MainViewModel
         };
         if (result.Exact)
         {
-            SetStatus(restored + $"Verified {actual.Width} × {actual.Height} px at ({actual.X}, {actual.Y}). " +
+            SetStatus(restored + $"Measured {actual.Width} × {actual.Height} px at ({actual.X}, {actual.Y}). Recording is unverified. " +
                       "The outline follows the app when it moves. Restore original size is available for this session." +
                       source + exclusion);
         }
@@ -470,9 +470,9 @@ public sealed partial class MainViewModel
         if (!changed) return;
         if (_display is not null) _overlay.Show(bounds, _display, _keepClear, []);
         NotifyFrame();
-        bool exclusionFailed = _hideFromRecorders && !_overlay.CaptureExclusionApplied;
+        bool exclusionFailed = _hideFromRecorders && (!_overlay.CaptureExclusionApplied || HudCaptureExclusionFailed);
         SetStatus(exclusionFailed
-            ? "The outline is following the app, but capture exclusion is unavailable. Hide it before recording."
+            ? CaptureExclusionStatusText
             : $"Following {window.ProcessName} at {bounds.X}, {bounds.Y} ({bounds.Width} × {bounds.Height} px).",
             warning: exclusionFailed);
     }

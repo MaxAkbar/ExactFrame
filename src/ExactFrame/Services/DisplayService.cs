@@ -37,11 +37,20 @@ internal sealed class DisplayService : IDisplayService, IDisposable
         return found
             .OrderBy(d => d.Bounds.X)
             .ThenBy(d => d.Bounds.Y)
-            .Select((d, index) => new DisplayInfo(d.Device, index + 1, d.Bounds, d.Work, d.Dpi, d.Primary))
+            .Select((d, index) => new DisplayInfo(d.Device, index + 1, d.Bounds, d.Work, d.Dpi, d.Primary)
+            {
+                MonitorDevicePath = MonitorPath(d.Device)
+            })
             .ToList();
     }
 
     public void Dispose() => _messages.DisplaysChanged -= OnDisplaysChanged;
+
+    private static string? MonitorPath(string name)
+    {
+        var device = new NativeMethods.DisplayDevice { Size = (uint)Marshal.SizeOf<NativeMethods.DisplayDevice>() };
+        return NativeMethods.EnumDisplayDevices(name, 0, ref device, 1) ? device.DeviceId : null;
+    }
 
     private void OnDisplaysChanged(object? sender, EventArgs e) => DisplaysChanged?.Invoke(this, EventArgs.Empty);
 }

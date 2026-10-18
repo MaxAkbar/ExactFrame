@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using ExactFrame.Core.Services;
+using ExactFrame.Core.Obs;
 using ExactFrame.Core.Settings;
 using ExactFrame.Core.ViewModels;
 using ExactFrame.Hud;
@@ -83,10 +84,16 @@ public partial class App : Application
         services.AddSingleton<IAppInfo>(_ => new AppInfo(databasePath));
         services.AddSingleton<IShellService, ShellService>();
         services.AddSingleton<IStartupService, StartupService>();
+        services.AddSingleton<IObsClient>(_ => new ObsWebSocketClient());
+        services.AddSingleton<IObsService, ObsService>();
 
         // Presentation
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<HelpViewModel>();
+        services.AddSingleton<ObsViewModel>();
+        services.AddSingleton<Func<RecordingSetupViewModel>>(sp => () => new RecordingSetupViewModel(
+            sp.GetRequiredService<MainViewModel>(), sp.GetRequiredService<IAppInfo>(),
+            sp.GetRequiredService<IDisplayService>(), sp.GetRequiredService<IClipboardService>()));
         services.AddSingleton<MainWindow>();
         services.AddSingleton<HudWindow>();
         services.AddSingleton<TrayIcon>();

@@ -23,7 +23,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition x:Name="CaptionButtonsColumn" Width="138" />
             </Grid.ColumnDefinitions>
 
@@ -90,6 +90,9 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="6">
+                <Button x:Name="CheckSetupButton" Content="Check my setup" Click="OnCheckSetupClick"
+                        MinHeight="36" Style="{StaticResource SecondaryButtonStyle}"
+                        ToolTipService.ToolTip="Verify a saved test recording and copy a setup report" />
                 <Button
                     x:Name="HelpButton"
                     Width="36"
@@ -360,6 +363,8 @@
             </Grid>
 
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
+                <Button Content="Send to OBS" Click="OnSendToObsClick" Style="{StaticResource SecondaryButtonStyle}"
+                        ToolTipService.ToolTip="Preview and apply this frame to an OBS Display Capture source" />
                 <Button
                     Command="{x:Bind ViewModel.CopyBoundsCommand}"
                     Style="{StaticResource SecondaryButtonStyle}"

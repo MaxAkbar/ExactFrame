@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <ApplicationManifest>../../src/ExactFrame/app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
+    <ProjectReference Include="../../src/ExactFrame.Core/ExactFrame.Core.csproj" />
+    <!-- Compile the production native implementations, not substitutes. -->
+    <Compile Include="../../src/ExactFrame/Interop/NativeMethods.cs" Link="Production/NativeMethods.cs" />
+    <Compile Include="../../src/ExactFrame/Native/NativeWindow.cs" Link="Production/NativeWindow.cs" />
+    <Compile Include="../../src/ExactFrame/Native/LayeredWindow.cs" Link="Production/LayeredWindow.cs" />
+    <Compile Include="../../src/ExactFrame/Native/OverlayWindows.cs" Link="Production/OverlayWindows.cs" />
+    <Compile Include="../../src/ExactFrame/Native/EdgeMagnifierWindow.cs" Link="Production/EdgeMagnifierWindow.cs" />
+    <Compile Include="../../src/ExactFrame/Native/MessageWindow.cs" Link="Production/MessageWindow.cs" />
+    <Compile Include="../../src/ExactFrame/Services/OutlineOverlay.cs" Link="Production/OutlineOverlay.cs" />
+    <Compile Include="../../src/ExactFrame/Services/DisplayService.cs" Link="Production/DisplayService.cs" />
+    <Compile Include="../../src/ExactFrame/Services/WindowService.cs" Link="Production/WindowService.cs" />
+    <Compile Include="../../src/ExactFrame/Services/TitleBarDetector.cs" Link="Production/TitleBarDetector.cs" />
+    <Compile Include="../../src/ExactFrame/Hud/HudWindow.xaml.cs" Link="Hud/HudWindow.xaml.cs" />
+    <Compile Include="../../src/ExactFrame/Controls/KeyChips.cs" Link="Production/KeyChips.cs" />
+    <Compile Include="../../src/ExactFrame/Helpers/Format.cs" Link="Production/Format.cs" />
+    <!-- Persistence, hotkeys and prompts are disabled; no personal settings are touched. -->
+    <Compile Include="../ExactFrame.Core.Tests/Fakes.cs" Link="Support/NonNativeDoubles.cs" />
+    <Page Include="../../src/ExactFrame/Hud/HudWindow.xaml" Link="Hud/HudWindow.xaml" />
+    <Page Include="../../src/ExactFrame/Styles/*.xaml" Link="Styles/%(Filename)%(Extension)" />
+    <Content Include="../../src/ExactFrame/Assets/Fonts/*" Link="Assets/Fonts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -244,7 +244,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     // ---- Status ---------------------------------------------------------------------------------
 
     public string StatusTitle =>
-        _statusWarning ? "Needs attention"
+        _statusWarning || CaptureExclusionFailed ? "Needs attention"
         : IsBusy ? "Updating window"
         : _overlay.IsVisible ? "Outline is live"
         : IsResizeMode ? (IsChipLive ? "Window resized" : "Ready to resize")
@@ -253,7 +253,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public string StatusDetail => _statusMessage;
 
     public StatusKind StatusKind =>
-        _statusWarning ? StatusKind.Warning
+        _statusWarning || CaptureExclusionFailed ? StatusKind.Warning
         : IsBusy ? StatusKind.Busy
         : IsChipLive ? StatusKind.Live
         : StatusKind.Ready;

@@ -1,0 +1,26 @@
+<ContentDialog
+    x:Class="ExactFrame.Views.RecordingSetupDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Check my setup" CloseButtonText="Close" DefaultButton="Close">
+    <ScrollViewer MaxHeight="600" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12" MinWidth="420" MaxWidth="520">
+            <TextBlock Text="1. Note your setup" FontWeight="SemiBold" />
+            <TextBlock Text="{x:Bind ViewModel.Context, Mode=OneWay}" TextWrapping="Wrap" FontSize="12" IsTextSelectionEnabled="True" />
+            <TextBox Header="Recorder and version" PlaceholderText="For example, OBS Studio 32.2.2" Text="{x:Bind ViewModel.Recorder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <ComboBox Header="Capture method (check the source properties)" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.CaptureMethods}" SelectedItem="{x:Bind ViewModel.CaptureMethod, Mode=TwoWay}" />
+            <TextBox Header="Browser or app and full version" PlaceholderText="Include browser zoom; use N/A for a native fixture" Text="{x:Bind ViewModel.Browser, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Text="2. Record a short test clip" FontWeight="SemiBold" Margin="0,8,0,0" />
+            <TextBlock Text="Close this dialog and put a test page or pattern inside the frame. Keep the outline, guides and control bar visible. Record 5–10 seconds with Hide from recorders on. Stop and open the saved video. Move across monitors and repeat if you use more than one scale." TextWrapping="Wrap" />
+            <TextBlock Text="Changing the frame, display, capture settings or clip clears these checks. This dialog keeps entries only while open; close it to record, then reopen and enter the clip details." TextWrapping="Wrap" FontSize="12" />
+            <TextBlock Text="3. Check the saved video" FontWeight="SemiBold" Margin="0,8,0,0" />
+            <TextBox Header="Clip filename or reference" Text="{x:Bind ViewModel.Clip, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <CheckBox IsChecked="{x:Bind ViewModel.DimensionsMatch, Mode=TwoWay}"><TextBlock Text="The file dimensions match my intended output; recorder scaling is accounted for." TextWrapping="Wrap" /></CheckBox>
+            <CheckBox IsChecked="{x:Bind ViewModel.EdgesVisible, Mode=TwoWay}"><TextBlock Text="All four edges and corner markers are present, with no crop or offset." TextWrapping="Wrap" /></CheckBox>
+            <CheckBox IsChecked="{x:Bind ViewModel.OverlaysAbsent, Mode=TwoWay}"><TextBlock Text="The outline, guides, dimming, magnifier and floating control bar are absent." TextWrapping="Wrap" /></CheckBox>
+            <TextBlock Text="{x:Bind ViewModel.Result, Mode=OneWay}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+            <Button Content="Copy setup report" Command="{x:Bind ViewModel.CopyReportCommand}" />
+            <TextBlock Text="{x:Bind ViewModel.CopyStatus, Mode=OneWay}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

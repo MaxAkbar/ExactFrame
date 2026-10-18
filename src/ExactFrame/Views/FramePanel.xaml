@@ -224,7 +224,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="2">
                         <TextBlock Style="{StaticResource BodyStrongStyle}" Text="Hide from recorders" />
-                        <TextBlock Style="{StaticResource CaptionStyle}" Text="Keeps the outline out of captures in apps that honor Windows capture exclusion. Check your recorder’s preview." />
+                        <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.CaptureExclusionStatusText, Mode=OneWay}" AutomationProperties.LiveSetting="Polite" />
                     </StackPanel>
                     <ToggleSwitch
                         Grid.Column="1"

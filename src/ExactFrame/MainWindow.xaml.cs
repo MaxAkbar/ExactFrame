@@ -22,11 +22,17 @@ public sealed partial class MainWindow : Window
     private const int MinimumHeight = 700;
 
     private readonly HelpView _helpView;
+    private readonly ObsViewModel _obs;
+    private readonly Func<RecordingSetupViewModel> _recordingSetup;
+    private bool _obsOpen;
+    private bool _setupOpen;
 
-    public MainWindow(MainViewModel viewModel, HelpViewModel help)
+    public MainWindow(MainViewModel viewModel, HelpViewModel help, ObsViewModel obs, Func<RecordingSetupViewModel> recordingSetup)
     {
         ViewModel = viewModel;
         Help = help;
+        _obs = obs;
+        _recordingSetup = recordingSetup;
         InitializeComponent();
 
         PanelHost.Children.Add(new FramePanel(viewModel));
@@ -42,12 +48,32 @@ public sealed partial class MainWindow : Window
         ModeSwitch.SizeChanged += (_, _) => UpdateTitleBarRegions();
         ProfileButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
         HelpButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
+        CheckSetupButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
         Closed += (_, _) => ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
     }
 
     public MainViewModel ViewModel { get; }
 
     public HelpViewModel Help { get; }
+
+    private async void OnCheckSetupClick(object sender, RoutedEventArgs e)
+    {
+        if (_setupOpen || Content?.XamlRoot is not { } root) return;
+        _setupOpen = true;
+        using var setup = _recordingSetup();
+        try { await new RecordingSetupDialog(setup) { XamlRoot = root }.ShowAsync(); }
+        catch (System.Runtime.InteropServices.COMException) { /* Another dialog is already open. */ }
+        finally { _setupOpen = false; }
+    }
+
+    private async void OnSendToObsClick(object sender, RoutedEventArgs e)
+    {
+        if (_obsOpen || Content?.XamlRoot is not { } root) return;
+        _obsOpen = true;
+        try { await new ObsDialog(_obs) { XamlRoot = root }.ShowAsync(); }
+        catch (System.Runtime.InteropServices.COMException) { /* Another dialog is already open. */ }
+        finally { _obsOpen = false; }
+    }
 
     /// <summary>Shows the window if it's in the notification area or minimized, and brings it to the front.</summary>
     public void BringToFront()
@@ -102,7 +128,7 @@ public sealed partial class MainWindow : Window
         double scale = root.RasterizationScale;
         CaptionButtonsColumn.Width = new GridLength(Math.Max(0, AppWindow.TitleBar.RightInset / scale));
 
-        var regions = new[] { RegionFor(ModeSwitch, scale), RegionFor(HelpButton, scale), RegionFor(ProfileButton, scale) };
+        var regions = new[] { RegionFor(ModeSwitch, scale), RegionFor(CheckSetupButton, scale), RegionFor(HelpButton, scale), RegionFor(ProfileButton, scale) };
         InputNonClientPointerSource.GetForWindowId(AppWindow.Id).SetRegionRects(NonClientRegionKind.Passthrough, regions);
     }
 
