@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -39,7 +40,7 @@ public sealed partial class HudWindow : Window
     private HudState _state = HudState.Full;
     private DateTime _lastNear = DateTime.UtcNow;
     private bool _shown;
-    private bool? _excluded;
+    private readonly CaptureExclusionRequest _captureExclusion = new();
 
     public HudWindow(MainViewModel viewModel, IOutlineOverlay overlay)
     {
@@ -129,6 +130,7 @@ public sealed partial class HudWindow : Window
 
     private void HideBar()
     {
+        ViewModel.ReportHudCaptureExclusion(null);
         if (!_shown) return;
         AppWindow.Hide();
         _shown = false;
@@ -173,6 +175,7 @@ public sealed partial class HudWindow : Window
 
     private void OnTimerTick(DispatcherQueueTimer sender, object args)
     {
+        if (_shown && _captureExclusion.AppliedValue != ViewModel.HideFromRecorders) ApplyCaptureExclusion();
         if (!_shown || _state == HudState.Locked) return;
 
         NativeMethods.GetCursorPos(out var point);
@@ -198,15 +201,20 @@ public sealed partial class HudWindow : Window
     private void ApplyCaptureExclusion()
     {
         bool exclude = ViewModel.HideFromRecorders;
-        if (_excluded == exclude) return;
-        NativeMethods.SetWindowDisplayAffinity(_hwnd, exclude ? NativeMethods.WdaExcludeFromCapture : NativeMethods.WdaNone);
-        _excluded = exclude;
+        var result = _captureExclusion.Apply(exclude, value =>
+        {
+            bool succeeded = NativeMethods.SetWindowDisplayAffinity(_hwnd,
+                value ? NativeMethods.WdaExcludeFromCapture : NativeMethods.WdaNone);
+            return new CaptureExclusionResult(succeeded, succeeded ? 0 : Marshal.GetLastWin32Error());
+        });
+        ViewModel.ReportHudCaptureExclusion(result.Succeeded, result.ErrorCode);
     }
 
     private void OnOpenMainClick(object sender, RoutedEventArgs e) => OpenMainRequested?.Invoke(this, EventArgs.Empty);
 
     private void OnClosed(object sender, WindowEventArgs args)
     {
+        ViewModel.ReportHudCaptureExclusion(null);
         _timer.Stop();
         _overlay.VisibilityChanged -= OnOverlayChanged;
         _overlay.FrameMoved -= OnOverlayChanged;

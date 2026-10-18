@@ -152,10 +152,17 @@ disconnecting or quitting ExactFrame clears them. Frame changes invalidate a pre
 automatically update OBS. Window Capture, grouped sources, enabled source filters and remote OBS instances
 are not supported in this first integration.
 
+**Check my setup (development build).** The title bar opens a short workflow for checking a saved test clip
+and copying a local setup report. Windows accepting capture exclusion does not verify the recording. The
+floating control bar now reports a failed request and retries it. See the [recording compatibility matrix](docs/recording-compatibility.md)
+for recorder methods, browser versions, display scaling, monitor transitions and evidence limits, plus
+[repeatable Windows checks](tests/ExactFrame.WindowsChecks/README.md). Results start unverified; completed
+checklists are explicitly user-reported. None of these results establish support for an untested setup.
+
 **On-screen controls.** While the outline is visible, a small bar sits under it (or above it when there's no
 room) with the size, position, center, guides, click-through, hide-from-recorders, open ExactFrame and hide.
 It shrinks to the size readout after 3 seconds without the pointer nearby. It never takes focus from the app
-you're recording, and it's hidden from recorders along with the outline.
+you're recording. Windows is asked to exclude it along with the outline; check a saved test clip for your capture method.
 
 **Help.** Select **?** in the title bar or press F1. Help opens at the topic for what you're doing, and has
 a search box, a live list of your shortcuts (including any another app has taken), troubleshooting, and an
@@ -188,7 +195,7 @@ settings files.
 - Dimming, guides and the size label are click-through layers. Guides are drawn inside the frame, so keep
   **Hide from recorders** on while they're visible.
 - **Hide from recorders** uses `SetWindowDisplayAffinity` with `WDA_EXCLUDEFROMCAPTURE`. Recorder support
-  varies: check your recorder's preview, and hide the outline with Ctrl + Alt + F8 if it shows up. The main
+  varies: check a saved test clip, and hide the outline with Ctrl + Alt + F8 if it shows up. The main
   window isn't excluded; minimize it or move it off the recording area.
 - A frame must fit on its display (or inside the work area with **Keep clear of the taskbar**). ExactFrame
   rejects an oversized frame instead of shrinking it.

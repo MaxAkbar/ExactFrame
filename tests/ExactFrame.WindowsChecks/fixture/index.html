@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ExactFrame recording test pattern</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#123456;color:white;font:16px system-ui}
+body{border:1px solid white}i{position:fixed;width:32px;height:32px}#tl{left:0;top:0;background:red}#tr{right:0;top:0;background:lime}
+#bl{left:0;bottom:0;background:yellow}#br{right:0;bottom:0;background:cyan}main{position:absolute;inset:70px;display:grid;place-content:center;text-align:center}
+pre{white-space:pre-wrap}p{max-width:600px}hr{border:0;border-top:1px solid white}
+</style>
+<i id="tl"></i><i id="tr"></i><i id="bl"></i><i id="br"></i>
+<main><h1>ExactFrame recording test pattern</h1><pre id="measure"></pre><hr>
+<p>Keep all four corner markers and the 1 pixel white edge in the saved clip. Use 100% browser zoom. Move between monitors and repeat.</p></main>
+<script>
+async function report(){
+ const metrics={utc:new Date().toISOString(),widthCss:innerWidth,heightCss:innerHeight,dpr:devicePixelRatio,
+ physicalWidth:Math.round(innerWidth*devicePixelRatio),physicalHeight:Math.round(innerHeight*devicePixelRatio),userAgent:navigator.userAgent};
+ document.getElementById('measure').textContent=`Viewport: ${metrics.widthCss} × ${metrics.heightCss} CSS px\nDevice pixel ratio: ${metrics.dpr}\nPhysical viewport (rounded): ${metrics.physicalWidth} × ${metrics.physicalHeight} px`;
+ if(location.protocol==='http:')try{await fetch('/metrics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(metrics)});}catch{}
+}
+addEventListener('resize',report);setInterval(report,500);report();
+</script></html>

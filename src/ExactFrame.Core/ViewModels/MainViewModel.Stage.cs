@@ -11,7 +11,8 @@ public sealed partial class MainViewModel
         nameof(StageEyebrow), nameof(SizeText), nameof(StageSubtitle), nameof(DisplayLabel), nameof(IsFit),
         nameof(IsNotFit), nameof(FitText), nameof(IsChipLive), nameof(ChipText), nameof(ShowRecorderChip),
         nameof(ShowLockChip), nameof(BoundsLeft), nameof(BoundsTop), nameof(BoundsRight), nameof(BoundsBottom),
-        nameof(BoundsText), nameof(HudPositionText), nameof(Preview)
+        nameof(BoundsText), nameof(HudPositionText), nameof(Preview),
+        nameof(CaptureExclusionStatusText), nameof(HudCaptureExclusionFailed), nameof(CaptureExclusionFailed)
     ];
 
     private static readonly string[] FooterProperties =

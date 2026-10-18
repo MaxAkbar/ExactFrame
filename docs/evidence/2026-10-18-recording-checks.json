@@ -1,0 +1,843 @@
+{
+  "evidenceDate": "2026-10-18",
+  "sourceBase": "16f5f47a464524fd50bbb3f50d2c6f7e9f227c6a",
+  "status": "INCONCLUSIVE - black output and missing positive controls; no recorder compatibility pass",
+  "environment": {
+    "windows": "Microsoft Windows 10.0.26300",
+    "runtime": ".NET 10.0.13",
+    "processArchitecture": "X64"
+  },
+  "monitors": [
+    {
+      "Number": 1,
+      "Dpi": 144,
+      "ScalePercent": 150,
+      "Bounds": {
+        "Location": {
+          "IsEmpty": false,
+          "X": -3840,
+          "Y": 0
+        },
+        "Size": {
+          "IsEmpty": false,
+          "Width": 3840,
+          "Height": 2160
+        },
+        "X": -3840,
+        "Y": 0,
+        "Width": 3840,
+        "Height": 2160,
+        "Left": -3840,
+        "Top": 0,
+        "Right": 0,
+        "Bottom": 2160,
+        "IsEmpty": false
+      }
+    },
+    {
+      "Number": 2,
+      "Dpi": 168,
+      "ScalePercent": 175,
+      "Bounds": {
+        "Location": {
+          "IsEmpty": true,
+          "X": 0,
+          "Y": 0
+        },
+        "Size": {
+          "IsEmpty": false,
+          "Width": 3840,
+          "Height": 2160
+        },
+        "X": 0,
+        "Y": 0,
+        "Width": 3840,
+        "Height": 2160,
+        "Left": 0,
+        "Top": 0,
+        "Right": 3840,
+        "Bottom": 2160,
+        "IsEmpty": false
+      }
+    }
+  ],
+  "nativeChecks": [
+    {
+      "area": "VisibleFrame",
+      "monitor": 1,
+      "scalePercent": 150,
+      "requested": {
+        "X": -3780,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "actual": {
+        "X": -3780,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "independentBounds": {
+        "X": -3780,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "equal": true
+    },
+    {
+      "area": "Client",
+      "monitor": 1,
+      "scalePercent": 150,
+      "requested": {
+        "X": -3780,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "actual": {
+        "X": -3780,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "independentBounds": {
+        "X": -3780,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "equal": true
+    },
+    {
+      "area": "VisibleFrame",
+      "monitor": 2,
+      "scalePercent": 175,
+      "requested": {
+        "X": 60,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "actual": {
+        "X": 60,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "independentBounds": {
+        "X": 60,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "equal": true
+    },
+    {
+      "area": "Client",
+      "monitor": 2,
+      "scalePercent": 175,
+      "requested": {
+        "X": 60,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "actual": {
+        "X": 60,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "independentBounds": {
+        "X": 60,
+        "Y": 60,
+        "Width": 1280,
+        "Height": 720
+      },
+      "equal": true
+    }
+  ],
+  "nativeLimit": "API rectangles matched while the desktop was inaccessible to visual automation. This does not validate visible content or recordings. Rerun on an unlocked desktop.",
+  "recordingAnalysis": {
+    "scope": "1280x800 static native pattern, 2 decoded frames per second, listed monitor/method only; magnifier, browsers and recorded transitions excluded",
+    "ffprobeVersion": "ffprobe version 7.1-essentials_build-www.gyan.dev Copyright (c) 2007-2024 the FFmpeg developers",
+    "results": [
+      {
+        "method": "DXGI",
+        "files": [
+          {
+            "phase": "baseline",
+            "file": "DXGI-baseline.mkv",
+            "sha256": "6491800675668a09deea89f2141a3d37d73747a2e8667f3e8b7f567ce10645a4",
+            "sampledFrames": 5,
+            "probe": {
+              "programs": [],
+              "stream_groups": [],
+              "streams": [
+                {
+                  "codec_name": "h264",
+                  "width": 1280,
+                  "height": 800,
+                  "avg_frame_rate": "30/1"
+                }
+              ],
+              "format": {
+                "duration": "2.300000"
+              }
+            }
+          },
+          {
+            "phase": "visible",
+            "file": "DXGI-visible.mkv",
+            "sha256": "04c48e62282f2b1ff019934c22dd1a0ff467ea38a591055e590d86e2bde12651",
+            "sampledFrames": 4,
+            "probe": {
+              "programs": [],
+              "stream_groups": [],
+              "streams": [
+                {
+                  "codec_name": "h264",
+                  "width": 1280,
+                  "height": 800,
+                  "avg_frame_rate": "30/1"
+                }
+              ],
+              "format": {
+                "duration": "2.166000"
+              }
+            }
+          },
+          {
+            "phase": "excluded",
+            "file": "DXGI-excluded.mkv",
+            "sha256": "5d85f1fed92b909ea9f66b9101b9f734649e08c9cf337c8f9821e8bec202429b",
+            "sampledFrames": 5,
+            "probe": {
+              "programs": [],
+              "stream_groups": [],
+              "streams": [
+                {
+                  "codec_name": "h264",
+                  "width": 1280,
+                  "height": 800,
+                  "avg_frame_rate": "30/1"
+                }
+              ],
+              "format": {
+                "duration": "2.300000"
+              }
+            }
+          }
+        ],
+        "cornerMarkersPresent": false,
+        "visibleOverlayDifferenceFraction": 0.0,
+        "visibleHudDifferenceFraction": 0.0,
+        "excludedDifferenceFraction": 0.0,
+        "positiveControlPassed": false,
+        "windowsAcceptedExclusion": true,
+        "boundedPatternCheckPassed": false,
+        "excludedMatchesBaseline": true,
+        "excludedOverlaysAbsent": null
+      },
+      {
+        "method": "WGC",
+        "files": [
+          {
+            "phase": "baseline",
+            "file": "WGC-baseline.mkv",
+            "sha256": "c789c0b05dcd016fc25441b5722b0959e38cb239fd8946fcba7ea0a8c3a0426c",
+            "sampledFrames": 5,
+            "probe": {
+              "programs": [],
+              "stream_groups": [],
+              "streams": [
+                {
+                  "codec_name": "h264",
+                  "width": 1280,
+                  "height": 800,
+                  "avg_frame_rate": "30/1"
+                }
+              ],
+              "format": {
+                "duration": "2.300000"
+              }
+            }
+          },
+          {
+            "phase": "visible",
+            "file": "WGC-visible.mkv",
+            "sha256": "ddc9981fb32bf066c56c7e2bf46aca8112e0e875b410dad33cfe5569239239fe",
+            "sampledFrames": 5,
+            "probe": {
+              "programs": [],
+              "stream_groups": [],
+              "streams": [
+                {
+                  "codec_name": "h264",
+                  "width": 1280,
+                  "height": 800,
+                  "avg_frame_rate": "30/1"
+                }
+              ],
+              "format": {
+                "duration": "2.300000"
+              }
+            }
+          },
+          {
+            "phase": "excluded",
+            "file": "WGC-excluded.mkv",
+            "sha256": "ba26226a464154d5f8694f1ce67c96b9da90791db71d30153cfee12799cdad25",
+            "sampledFrames": 4,
+            "probe": {
+              "programs": [],
+              "stream_groups": [],
+              "streams": [
+                {
+                  "codec_name": "h264",
+                  "width": 1280,
+                  "height": 800,
+                  "avg_frame_rate": "30/1"
+                }
+              ],
+              "format": {
+                "duration": "2.166000"
+              }
+            }
+          }
+        ],
+        "cornerMarkersPresent": false,
+        "visibleOverlayDifferenceFraction": 0.0,
+        "visibleHudDifferenceFraction": 0.0,
+        "excludedDifferenceFraction": 0.0,
+        "positiveControlPassed": false,
+        "windowsAcceptedExclusion": true,
+        "boundedPatternCheckPassed": false,
+        "excludedMatchesBaseline": true,
+        "excludedOverlaysAbsent": null
+      }
+    ],
+    "passed": false
+  },
+  "sourceFilesAtRun": [
+    {
+      "path": "scripts/Analyze-RecordingChecks.py",
+      "sha256": "385325ADFBACD72684C328A5CE089CF79D0292C29E8B64A6BDFB6B14FECE0A0D"
+    },
+    {
+      "path": "scripts/Build-Release.ps1",
+      "sha256": "4ECD85E779923AEB3B31C4FE214358BBD99950777D46C84B2866142165127B70"
+    },
+    {
+      "path": "scripts/Run-WindowsRecordingChecks.ps1",
+      "sha256": "AC0FAFA7261A896A902858F860EDC54DC94336FEF74323C5598D58D1802F38EA"
+    },
+    {
+      "path": "scripts/Serve-RecordingFixture.ps1",
+      "sha256": "697644C323B2DFFEAB8EA993FC868164B0D9A1C589E5C4E00F0475370B40B1F0"
+    },
+    {
+      "path": "src/ExactFrame.Core/ExactFrame.Core.csproj",
+      "sha256": "2D321D23DADC53975F55B05FDE0324274F95269A093C95EB26A82CF4857AF3C2"
+    },
+    {
+      "path": "src/ExactFrame.Core/Geometry/AspectRatio.cs",
+      "sha256": "69809DBBCFB5D5AD608A36E4F1DCC768001DC081E88B13B05DE55706A10B2683"
+    },
+    {
+      "path": "src/ExactFrame.Core/Geometry/EdgeMagnifierGeometry.cs",
+      "sha256": "03871F4CD22FF9F95EEFEA8A8E7E4EB509981DB88C82E2E62644B273ACF7C95D"
+    },
+    {
+      "path": "src/ExactFrame.Core/Geometry/FrameAnchor.cs",
+      "sha256": "0D0005F6B6D390A9E83459E9A7461141EADFA839E3567F3CD3DC32551E592AEB"
+    },
+    {
+      "path": "src/ExactFrame.Core/Geometry/FrameGeometry.cs",
+      "sha256": "EBD0B5092EC94D791AA20C15F27484B6CD1A8744C1757A68FFB6AB4370F1C34A"
+    },
+    {
+      "path": "src/ExactFrame.Core/Geometry/NestedFrameGeometry.cs",
+      "sha256": "DD917F6F9610006C22A5FCE0A02090A67C9BF7CC089AEB118A8D0A862943F08A"
+    },
+    {
+      "path": "src/ExactFrame.Core/Geometry/TitleBarScan.cs",
+      "sha256": "276391D48CF922A2DB56FC0943965CF2040BDC32090A7481F41295037BCA81E4"
+    },
+    {
+      "path": "src/ExactFrame.Core/Help/HelpContent.cs",
+      "sha256": "C721DB11753D5A74EB1B8810E6E85A804FA13EA18462DD3B96EE4A8B5E3F7C49"
+    },
+    {
+      "path": "src/ExactFrame.Core/Help/HelpTopic.cs",
+      "sha256": "485787823C31113963169676E33A425D4DED7CCA9DD1158C4E18FF373E7FDBAF"
+    },
+    {
+      "path": "src/ExactFrame.Core/Models/DisplayInfo.cs",
+      "sha256": "2651BDFDF94A86E34D421D90E1721E196233168CB85E51DDEAFEFF47778BB2C6"
+    },
+    {
+      "path": "src/ExactFrame.Core/Models/FrameProfile.cs",
+      "sha256": "BBC20E9BD1E5EB62355EB3901B84E2371A512A7AEC70D0B062D68DD1E0514306"
+    },
+    {
+      "path": "src/ExactFrame.Core/Models/HotkeyGesture.cs",
+      "sha256": "EA64D2827EE4AE52EB20358E2C06E14C7E831CAC6A80C749EF683ACB18435FC1"
+    },
+    {
+      "path": "src/ExactFrame.Core/Models/NestedFrame.cs",
+      "sha256": "07B9C563EB9843EA422E3DB30402B16F4A80B0DAE687B48226F59F60E4AD5A00"
+    },
+    {
+      "path": "src/ExactFrame.Core/Models/OutlineStyle.cs",
+      "sha256": "2C7EBD38CF2136137D5FA3E3F2A587C879399B34CBF6849C16B5DCFA3F1A744A"
+    },
+    {
+      "path": "src/ExactFrame.Core/Models/RememberedAppSize.cs",
+      "sha256": "EC755EFBC5D81157A81B00C5A4ABAE01DFCADCF75FBC7BE20BB16ADCDCF216AC"
+    },
+    {
+      "path": "src/ExactFrame.Core/Models/ResolutionPreset.cs",
+      "sha256": "0D2335E1E15322F0CB19DBE39FD189CEE12690385873EFC9EAA1BB7B34D55429"
+    },
+    {
+      "path": "src/ExactFrame.Core/Models/WindowInfo.cs",
+      "sha256": "D6F1412042E7E65A339AA61C99900D567C6B258C0C0F9BC04FDBBB933B9AB447"
+    },
+    {
+      "path": "src/ExactFrame.Core/Obs/IObsClient.cs",
+      "sha256": "A7377978645FD321DA75E24AFB66972A143C11F4FA1A54BE03CCE359F51CEEDE"
+    },
+    {
+      "path": "src/ExactFrame.Core/Obs/ObsFrameMapper.cs",
+      "sha256": "520BCDC6BFF8520D1149A33E2EA716B16E9BC98240B37B31CEEC82D4C72B97E9"
+    },
+    {
+      "path": "src/ExactFrame.Core/Obs/ObsModels.cs",
+      "sha256": "3F900B078C2888A98936D713BB19E20D8752FCB6A4EFB0029818BC5306901784"
+    },
+    {
+      "path": "src/ExactFrame.Core/Obs/ObsService.cs",
+      "sha256": "2B9B5CB171983E094032F540D72323FC85B566C93BE658AD52F8163B07AEB5E4"
+    },
+    {
+      "path": "src/ExactFrame.Core/Obs/ObsWebSocketClient.cs",
+      "sha256": "1CB8C1EA9262FFAFB33D7DFCB2607539EF027094C5672927A98B56BEA8B7E5A3"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/CaptureExclusionRequest.cs",
+      "sha256": "90DA13F560371703590590CE081E1A1D8E1637913B8C70C5AD731AB15C52328A"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IAppInfo.cs",
+      "sha256": "3DE32A850A32ABA66172B3E4561311423376769C5ADFA014095745D566D5E413"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IClipboardService.cs",
+      "sha256": "8B0A0A7C267CA5C98B96F8B4718E1B890A8C033B0F69EAB22F48D794F1064649"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IDialogService.cs",
+      "sha256": "0CE3C023A8223D2CB35FA6B5B3B70E3C78660382A2B481B71B482206F5514774"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IDisplayService.cs",
+      "sha256": "25F90A931AAA0CDB2FA99F9DB233DB17371252AD7BBBF977C70A0DF78F12F448"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IHotkeyService.cs",
+      "sha256": "E0C5508517B65CF54EEE2E4478606CFCF267D2B18CFD2A11CBDB8DFC1EBD88D6"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IOutlineOverlay.cs",
+      "sha256": "B54A0A7FB7018D084D44F928277A594AF2805903F8AFDBAD6155C17532858919"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IShellService.cs",
+      "sha256": "BBE908213FC859DA3C6B3EA98AB440FCDA6153ED6E3AF914DA90DC172B39EFD6"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IStartupService.cs",
+      "sha256": "17F6845433D25928A207094BE9B21DF7AB37FA65038AAE7E2C9B99977687145C"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IWindowPicker.cs",
+      "sha256": "C7B32A40A10CF061D67A6B88B22A13BAA9FAD4EC7FCA4D2312B64871A7EC3EE5"
+    },
+    {
+      "path": "src/ExactFrame.Core/Services/IWindowService.cs",
+      "sha256": "82CDC19DE36D8E5EF21221A3754822356C78123995F30EC6108CD86189BB1996"
+    },
+    {
+      "path": "src/ExactFrame.Core/Settings/AppSettings.cs",
+      "sha256": "F7207F4E61DBE92D02DE1115451C03B327D8F93DCC04F7AE682FCDBE44CE861A"
+    },
+    {
+      "path": "src/ExactFrame.Core/Settings/CSharpDbAppStore.cs",
+      "sha256": "5E1261E85C40DAE097DF32E276637E5A7D6EEF7646FB77BDA9E655BDFA0C572F"
+    },
+    {
+      "path": "src/ExactFrame.Core/Settings/IAppDataStore.cs",
+      "sha256": "AA1E9B7E3DBA0B6568E19BF4D88B7249ECF7D7EAD80725376D071F3F4BB94359"
+    },
+    {
+      "path": "src/ExactFrame.Core/Settings/ISettingsStore.cs",
+      "sha256": "76500F946B83AD8E13AB1F2F57551D208A6E5159B41065861053EE56A878975C"
+    },
+    {
+      "path": "src/ExactFrame.Core/Settings/JsonSettingsStore.cs",
+      "sha256": "7C21ADE21FF50DBC68073CD4E6F1508A80C90ED732471BF1FECA447FF5D6EA6D"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/HelpViewModel.cs",
+      "sha256": "2794744874D0CCD89C86CA8058B1FB6128514D510B167E6726B4825DFF7ABB6F"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/Items.cs",
+      "sha256": "7618B5BD204D7BCEB86DB7FB2361558829785D5B207EBCDAA2B1C78BAD709A30"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Background.cs",
+      "sha256": "E66B219098B80BF40682532F60810C234B521822700BA842603328ADCBFD2DB8"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.cs",
+      "sha256": "D0C9C2393B3B1FAB3F2ED3F0159777DBE80D2C55AA0E9E5006E049201825AD2C"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Frame.cs",
+      "sha256": "9B80EC80A143592D6BDDB9DE89E8CFB9CCF7A6D2A5D5752CCACB01D8F601D2F0"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.NestedFrames.cs",
+      "sha256": "F547C164EF49394A718CA268FD37EABBCC6019D747B82C6C8EBEB37BBE4F7DF6"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Outline.cs",
+      "sha256": "FD8394B30FED2EE3E8B00C76FB54789E556778DB41FF3D23270249E061FBBA67"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Profiles.cs",
+      "sha256": "240B38D99C918A693F45E2B34638A1863650B8DB06BE7184B64AB61524944BA1"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Recording.cs",
+      "sha256": "388A8592F39DAB48DFB038447E0214DBAFD551C7C638D20611438E7C32698928"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Resize.cs",
+      "sha256": "5F9A723C554823390956AFD1378CD24556EBE3AE5BBE5F1A2817A20688FCBD39"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Sliders.cs",
+      "sha256": "89F2744A89F8A6A75A785CF95BFB9B967DD445947237A574AF63369A8DE4F8ED"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Stage.cs",
+      "sha256": "0700B4FC4C99CB10755BBDF41601135AA5844B1E75F2851432246E5919696647"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/MainViewModel.Style.cs",
+      "sha256": "53DC595D5B81A155060429B1C0FB81DC55672A2FF98A047B931D61A6B9E24CBC"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/ObsViewModel.cs",
+      "sha256": "B1ABD4FCE102B953C8A99AA62B621F75F3B7C2FA1D6291F0570CF911A50F573C"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/PreviewState.cs",
+      "sha256": "7BE66DD8E9D6F96D4321E5BC8E442BCD0FC8B1AE779437CE2C5F5445227A5A99"
+    },
+    {
+      "path": "src/ExactFrame.Core/ViewModels/RecordingSetupViewModel.cs",
+      "sha256": "8D4F22ACA42AB5010D0B1041D6944D9D9D936236AE809AB8C75C004E01B08507"
+    },
+    {
+      "path": "src/ExactFrame/app.manifest",
+      "sha256": "6D5B4218F0011F25BBA60FEF60673994E3339B76C416B2C38468A8C7DF4FB50A"
+    },
+    {
+      "path": "src/ExactFrame/App.xaml",
+      "sha256": "A870B80DC822B0A198A78521C8F5DEFAD7556AD3520FB1F55DA5395A462D3420"
+    },
+    {
+      "path": "src/ExactFrame/App.xaml.cs",
+      "sha256": "31F0C503B3084D1567F0F42B511E1DFBFD8895C86B9A3BD00B015AB0BCF12087"
+    },
+    {
+      "path": "src/ExactFrame/Assets/Fonts/IBMPlexMono-Medium.ttf",
+      "sha256": "98FBD727AAE340B236955879DABED4D991AAC9E8E90B3B2A67CE4A59221CC97C"
+    },
+    {
+      "path": "src/ExactFrame/Assets/Fonts/IBMPlexMono-Regular.ttf",
+      "sha256": "7C6FBDDCA4B700BE918F5F6183D9BD4464FA427FE435F0B480D77FE2BB8C5A43"
+    },
+    {
+      "path": "src/ExactFrame/Assets/Fonts/IBMPlexMono-SemiBold.ttf",
+      "sha256": "F04D7C488DDF7D1FA99F2574EFC3406EA4CBE17BB1AF3A1AB960F84D0C96A172"
+    },
+    {
+      "path": "src/ExactFrame/Assets/Fonts/IBMPlexSans-Medium.ttf",
+      "sha256": "331C8639D7598B2CDE62A911A71DB195E30CB655CD6BDF2E324A7E984955F907"
+    },
+    {
+      "path": "src/ExactFrame/Assets/Fonts/IBMPlexSans-Regular.ttf",
+      "sha256": "975DCDA37D80F038DCD143C22E33CA2D97A0CC5A929AACE1C749153B0FE1AFA5"
+    },
+    {
+      "path": "src/ExactFrame/Assets/Fonts/IBMPlexSans-SemiBold.ttf",
+      "sha256": "A20CAF8286023A6A7A85E40B1D2A4AE9FC3E3B1F9EDA8F4C542DD4986AF67BB1"
+    },
+    {
+      "path": "src/ExactFrame/Assets/Fonts/OFL.txt",
+      "sha256": "D7F63CDCCF0C57F3EA47C7E1D45B002B85044DBE4935989F0522E780F6FC8511"
+    },
+    {
+      "path": "src/ExactFrame/Controls/DisplayMap.cs",
+      "sha256": "BCF0D99EDEA0BA852E05B0684C323C0F5B4E6BBDA7D57496B817DEB05E20702A"
+    },
+    {
+      "path": "src/ExactFrame/Controls/KeyChips.cs",
+      "sha256": "6FFDD334F545D8E78D11935BC457B09CF2A7796E4ADADA828864F2A5DEF14B0D"
+    },
+    {
+      "path": "src/ExactFrame/Controls/ObsCanvasPreview.cs",
+      "sha256": "2ECF0ECF22D07B3D5E7A37055A1F7CE143A69EAC2B9201744863E63D6DAFE300"
+    },
+    {
+      "path": "src/ExactFrame/ExactFrame.csproj",
+      "sha256": "D02A2D5AC247303A86FEE53FC34C6737AF61E988156AC3563D2F7AD11B8D22D2"
+    },
+    {
+      "path": "src/ExactFrame/ExactFrame.ico",
+      "sha256": "F6A4E3BB40D830EE5BA3FDE705F318D24B38C2BD2CE04A7C043FD73E45350445"
+    },
+    {
+      "path": "src/ExactFrame/Helpers/Format.cs",
+      "sha256": "9DA78C8582C1718CE0701E8B4504696E5916CA213EE9E1FA10143263692904B2"
+    },
+    {
+      "path": "src/ExactFrame/Helpers/HelpRenderer.cs",
+      "sha256": "BA280554600313E66782B9B0069AB4AA118B24F0AA181A993C937FB4D65C2061"
+    },
+    {
+      "path": "src/ExactFrame/Hud/HudWindow.xaml",
+      "sha256": "15FDAB96F4F52664563D9E9028C84FE23E10C55A9251DB1EC2146F77129D61D2"
+    },
+    {
+      "path": "src/ExactFrame/Hud/HudWindow.xaml.cs",
+      "sha256": "0D3637D3A6D1D16092D30245BF216EDA12F5F59DA1FA6B41DC45A63B73F90E8A"
+    },
+    {
+      "path": "src/ExactFrame/Interop/NativeMethods.cs",
+      "sha256": "B224F9CC83AF528B710CC5BE8799586601F8BC20F227D771A7EA4C2C4EB3891F"
+    },
+    {
+      "path": "src/ExactFrame/MainWindow.xaml",
+      "sha256": "D779E01FD4EADF60421433D22945DF2BBC85D8ABC2150C9E061EFF4411FE048F"
+    },
+    {
+      "path": "src/ExactFrame/MainWindow.xaml.cs",
+      "sha256": "839DD61470F2253EE8D6F154E3588658BD195F41384B0B679A3D963A3FEBB080"
+    },
+    {
+      "path": "src/ExactFrame/Native/EdgeMagnifierWindow.cs",
+      "sha256": "2FD2AC92A4F78A2B0EDFD27C55021C59AA54FB39CC92C01819FDF005336CF7CD"
+    },
+    {
+      "path": "src/ExactFrame/Native/LayeredWindow.cs",
+      "sha256": "DF963698992F610B3066E4F2E39A8F9B6E41C0571CA53449F034452C3DCD3039"
+    },
+    {
+      "path": "src/ExactFrame/Native/MessageWindow.cs",
+      "sha256": "425506225C98254CF22D21D1400E8C8635F79B84CD867E685CEEE07E6AA669FA"
+    },
+    {
+      "path": "src/ExactFrame/Native/NativeWindow.cs",
+      "sha256": "68FAB066126161F68375023D1FAAD1C06D2952115C5FD546B4BC3AF7AF9DF336"
+    },
+    {
+      "path": "src/ExactFrame/Native/OverlayWindows.cs",
+      "sha256": "ED31E47738A37279D44B125387615007FCC4B35868124A04EC908FA84CA17D55"
+    },
+    {
+      "path": "src/ExactFrame/Native/SingleInstance.cs",
+      "sha256": "7F704B79A01CB49A96F2A55F286A483674D480195A6F6045B6DABE77177A9285"
+    },
+    {
+      "path": "src/ExactFrame/Native/TrayIcon.cs",
+      "sha256": "54EF3C80174C3B4FDA70655824E963E8462523D766F25928B33FE5A49E5631E3"
+    },
+    {
+      "path": "src/ExactFrame/Services/AppInfo.cs",
+      "sha256": "5C71FFB301ED7A50B4992DC0725A79B353F9046F9DD9A5210437B90D0DABA458"
+    },
+    {
+      "path": "src/ExactFrame/Services/ClipboardService.cs",
+      "sha256": "879079F2A26CB0851D5AB2EFA00D675D73C854041656B1B8E1DFD701584261F7"
+    },
+    {
+      "path": "src/ExactFrame/Services/DialogService.cs",
+      "sha256": "ED081C4A3FD61269C7B5FD376BDE9E674FAB9D4145E95CBD9D190DEE0746B8A4"
+    },
+    {
+      "path": "src/ExactFrame/Services/DisplayService.cs",
+      "sha256": "E8F7DA60946520B23E55A675F82790B5C7B8232F4DCD2C5B2B77D3DE3373A381"
+    },
+    {
+      "path": "src/ExactFrame/Services/HotkeyService.cs",
+      "sha256": "2FF0AA0888B48E6CC5FB7A26FA258E590F2DFD69EA57375A7278254F8B464FC3"
+    },
+    {
+      "path": "src/ExactFrame/Services/OutlineOverlay.cs",
+      "sha256": "3B352E96681651DFBF75C8991134CC70F0C7566A50CBDF930D1AF59B9D76BF81"
+    },
+    {
+      "path": "src/ExactFrame/Services/ShellService.cs",
+      "sha256": "8FAB5B99B2E8FAE9FAD43192597603008372B64F1897AB5908580779A7A33A29"
+    },
+    {
+      "path": "src/ExactFrame/Services/StartupService.cs",
+      "sha256": "E8557D44C073DCF6FE2826F18D733A52CBF1D0A8BF7AD7189A02AB2407B06602"
+    },
+    {
+      "path": "src/ExactFrame/Services/TitleBarDetector.cs",
+      "sha256": "1BC96420409EB7AF745BE9A3F0A1EC057410C03DAB5CCBA184055CAB0EA42582"
+    },
+    {
+      "path": "src/ExactFrame/Services/WindowPicker.cs",
+      "sha256": "FBE237855CB8FF6E8A45239850221729B85B9A060643C521B13DBB27E38B48A6"
+    },
+    {
+      "path": "src/ExactFrame/Services/WindowService.cs",
+      "sha256": "E235191F3CC1DA55B0FDF8CD54A3FB268185DC4924560A58A76BFBD6AEEB3BB7"
+    },
+    {
+      "path": "src/ExactFrame/Styles/Controls.xaml",
+      "sha256": "2337D13142B9CCB3E5A17F5DD72B911D6B83D823320D64094CD3959EF6CEB548"
+    },
+    {
+      "path": "src/ExactFrame/Styles/Theme.xaml",
+      "sha256": "52A13098EA26AF19F0F81DA23EDD1FEBCA898D32AEF5B1F0F8ECF50005BA2222"
+    },
+    {
+      "path": "src/ExactFrame/Views/FramePanel.xaml",
+      "sha256": "9D7A0C3412A4570A5D5745D825022853ED3F66FA9D7131AE5F6BE5C2EF91F2E8"
+    },
+    {
+      "path": "src/ExactFrame/Views/FramePanel.xaml.cs",
+      "sha256": "C44171879160F1976AFFDA78A768AFC9F313D12647D80325154AFB2F83AEE50E"
+    },
+    {
+      "path": "src/ExactFrame/Views/HelpView.xaml",
+      "sha256": "48AE891AD1D146573AFE30A252818C27C323555C5FF6CC1E3BCF9C3A60F3A6A0"
+    },
+    {
+      "path": "src/ExactFrame/Views/HelpView.xaml.cs",
+      "sha256": "F6513A38ED2D338B862F179F92BCE2DA6580A627D21976E529DEF0B2DF4D0ECA"
+    },
+    {
+      "path": "src/ExactFrame/Views/ObsDialog.xaml",
+      "sha256": "9A79883A2B8EE7DCE5D8686E6D2BCEA62F402A9C993D8982FD503460CC79C054"
+    },
+    {
+      "path": "src/ExactFrame/Views/ObsDialog.xaml.cs",
+      "sha256": "42A1F6B0DFBD98E80A9B39047A893C8B22617A6C33C1296C9D7673EE82FDE0A6"
+    },
+    {
+      "path": "src/ExactFrame/Views/ProfilesPanel.xaml",
+      "sha256": "73BB20BCD97946DBD5B62047C35CFA423BA7C2680F11A1EBDE9A9B785B8DFA46"
+    },
+    {
+      "path": "src/ExactFrame/Views/ProfilesPanel.xaml.cs",
+      "sha256": "4BA450CF9DA3FF15929B6790AFEF0265C3305DD63D9794541B841103C211DEA4"
+    },
+    {
+      "path": "src/ExactFrame/Views/RecordingSetupDialog.xaml",
+      "sha256": "D857687BE47E3F0FD561ECF1742437BDC425ED8063C1373F1412A4D8F78F779B"
+    },
+    {
+      "path": "src/ExactFrame/Views/RecordingSetupDialog.xaml.cs",
+      "sha256": "875B8846DAD2DF1064DAC43E3C83B4108759DAF5EE27B3BEBD2D75278EA1182C"
+    },
+    {
+      "path": "src/ExactFrame/Views/ResizePanel.xaml",
+      "sha256": "082154E8AD6572E64230E416F53B103CB0253DFABA1D787F8C8F4DBB8FA67397"
+    },
+    {
+      "path": "src/ExactFrame/Views/ResizePanel.xaml.cs",
+      "sha256": "E964CAF9490C49D2C3D520FCA7A1C6605EBE6431182D8D208D46BCF8CA2EC8B7"
+    },
+    {
+      "path": "src/ExactFrame/Views/SizeEditor.xaml",
+      "sha256": "F9E8973FF42DC4D1F8491B8C8DF7A18BC3A60C9D1A902686451C46468BFB4CF2"
+    },
+    {
+      "path": "src/ExactFrame/Views/SizeEditor.xaml.cs",
+      "sha256": "6136198DE08F35F4287365731D0BA25BE0D9ADB60669D96E5DA220752FE8A388"
+    },
+    {
+      "path": "src/ExactFrame/Views/StylePanel.xaml",
+      "sha256": "432EF2C96EA6E130D90A065D3ABEF37D3E23243857F1F78E65B464C78817647C"
+    },
+    {
+      "path": "src/ExactFrame/Views/StylePanel.xaml.cs",
+      "sha256": "357DF14CEB341747800C1CD7FE918AC6CE6EBF6DC26589A71BEBEF0D6D52820F"
+    },
+    {
+      "path": "tests/ExactFrame.WindowsChecks/App.xaml",
+      "sha256": "A4F1A3C36B781234E61D71CB88195DBB42E9F54C2FA46C1C5724808E8C47EE3B"
+    },
+    {
+      "path": "tests/ExactFrame.WindowsChecks/App.xaml.cs",
+      "sha256": "144218C428E71B8C7640D8FCD5BE82CAA9AB8F6FCF603CF49BE4A70485DCA0C2"
+    },
+    {
+      "path": "tests/ExactFrame.WindowsChecks/BrowserChecks.cs",
+      "sha256": "5A76EF99C6FA0C6E92F8AA6257D691E48E0B6AFBB97B8BCC15001543E9066526"
+    },
+    {
+      "path": "tests/ExactFrame.WindowsChecks/ExactFrame.WindowsChecks.csproj",
+      "sha256": "3FBA730957215AC94CBD57721F7EAEA6ADEBC7C7E0A6066D4B5603EFAFB53EE9"
+    },
+    {
+      "path": "tests/ExactFrame.WindowsChecks/fixture/index.html",
+      "sha256": "EA1E37256C42B821843474DA0734EB5E0CD1E2248C8B4DC8D07292FB5757C7EE"
+    },
+    {
+      "path": "tests/ExactFrame.WindowsChecks/README.md",
+      "sha256": "7C5E6ED12EB1330CC5A9718AEAF5F88CDF05DCFB498BA86874A15A289D6EE41D"
+    }
+  ],
+  "attempts": [
+    {
+      "run": "initial-native-obs",
+      "result": "Incomplete: OBS startup dialog prevented WebSocket connection; initial whole-window oracle incorrectly used client bounds. Retained; oracle corrected to DWM frame bounds."
+    },
+    {
+      "run": "native-obs-v1",
+      "result": "Incomplete: virtual camera status returned 604 in the portable instance. Retained; guard now checks active outputs without requiring an installed virtual camera."
+    },
+    {
+      "run": "native-obs-v2",
+      "result": "Incomplete: StopRecord replied before the muxer closed the output file. Retained; harness now waits for bounded file finalization."
+    },
+    {
+      "run": "native-obs-v3",
+      "result": "Six actual clips encoded at 1280x800, H.264, 30 fps. All sampled frames black; corner checks and visible positive controls failed. No exclusion pass. A desktop preflight guard was added afterward."
+    }
+  ],
+  "notTested": [
+    "Native Chrome/Edge viewport measurements",
+    "Browser recordings",
+    "Window Capture",
+    "100%,125%,200% scales",
+    "Recorded monitor transitions",
+    "Magnifier",
+    "ARM64",
+    "HDR"
+  ],
+  "rawArtifacts": "Retained locally under artifacts/recording-checks; not uploaded. SHA-256 hashes identify each clip."
+}

@@ -91,6 +91,9 @@ public partial class App : Application
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<HelpViewModel>();
         services.AddSingleton<ObsViewModel>();
+        services.AddSingleton<Func<RecordingSetupViewModel>>(sp => () => new RecordingSetupViewModel(
+            sp.GetRequiredService<MainViewModel>(), sp.GetRequiredService<IAppInfo>(),
+            sp.GetRequiredService<IDisplayService>(), sp.GetRequiredService<IClipboardService>()));
         services.AddSingleton<MainWindow>();
         services.AddSingleton<HudWindow>();
         services.AddSingleton<TrayIcon>();

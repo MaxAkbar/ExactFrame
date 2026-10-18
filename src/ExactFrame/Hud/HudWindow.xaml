@@ -50,6 +50,11 @@
                     Text="{x:Bind ViewModel.SizeText, Mode=OneWay}" />
             </Border>
 
+            <FontIcon Glyph="&#xE7BA;" FontSize="16" Foreground="#FFFFC857" Margin="6,0"
+                      Visibility="{x:Bind ViewModel.HudCaptureExclusionFailed, Mode=OneWay}"
+                      AutomationProperties.Name="Control bar capture exclusion failed"
+                      ToolTipService.ToolTip="{x:Bind ViewModel.CaptureExclusionStatusText, Mode=OneWay}" />
+
             <!-- Full controls -->
             <StackPanel x:Name="FullControls" VerticalAlignment="Center" Orientation="Horizontal" Spacing="2">
                 <TextBlock

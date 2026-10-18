@@ -12,6 +12,7 @@ public static class HelpContent
     public const string Shortcuts = "shortcuts";
     public const string ResizeWindow = "resize-window";
     public const string ObsIntegration = "obs";
+    public const string RecordingSetup = "recording-setup";
     public const string Troubleshooting = "troubleshooting";
     public const string About = "about";
 
@@ -109,7 +110,7 @@ public static class HelpContent
                     Bullets(
                         "After 3 seconds without the pointer nearby, it shrinks to just the size.",
                         "With click-through on, it only shows how to unlock.",
-                        "It never takes focus from the app you're recording, and it's hidden from recorders along with the outline.",
+                        "It never takes focus from the app you're recording. Windows is asked to exclude it along with the outline; check a saved test clip for your capture method.",
                         "Turn it off in the **Style** tab with **On-screen controls**.")
                 ])
             ]),
@@ -221,6 +222,19 @@ public static class HelpContent
                     "ExactFrame changes only the selected scene item. It does not change OBS video settings, switch scenes, create sources, start recording, or follow future frame movements automatically.",
                     "Display Capture sources are matched to Windows monitor identities, including displays with negative coordinates and different display scaling. Unknown displays are rejected instead of guessed.",
                     "Window Capture, grouped sources and other source types are not supported in this first integration. Use an unfiltered Display Capture source.")])
+            ]),
+        new(RecordingSetup, "Check my setup", "\uE73E",
+            "Verify a saved test recording for your recorder, capture method, app version and display scaling.",
+            [
+                new("A short recording check", [Steps(
+                    "Select **Check my setup** in the title bar. Note your recorder version and exact capture method; **Automatic** may choose a different method on another display.",
+                    "Record a 5–10 second test clip with a test page or pattern inside the frame. Keep the outline, guides and floating control bar visible, with **Hide from recorders** on. Include dimming and the magnifier if you use them.",
+                    "Stop recording and open the saved video. Confirm the file dimensions, all four edges and corner markers, and that every overlay is absent. Account for the recorder's canvas, output scaling and any encoder rescale setting.",
+                    "Reopen **Check my setup**, enter the clip reference and mark only what you observed. **Copy setup report** includes Windows, monitor geometry, scaling and the current frame. Results are user-reported, not automatically verified.")]),
+                new("Repeat when your setup changes", [Bullets(
+                    "Repeat after changing the recorder, capture method, browser version or zoom, display scaling, or monitor. Record monitor transitions separately before relying on them.",
+                    "**Windows accepted capture exclusion** means the native API succeeded. It does not prove that your capture method honors the request. If Windows rejects the floating control bar request, ExactFrame reports the failure and retries instead of remembering it as applied.",
+                    "If any overlay appears in the saved file, hide the outline and floating controls before recording. The main ExactFrame window is never excluded; move it outside the capture region or minimize it.")])
             ]),
         new(Troubleshooting, "Troubleshooting", "",
             "Fixes for the most common problems.",
