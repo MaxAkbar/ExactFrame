@@ -22,11 +22,14 @@ public sealed partial class MainWindow : Window
     private const int MinimumHeight = 700;
 
     private readonly HelpView _helpView;
+    private readonly ObsViewModel _obs;
+    private bool _obsOpen;
 
-    public MainWindow(MainViewModel viewModel, HelpViewModel help)
+    public MainWindow(MainViewModel viewModel, HelpViewModel help, ObsViewModel obs)
     {
         ViewModel = viewModel;
         Help = help;
+        _obs = obs;
         InitializeComponent();
 
         PanelHost.Children.Add(new FramePanel(viewModel));
@@ -48,6 +51,15 @@ public sealed partial class MainWindow : Window
     public MainViewModel ViewModel { get; }
 
     public HelpViewModel Help { get; }
+
+    private async void OnSendToObsClick(object sender, RoutedEventArgs e)
+    {
+        if (_obsOpen || Content?.XamlRoot is not { } root) return;
+        _obsOpen = true;
+        try { await new ObsDialog(_obs) { XamlRoot = root }.ShowAsync(); }
+        catch (System.Runtime.InteropServices.COMException) { /* Another dialog is already open. */ }
+        finally { _obsOpen = false; }
+    }
 
     /// <summary>Shows the window if it's in the notification area or minimized, and brings it to the front.</summary>
     public void BringToFront()

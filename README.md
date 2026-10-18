@@ -126,6 +126,32 @@ the app itself; its outline is click-through while following. The outline hides 
 hidden and returns when it becomes visible. Hiding the outline, choosing another app, editing the requested
 frame or restoring the original size stops following.
 
+**OBS Studio (development build).** This integration is in the current source; it is not part of the 2.0.0
+download above. In OBS Studio 28 or later, open **Tools > WebSocket Server Settings**, enable the server,
+and keep authentication enabled. Select **Send to OBS** in ExactFrame, enter the server port (normally 4455)
+and password, then connect. The integration connects only to OBS on this PC. The password is cleared after
+connecting and is never saved.
+
+Choose the main frame or an additional guide, an OBS scene, and an existing **Display Capture** placed
+directly in that scene. The item must be visible, unlocked and unfiltered. ExactFrame identifies its Windows
+monitor, converts desktop coordinates to source-pixel crop margins, and rejects unknown displays or mismatched
+source dimensions. Negative monitor origins and Windows display scaling are handled in physical pixels.
+
+Choose **Fit to canvas** for uniform scaling with space around the frame when aspect ratios differ, or
+**Actual pixels** to center without scaling. Select **Preview change** to review the proposed canvas geometry,
+crop, scale and OBS output dimensions, then **Apply to OBS**. The preview is a geometry drawing, not a captured
+image. Applying rechecks the source and verifies the resulting transform. It changes only that scene item's
+crop and placement, resetting its rotation, flip and bounding box. It does not alter video settings, switch
+scenes, create sources or start recording. Stop recording and streaming before applying or undoing, and check
+the OBS preview before recording. The output dimensions shown are OBS's global output setting; an encoder's
+separate recording rescale setting can further change the final file dimensions.
+
+**Undo last apply** restores the previous crop and transform while the connection stays open, and refuses
+to overwrite later edits in OBS. Closing the dialog keeps the connection and undo history available;
+disconnecting or quitting ExactFrame clears them. Frame changes invalidate a prepared preview; they do not
+automatically update OBS. Window Capture, grouped sources, enabled source filters and remote OBS instances
+are not supported in this first integration.
+
 **On-screen controls.** While the outline is visible, a small bar sits under it (or above it when there's no
 room) with the size, position, center, guides, click-through, hide-from-recorders, open ExactFrame and hide.
 It shrinks to the size readout after 3 seconds without the pointer nearby. It never takes focus from the app
@@ -222,6 +248,10 @@ projections. XAML compilation, rendering and native behavior need a Windows run:
 - Add a 9:16 guide inside a 16:9 frame; move and resize the main outline, adjust the guide's scale and position,
   copy both bounds, and confirm a saved profile restores the guide. Check the nested outline in a recorder preview.
 - Check capture exclusion with the recorder and capture method you actually use.
+- Connect to a password-protected OBS WebSocket server. Preview and apply a main and nested frame to a visible,
+  unlocked, unfiltered Display Capture in the selected scene, then undo. Check the OBS preview and crop/transform
+  values on displays with different scaling and negative origins. Confirm that changing the frame or OBS layout
+  requires a new preview, and that active recording/streaming, filtered sources and unknown monitors are rejected.
 
 ## API references
 

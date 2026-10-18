@@ -360,6 +360,8 @@
             </Grid>
 
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
+                <Button Content="Send to OBS" Click="OnSendToObsClick" Style="{StaticResource SecondaryButtonStyle}"
+                        ToolTipService.ToolTip="Preview and apply this frame to an OBS Display Capture source" />
                 <Button
                     Command="{x:Bind ViewModel.CopyBoundsCommand}"
                     Style="{StaticResource SecondaryButtonStyle}"

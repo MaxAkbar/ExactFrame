@@ -11,6 +11,7 @@ public static class HelpContent
     public const string Profiles = "profiles";
     public const string Shortcuts = "shortcuts";
     public const string ResizeWindow = "resize-window";
+    public const string ObsIntegration = "obs";
     public const string Troubleshooting = "troubleshooting";
     public const string About = "about";
 
@@ -203,6 +204,24 @@ public static class HelpContent
                 ])
             ]),
 
+        new(ObsIntegration, "OBS Studio", "\uE714",
+            "Preview and apply an ExactFrame region to an OBS Display Capture scene item.",
+            [
+                new("Connect on this PC", [Steps(
+                    "In OBS Studio 28 or later, open **Tools > WebSocket Server Settings** and enable the WebSocket server. Keep authentication enabled.",
+                    "In ExactFrame, select **Send to OBS**. Enter the server port (normally 4455) and password from OBS, then select **Connect**.",
+                    "The password is cleared after connecting and is never saved. The connection and its undo history stay in memory until disconnected or ExactFrame exits.")]),
+                new("Preview and apply", [Steps(
+                    "Choose the main frame or an additional guide, the OBS scene, and a **Display Capture** placed directly in that scene. It must be visible, unlocked and unfiltered.",
+                    "Choose **Fit to canvas** to scale uniformly, or **Actual pixels** to center without scaling. The frame must fit on the captured display; Actual pixels must also fit on the canvas.",
+                    "Select **Preview change**. The drawing shows proposed geometry, rather than a captured image. Review the crop, scale, canvas and output dimensions.",
+                    "Stop recording or streaming, then select **Apply to OBS**. ExactFrame rechecks the source and verifies its resulting transform. Check OBS's preview before recording.")]),
+                new("Undo and limitations", [Bullets(
+                    "**Undo last apply** restores the most recent item's previous crop and placement while the same connection stays open. It refuses to overwrite later edits made in OBS.",
+                    "ExactFrame changes only the selected scene item. It does not change OBS video settings, switch scenes, create sources, start recording, or follow future frame movements automatically.",
+                    "Display Capture sources are matched to Windows monitor identities, including displays with negative coordinates and different display scaling. Unknown displays are rejected instead of guessed.",
+                    "Window Capture, grouped sources and other source types are not supported in this first integration. Use an unfiltered Display Capture source.")])
+            ]),
         new(Troubleshooting, "Troubleshooting", "",
             "Fixes for the most common problems.",
             [
