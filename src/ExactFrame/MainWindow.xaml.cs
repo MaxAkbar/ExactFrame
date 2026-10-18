@@ -187,6 +187,12 @@ public sealed partial class MainWindow : Window
 
     private void OnEscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
+        if (Content?.XamlRoot is { } root && Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(root) is ExactFrame.Controls.NestedPositionMap crop && crop.IsInteracting)
+        {
+            crop.CancelInteraction();
+            args.Handled = true;
+            return;
+        }
         if (PreviewMap.IsInteracting)
         {
             PreviewMap.CancelInteraction();

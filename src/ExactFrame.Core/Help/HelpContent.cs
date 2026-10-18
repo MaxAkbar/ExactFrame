@@ -74,10 +74,14 @@ public static class HelpContent
                 [
                     Bullets(
                         "Add a **9:16** guide for Shorts inside a 16:9 main frame, or add **1:1**, **4:5** and custom guides.",
-                        "Set each guide's aspect ratio, scale and position inside the main frame. The dimensions and coordinates are physical pixels.",
+                        "Name each composition and choose its output size. The source crop and output dimensions are separate: a smaller crop may need enlargement, which can soften text.",
+                        "Drag the colored crop in its small position map, or set **Crop X/Y** in physical pixels relative to the main frame. Arrow keys move 1 px; Shift moves 10. Esc cancels a drag.",
+                        "Use an anchor or a free position. The free position stays relative as the main frame resizes. Adjust **Edge inset** for clearance and **Safe margin** for content guides.",
+                        "**Preview outputs** shows each final composition with its scaling and safe margin. Different aspect ratios use empty bars instead of stretching.",
+                        "**Refresh from screen** captures visible content while ExactFrame briefly hides. Images stay in memory until the dialog closes. Previews fit the window; actual recorder output remains unverified.",
                         "Move or resize the main frame and the extra guides follow it. Their borders are click-through.",
                         "**Copy bounds** copies a labeled region for every frame. Set up each region in your recorder or editor.",
-                        "Save the setup as a profile to restore all its guides together.")
+                        "Save the setup as a profile to restore all its compositions together. Exported version 2 profiles retain output sizes, free positions and margins; older version 1 files still import as guides.")
                 ]),
                 new("On screen",
                 [

@@ -27,6 +27,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IWindowPicker _windowPicker;
     private readonly IFrameRegionPicker? _framePicker;
     private readonly IProfileTransferService? _profileTransfer;
+    private readonly IOutputPreviewService? _outputPreview;
     private readonly bool _profileShortcutsMigrated;
     private readonly IOutlineOverlay _overlay;
     private readonly IHotkeyService _hotkeys;
@@ -56,13 +57,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ISettingsStore store,
         IStartupService startup,
         IFrameRegionPicker? framePicker = null,
-        IProfileTransferService? profileTransfer = null)
+        IProfileTransferService? profileTransfer = null,
+        IOutputPreviewService? outputPreview = null)
     {
         _displayService = displayService;
         _windowService = windowService;
         _windowPicker = windowPicker;
         _framePicker = framePicker;
         _profileTransfer = profileTransfer;
+        _outputPreview = outputPreview;
         _overlay = overlay;
         _hotkeys = hotkeys;
         _clipboard = clipboard;
@@ -111,6 +114,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         SaveProfileCommand = new AsyncRelayCommand(() => RunBusyAsync(SaveProfileAsync), () => !IsBusy);
         ImportProfilesCommand = new AsyncRelayCommand(() => RunBusyAsync(ImportProfilesAsync), () => !IsBusy && _profileTransfer is not null);
         ExportProfilesCommand = new AsyncRelayCommand(() => RunBusyAsync(() => ExportProfilesAsync(null)), () => !IsBusy && _profileTransfer is not null && HasProfiles);
+        PreviewOutputsCommand = new AsyncRelayCommand(() => RunBusyAsync(PreviewOutputsAsync),
+            () => !IsBusy && IsOutlineMode && HasNestedFrames && _outputPreview is not null);
         AddShortsFrameCommand = new RelayCommand(() => AddNestedFrame("Shorts 9:16", 9, 16));
         AddSquareFrameCommand = new RelayCommand(() => AddNestedFrame("Square 1:1", 1, 1));
         AddPortraitFrameCommand = new RelayCommand(() => AddNestedFrame("Portrait 4:5", 4, 5));
@@ -149,6 +154,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public IAsyncRelayCommand SaveProfileCommand { get; }
     public IAsyncRelayCommand ImportProfilesCommand { get; }
     public IAsyncRelayCommand ExportProfilesCommand { get; }
+    public IAsyncRelayCommand PreviewOutputsCommand { get; }
     public IRelayCommand RefreshWindowsCommand { get; }
     public IAsyncRelayCommand PickWindowCommand { get; }
     public IAsyncRelayCommand DrawFrameCommand { get; }
@@ -179,6 +185,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     private void NotifyPanels()
     {
+        PreviewOutputsCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(ShowFramePanel));
         OnPropertyChanged(nameof(ShowStylePanel));
         OnPropertyChanged(nameof(ShowProfilesPanel));
@@ -195,6 +202,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             SaveProfileCommand.NotifyCanExecuteChanged();
             ImportProfilesCommand.NotifyCanExecuteChanged();
             ExportProfilesCommand.NotifyCanExecuteChanged();
+            PreviewOutputsCommand.NotifyCanExecuteChanged();
             NotifyFrameEditor();
             NotifyFooter();
         }

@@ -6,7 +6,7 @@ namespace ExactFrame.Core.Profiles;
 public sealed record ProfilePackage
 {
     public string Format { get; init; } = "exactframe.profiles";
-    public int Version { get; init; } = 1;
+    public int Version { get; init; } = 2;
     public List<PortableProfile> Profiles { get; init; } = [];
 }
 

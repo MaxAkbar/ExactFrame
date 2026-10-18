@@ -453,6 +453,11 @@ public sealed class DisplayMap : UserControl
             var nestedBrush = new SolidColorBrush(nestedColor);
             if (style.Line == OutlineLine.Corners) DrawCorners(nx, ny, nw, nh, nestedBrush, stroke);
             else AddOutline(nx, ny, nw, nh, nestedBrush, stroke, dashed: style.Line == OutlineLine.Dashed);
+            if (!nested.SafeArea.IsEmpty)
+            {
+                var (sx, sy, sw, sh) = Map(nested.SafeArea);
+                AddOutline(sx, sy, sw, sh, nestedBrush, 1, dashed: true);
+            }
             if (style.ShowSizeLabel && nw >= 68 && nh >= 26)
                 AddText($"{nested.Bounds.Width} × {nested.Bounds.Height}", nx + 4, ny + 4,
                     OutlinePalette.Hex(nested.Color), 10);

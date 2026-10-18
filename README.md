@@ -84,10 +84,12 @@ handle resizes with the display and nearby window bounds. Numeric entry remains 
 See the [direct frame editing guide and Windows checks](docs/direct-frame-editing.md).
 
 **Additional frames.** In the Frame tab, add a **9:16**, **1:1**, **4:5** or custom guide inside the main frame.
-Each guide has an editable aspect ratio, scale percentage and position within the main frame. The displayed
-width, height, X and Y are physical pixels. Extra guides stay inside the main frame and follow it when it
-moves or resizes. Use **Copy bounds** to copy a labeled region for every frame; set up each region in your
-recorder or editing workflow. You can add several guides and remove them individually.
+Name each composition, choose an output size, and edit its crop ratio and scale. Drag its small position map or
+enter parent-relative X/Y to place it freely. Edge inset and safe margins are adjustable. The crop follows the
+main frame when it moves or resizes. **Preview outputs** compares each composition and reports enlargement
+or empty bars; **Refresh from screen** takes an in-memory snapshot of the visible source. These previews do
+not configure or verify recorder output. **Copy bounds** still copies every source region for your recorder.
+See [output compositions](docs/output-compositions.md) for examples, compatibility and verification limits.
 
 **Style tab.** Outline color, weight (2, 4 or 6 px) and line (solid, dashed or corners only), the size label,
 dimming outside the frame, rule-of-thirds, center-mark and 90% safe-area guides, and the on-screen controls.

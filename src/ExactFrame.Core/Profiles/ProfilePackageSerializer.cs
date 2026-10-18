@@ -188,8 +188,8 @@ public static class ProfilePackageSerializer
 
     private static void Validate(ProfilePackage package)
     {
-        if (package.Format != Format || package.Version != 1)
-            throw Invalid("This is not a supported ExactFrame profile file (format version 1).");
+        if (package.Format != Format || package.Version is not (1 or 2))
+            throw Invalid("This is not a supported ExactFrame profile file (format versions 1 and 2).");
         if (package.Profiles is null || package.Profiles.Count is < 1 or > MaxProfiles)
             throw Invalid($"A profile file must contain between 1 and {MaxProfiles} profiles.");
         var profileIds = new HashSet<string>(StringComparer.Ordinal);
@@ -223,6 +223,16 @@ public static class ProfilePackageSerializer
                 Range(guide.AspectWidth, 1, 32, "guide aspect width");
                 Range(guide.AspectHeight, 1, 32, "guide aspect height");
                 Range(guide.ScalePercent, 10, 100, "guide scale");
+                Range(guide.InsetPixels, 0, 1000, "guide inset");
+                Range(guide.SafeMarginPercent, 0, 40, "guide safe margin");
+                if (!double.IsFinite(guide.PositionXPercent) || guide.PositionXPercent is < 0 or > 100 ||
+                    !double.IsFinite(guide.PositionYPercent) || guide.PositionYPercent is < 0 or > 100)
+                    throw Invalid("Guide positions must be between 0 and 100 percent.");
+                if (guide.OutputWidth != 0 || guide.OutputHeight != 0)
+                {
+                    Range(guide.OutputWidth, 100, 16384, "output width");
+                    Range(guide.OutputHeight, 100, 16384, "output height");
+                }
                 Defined(guide.Anchor, "guide anchor"); Defined(guide.Color, "guide color");
             }
             if (profile.Appearance is { } appearance)
@@ -292,7 +302,10 @@ public static class ProfilePackageSerializer
                 NestedFrames = [.. entry.Profile.NestedFrames.Select(guide => new WireGuide
                 {
                     Id = guide.Id, Name = guide.Name, AspectWidth = guide.AspectWidth, AspectHeight = guide.AspectHeight,
-                    ScalePercent = guide.ScalePercent, Anchor = guide.Anchor, Color = guide.Color
+                    ScalePercent = guide.ScalePercent, Anchor = guide.Anchor, Color = guide.Color,
+                    UseCustomPosition = guide.UseCustomPosition, PositionXPercent = guide.PositionXPercent,
+                    PositionYPercent = guide.PositionYPercent, InsetPixels = guide.InsetPixels,
+                    SafeMarginPercent = guide.SafeMarginPercent, OutputWidth = guide.OutputWidth, OutputHeight = guide.OutputHeight
                 })],
                 Anchor = entry.Profile.Anchor, X = entry.Profile.X, Y = entry.Profile.Y,
                 DisplayDeviceName = entry.Profile.DisplayDeviceName, KeepClearOfTaskbar = entry.Profile.KeepClearOfTaskbar,
@@ -339,7 +352,10 @@ public static class ProfilePackageSerializer
                         NestedFrames = [.. profile.NestedFrames.Select(guide => guide is null ? throw Invalid("An additional guide is missing.") : new NestedFrame
                         {
                             Id = guide.Id, Name = guide.Name, AspectWidth = guide.AspectWidth, AspectHeight = guide.AspectHeight,
-                            ScalePercent = guide.ScalePercent, Anchor = guide.Anchor, Color = guide.Color
+                            ScalePercent = guide.ScalePercent, Anchor = guide.Anchor, Color = guide.Color,
+                            UseCustomPosition = guide.UseCustomPosition, PositionXPercent = guide.PositionXPercent,
+                            PositionYPercent = guide.PositionYPercent, InsetPixels = guide.InsetPixels,
+                            SafeMarginPercent = guide.SafeMarginPercent, OutputWidth = guide.OutputWidth, OutputHeight = guide.OutputHeight
                         })],
                         Anchor = profile.Anchor, X = profile.X, Y = profile.Y, DisplayDeviceName = profile.DisplayDeviceName,
                         KeepClearOfTaskbar = profile.KeepClearOfTaskbar, Area = profile.Area, TargetProcessName = profile.TargetProcessName,
@@ -404,6 +420,13 @@ public static class ProfilePackageSerializer
         public required int ScalePercent { get; init; }
         public required FrameAnchor Anchor { get; init; }
         public required OutlineColor Color { get; init; }
+        public bool UseCustomPosition { get; init; }
+        public double PositionXPercent { get; init; } = 50;
+        public double PositionYPercent { get; init; } = 50;
+        public int InsetPixels { get; init; } = 8;
+        public int SafeMarginPercent { get; init; }
+        public int OutputWidth { get; init; }
+        public int OutputHeight { get; init; }
     }
 
     private sealed class WireAppearance

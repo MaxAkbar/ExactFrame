@@ -46,6 +46,8 @@ public sealed class NestedFrameItem : ObservableObject
 {
     private NestedFrame _frame;
     private string _dimensions = string.Empty;
+    private Rectangle _parent;
+    private Rectangle _bounds;
     private readonly Action<NestedFrame> _changed;
 
     public NestedFrameItem(NestedFrame frame, Action<NestedFrame> changed, Action remove)
@@ -57,7 +59,83 @@ public sealed class NestedFrameItem : ObservableObject
 
     public NestedFrame Frame => _frame;
 
-    public string Name => _frame.Name;
+    public string Name
+    {
+        get => _frame.Name;
+        set
+        {
+            string name = value?.Trim() ?? string.Empty;
+            if (name.Length is > 0 and <= 80 && !name.Any(char.IsControl)) Change(_frame with { Name = name });
+        }
+    }
+
+    public Rectangle ParentBounds => _parent;
+    public Rectangle Bounds => _bounds;
+    public CompositionLayout Composition => CompositionLayout.Create(_parent, _frame);
+    public string OutputSummary => Composition.OutputText;
+    public string ScalingSummary => Composition.ScaleText;
+    public bool NeedsEnlargement => Composition.NeedsEnlargement;
+    public bool HasOutput => _frame.OutputWidth > 0 && _frame.OutputHeight > 0;
+    public bool HasCustomPosition => _frame.UseCustomPosition;
+
+    public int OutputPresetIndex
+    {
+        get
+        {
+            for (int i = 0; i < CompositionPreset.All.Count; i++)
+                if (_frame.OutputWidth == CompositionPreset.All[i].Width && _frame.OutputHeight == CompositionPreset.All[i].Height) return i;
+            return CompositionPreset.All.Count;
+        }
+        set
+        {
+            if (value < 0 || value > CompositionPreset.All.Count) return;
+            if (value == CompositionPreset.All.Count)
+            {
+                if (!HasOutput) Change(_frame with { OutputWidth = Math.Max(100, _bounds.Width), OutputHeight = Math.Max(100, _bounds.Height) });
+                return;
+            }
+            var preset = CompositionPreset.All[value];
+            Change(_frame with
+            {
+                OutputWidth = preset.Width, OutputHeight = preset.Height,
+                AspectWidth = value == 0 ? _frame.AspectWidth : preset.AspectWidth,
+                AspectHeight = value == 0 ? _frame.AspectHeight : preset.AspectHeight
+            });
+        }
+    }
+
+    public double OutputWidth
+    {
+        get => _frame.OutputWidth;
+        set { if (ValidNumber(value, 100, 16384, out int number) && HasOutput) Change(_frame with { OutputWidth = number }); }
+    }
+    public double OutputHeight
+    {
+        get => _frame.OutputHeight;
+        set { if (ValidNumber(value, 100, 16384, out int number) && HasOutput) Change(_frame with { OutputHeight = number }); }
+    }
+    public double InsetPixels
+    {
+        get => _frame.InsetPixels;
+        set { if (ValidNumber(value, 0, 1000, out int number)) Change(_frame with { InsetPixels = number }); }
+    }
+    public double SafeMarginPercent
+    {
+        get => _frame.SafeMarginPercent;
+        set { if (ValidNumber(value, 0, 40, out int number)) Change(_frame with { SafeMarginPercent = number }); }
+    }
+    public double X => _bounds.X - _parent.X;
+    public double Y => _bounds.Y - _parent.Y;
+    public double XPosition { get => X; set => SetPosition(value, Y); }
+    public double YPosition { get => Y; set => SetPosition(X, value); }
+
+    public void SetPosition(double x, double y)
+    {
+        if (Math.Round(x) == X && Math.Round(y) == Y) return;
+        Change(NestedFrameGeometry.PositionAt(_parent, _frame, x, y));
+    }
+
+    public void RestoreFrame(NestedFrame frame) => Change(frame);
 
     public string ColorHex => OutlinePalette.Hex(_frame.Color);
 
@@ -85,24 +163,35 @@ public sealed class NestedFrameItem : ObservableObject
 
     public int AnchorIndex
     {
-        get => (int)_frame.Anchor;
-        set { if (value is >= 0 and <= 8) Change(_frame with { Anchor = (FrameAnchor)value }); }
+        get => _frame.UseCustomPosition ? 9 : (int)_frame.Anchor;
+        set
+        {
+            if (value is >= 0 and <= 8) Change(_frame with { Anchor = (FrameAnchor)value, UseCustomPosition = false });
+            else if (value == 9) Change(NestedFrameGeometry.PositionAt(_parent, _frame, X, Y));
+        }
     }
 
-    public void UpdateBounds(Rectangle bounds)
+    public void UpdateBounds(Rectangle bounds, Rectangle parent = default)
     {
+        _bounds = bounds;
+        _parent = parent;
         string dimensions = bounds.IsEmpty ? "Does not fit" : $"{bounds.Width} × {bounds.Height} px · X={bounds.X}, Y={bounds.Y}";
         SetProperty(ref _dimensions, dimensions);
+        OnPropertyChanged(nameof(Bounds));
+        OnPropertyChanged(nameof(ParentBounds));
+        OnPropertyChanged(nameof(XPosition));
+        OnPropertyChanged(nameof(YPosition));
+        OnPropertyChanged(nameof(Composition));
+        OnPropertyChanged(nameof(OutputSummary));
+        OnPropertyChanged(nameof(ScalingSummary));
+        OnPropertyChanged(nameof(NeedsEnlargement));
     }
 
     private void Change(NestedFrame frame)
     {
         if (frame == _frame) return;
         _frame = frame;
-        OnPropertyChanged(nameof(AspectWidth));
-        OnPropertyChanged(nameof(AspectHeight));
-        OnPropertyChanged(nameof(ScalePercent));
-        OnPropertyChanged(nameof(AnchorIndex));
+        OnPropertyChanged(string.Empty);
         _changed(frame);
     }
 

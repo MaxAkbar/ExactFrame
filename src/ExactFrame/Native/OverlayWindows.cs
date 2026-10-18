@@ -241,7 +241,9 @@ internal sealed class NestedFramesWindow : LayeredWindow
         var relative = frames.Select(frame => frame with
         {
             Bounds = new Rectangle(frame.Bounds.X - parent.X, frame.Bounds.Y - parent.Y,
-                frame.Bounds.Width, frame.Bounds.Height)
+                frame.Bounds.Width, frame.Bounds.Height),
+            SafeArea = frame.SafeArea.IsEmpty ? Rectangle.Empty : new Rectangle(frame.SafeArea.X - parent.X,
+                frame.SafeArea.Y - parent.Y, frame.SafeArea.Width, frame.SafeArea.Height)
         }).ToArray();
         bool redraw = Bounds.Size != parent.Size || style != _style || Math.Abs(scale - _scale) > 0.001 ||
             !_frames.SequenceEqual(relative);
@@ -274,6 +276,11 @@ internal sealed class NestedFramesWindow : LayeredWindow
                     break;
             }
 
+            if (!frame.SafeArea.IsEmpty)
+            {
+                using var safePen = new Pen(color, 1) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+                graphics.DrawRectangle(safePen, frame.SafeArea);
+            }
             if (_style.ShowSizeLabel) DrawLabel(graphics, frame, color, thickness);
         }
     }

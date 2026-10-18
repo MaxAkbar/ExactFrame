@@ -26,13 +26,25 @@ public sealed partial class MainViewModel
 
     public IRelayCommand AddCustomFrameCommand { get; private set; } = null!;
 
+    private Task PreviewOutputsAsync() => _outputPreview is not null && IsOutlineMode && HasNestedFrames
+        ? _outputPreview.ShowAsync(CurrentFrame, NestedFrames.Select(item => item.Frame).ToArray(), _lifetime.Token)
+        : Task.CompletedTask;
+
     private void AddNestedFrame(string name, int aspectWidth, int aspectHeight)
     {
+        if (NestedFrames.Count >= 16)
+        {
+            SetStatus("A setup supports up to 16 additional frames. Remove one before adding another.", warning: true);
+            return;
+        }
         var frame = new NestedFrame
         {
             Name = name,
             AspectWidth = aspectWidth,
             AspectHeight = aspectHeight,
+            OutputWidth = aspectWidth == 9 && aspectHeight == 16 || aspectWidth == 1 || aspectWidth == 4 ? 1080 : 0,
+            OutputHeight = aspectWidth == 9 && aspectHeight == 16 ? 1920 : aspectWidth == 1 ? 1080 : aspectWidth == 4 ? 1350 : 0,
+            SafeMarginPercent = 5,
             Color = NestedColors[NestedFrames.Count % NestedColors.Length]
         };
         AddNestedFrameItem(frame);
@@ -47,7 +59,9 @@ public sealed partial class MainViewModel
             AspectWidth = Math.Clamp(frame.AspectWidth, 1, 32),
             AspectHeight = Math.Clamp(frame.AspectHeight, 1, 32),
             ScalePercent = Math.Clamp(frame.ScalePercent, 10, 100),
-            Anchor = Enum.IsDefined(frame.Anchor) ? frame.Anchor : FrameAnchor.Center
+            Anchor = Enum.IsDefined(frame.Anchor) ? frame.Anchor : FrameAnchor.Center,
+            InsetPixels = Math.Clamp(frame.InsetPixels, 0, 1000),
+            SafeMarginPercent = Math.Clamp(frame.SafeMarginPercent, 0, 40)
         };
         NestedFrameItem? item = null;
         item = new NestedFrameItem(frame, _ => RefreshNestedFrames(), () =>
@@ -76,7 +90,8 @@ public sealed partial class MainViewModel
     {
         if (!IsOutlineMode || NestedFrames.Count == 0) return [];
         return [.. NestedFrames.Select(item =>
-            new NestedFrameBounds(NestedFrameGeometry.Place(parent, item.Frame), item.Name, item.Frame.Color))
+            new NestedFrameBounds(NestedFrameGeometry.Place(parent, item.Frame), item.Name, item.Frame.Color)
+            { SafeArea = NestedFrameGeometry.SafeArea(NestedFrameGeometry.Place(parent, item.Frame), item.Frame.SafeMarginPercent) })
             .Where(item => !item.Bounds.IsEmpty)];
     }
 
@@ -95,11 +110,12 @@ public sealed partial class MainViewModel
     private void UpdateNestedBounds(Rectangle parent)
     {
         foreach (var item in NestedFrames)
-            item.UpdateBounds(NestedFrameGeometry.Place(parent, item.Frame));
+            item.UpdateBounds(NestedFrameGeometry.Place(parent, item.Frame), parent);
     }
 
     private void NotifyNestedCount()
     {
+        PreviewOutputsCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(HasNestedFrames));
         OnPropertyChanged(nameof(HasNoNestedFrames));
     }

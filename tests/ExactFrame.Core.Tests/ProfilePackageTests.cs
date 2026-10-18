@@ -241,7 +241,7 @@ public sealed class ProfilePackageTests
 
     [Theory]
     [InlineData("format", "another-app")]
-    [InlineData("version", 2)]
+    [InlineData("version", 3)]
     [InlineData("version", 0)]
     public void Unsupported_format_or_version_is_rejected(string property, object value)
     {
@@ -319,7 +319,7 @@ public sealed class ProfilePackageTests
     {
         string json = ProfilePackageSerializer.Export([Profile()], [Source]);
         Assert.Throws<InvalidOperationException>(() => ProfilePackageSerializer.Parse(
-            json.Replace("\"version\": 1", "\"version\": 1, \"version\": 1", StringComparison.Ordinal)));
+            json.Replace("\"version\": 2", "\"version\": 2, \"version\": 2", StringComparison.Ordinal)));
         Assert.Throws<InvalidOperationException>(() => ProfilePackageSerializer.Parse(
             json.Replace("\"width\": 800", "\"width\": 800, \"width\": 900", StringComparison.Ordinal)));
     }

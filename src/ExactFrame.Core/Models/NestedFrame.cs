@@ -19,8 +19,29 @@ public sealed record NestedFrame
 
     public FrameAnchor Anchor { get; init; } = FrameAnchor.Center;
 
+    public bool UseCustomPosition { get; init; }
+
+    /// <summary>Position within the available travel, retained when the parent changes size.</summary>
+    public double PositionXPercent { get; init; } = 50;
+
+    public double PositionYPercent { get; init; } = 50;
+
+    /// <summary>Clearance from the parent outline, in physical pixels.</summary>
+    public int InsetPixels { get; init; } = 8;
+
+    /// <summary>Content-safe margin on each side of this crop. Zero hides the guide.</summary>
+    public int SafeMarginPercent { get; init; }
+
+    /// <summary>Zero on both dimensions means a guide with no requested output size.</summary>
+    public int OutputWidth { get; init; }
+
+    public int OutputHeight { get; init; }
+
     public OutlineColor Color { get; init; } = OutlineColor.Amber;
 }
 
 /// <summary>The resolved screen bounds and appearance sent to the preview and on-screen overlay.</summary>
-public sealed record NestedFrameBounds(Rectangle Bounds, string Name, OutlineColor Color);
+public sealed record NestedFrameBounds(Rectangle Bounds, string Name, OutlineColor Color)
+{
+    public Rectangle SafeArea { get; init; }
+}

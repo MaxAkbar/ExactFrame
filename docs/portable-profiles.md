@@ -34,7 +34,7 @@ Physical pixel sizes and anchors are preserved. A custom position is translated 
 
 Files contain profiles, optional saved appearance and source display geometry. They omit numbered shortcut assignments, native monitor interface paths, OBS addresses/passwords, startup settings and unrelated app data. Profile names and target app process names are readable in the file; review these when sharing it.
 
-The version 1 format accepts at most 100 profiles, 16 additional frames per profile, and 1 MiB per file. Invalid, unsupported, incomplete or conflicting documents are rejected as a whole. The file is validated before review and remapping; no partial import is retained if saving fails. Exporting more than 100 saved profiles at once requires smaller individual exports.
+The current version 2 format also preserves output composition sizes, free positions and margins. Version 1 files remain importable with their original guide defaults. Both versions accept at most 100 profiles, 16 additional frames per profile, and 1 MiB per file. Invalid, unsupported, incomplete or conflicting documents are rejected as a whole. The file is validated before review and remapping; no partial import is retained if saving fails. Exporting more than 100 saved profiles at once requires smaller individual exports.
 
 ## Verification
 

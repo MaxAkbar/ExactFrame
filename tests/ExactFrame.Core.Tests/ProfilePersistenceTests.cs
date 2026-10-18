@@ -55,7 +55,9 @@ public sealed class ProfilePersistenceTests : IDisposable
             NestedFrames = [new()
             {
                 Id = "nested-guide", Name = "Portrait", AspectWidth = 9, AspectHeight = 16,
-                ScalePercent = 60, Anchor = FrameAnchor.Right, Color = OutlineColor.Blue
+                ScalePercent = 60, Anchor = FrameAnchor.Right, Color = OutlineColor.Blue,
+                UseCustomPosition = true, PositionXPercent = 28.5, PositionYPercent = 76,
+                InsetPixels = 14, SafeMarginPercent = 6, OutputWidth = 1080, OutputHeight = 1920
             }]
         };
         return new AppSettings
@@ -87,6 +89,8 @@ public sealed class ProfilePersistenceTests : IDisposable
         Assert.Null(loaded.Profiles[1].Appearance);
         Assert.True(loaded.Profiles[1].IsAspectLocked);
         Assert.Equal("nested-guide", Assert.Single(saved.NestedFrames).Id);
+        Assert.Equal(28.5, saved.NestedFrames[0].PositionXPercent);
+        Assert.Equal(1920, saved.NestedFrames[0].OutputHeight);
     }
 
     public void Dispose()
