@@ -201,7 +201,13 @@
                     </StackPanel>
                 </Grid>
 
-                <controls:DisplayMap Grid.Row="2" State="{x:Bind ViewModel.Preview, Mode=OneWay}" />
+                <Grid Grid.Row="2" RowSpacing="8">
+                    <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <controls:DisplayMap x:Name="PreviewMap" Editor="{x:Bind ViewModel}" State="{x:Bind ViewModel.Preview, Mode=OneWay}" />
+                    <TextBlock Grid.Row="1" FontSize="11.5" Foreground="{StaticResource StageMutedBrush}"
+                               Text="{x:Bind ViewModel.FrameEditorHint, Mode=OneWay}" TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite" />
+                </Grid>
 
                 <Grid Grid.Row="3" ColumnSpacing="16">
                     <Grid.ColumnDefinitions>

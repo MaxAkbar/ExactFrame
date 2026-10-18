@@ -11,6 +11,8 @@ public sealed class AppSettings
 
     public bool HideFromRecorders { get; set; } = true;
 
+    public bool SnapToEdges { get; set; } = true;
+
     public List<FrameProfile> Profiles { get; set; } = [.. FrameProfile.Defaults()];
 
     public List<RememberedAppSize> RememberedAppSizes { get; set; } = [];

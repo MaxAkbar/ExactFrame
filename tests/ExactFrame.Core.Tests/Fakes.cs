@@ -116,6 +116,8 @@ internal sealed class FakePicker : IWindowPicker
 
 internal sealed class FakeOverlay : IOutlineOverlay
 {
+    public event EventHandler? FrameInteractionStarted;
+    public event EventHandler<bool>? FrameInteractionFinished;
     public event EventHandler? FrameMoved;
 
     public event EventHandler? VisibilityChanged;
@@ -167,6 +169,12 @@ internal sealed class FakeOverlay : IOutlineOverlay
     public void SetLocked(bool locked) => Locked = locked;
 
     public void SetCaptureExclusion(bool exclude) => Excluded = exclude;
+
+    public FrameEditingOptions? EditingOptions { get; private set; }
+    public void SetEditingOptions(FrameEditingOptions options) => EditingOptions = options;
+    public void CancelFrameInteraction() { }
+    public void BeginInteraction() => FrameInteractionStarted?.Invoke(this, EventArgs.Empty);
+    public void EndInteraction(bool canceled = false) => FrameInteractionFinished?.Invoke(this, canceled);
 
     public void Dispose()
     {

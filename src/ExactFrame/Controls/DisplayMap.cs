@@ -1,11 +1,19 @@
+using System.ComponentModel;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
 using ExactFrame.Core.ViewModels;
 using ExactFrame.Helpers;
 using DRect = System.Drawing.Rectangle;
+using DPoint = System.Drawing.Point;
 using Shapes = Microsoft.UI.Xaml.Shapes;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace ExactFrame.Controls;
 
@@ -17,19 +25,70 @@ namespace ExactFrame.Controls;
 public sealed class DisplayMap : UserControl
 {
     public static readonly DependencyProperty StateProperty = DependencyProperty.Register(
-        nameof(State), typeof(object), typeof(DisplayMap), new PropertyMetadata(null, (d, _) => ((DisplayMap)d).Redraw()));
+        nameof(State), typeof(object), typeof(DisplayMap), new PropertyMetadata(null, (d, _) => ((DisplayMap)d).OnStateChanged()));
 
-    private readonly Canvas _canvas = new();
+    public static readonly DependencyProperty EditorProperty = DependencyProperty.Register(
+        nameof(Editor), typeof(object), typeof(DisplayMap), new PropertyMetadata(null,
+            (d, e) => ((DisplayMap)d).OnEditorChanged(e.OldValue as MainViewModel)));
+
+    private readonly Canvas _canvas = new() { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent) };
+    private readonly Border _focusBorder;
     private double _scale;
     private double _originX;
     private double _originY;
     private DRect _display;
+    private MainViewModel? _gestureEditor;
+    private DRect _original;
+    private DRect _expected;
+    private DRect _gestureArea;
+    private DRect _gestureDisplay;
+    private DPoint _start;
+    private FrameHandle _handle;
+    private uint _pointerId;
+    private int _editRevision;
+    private bool _drawing;
+    private bool _ending;
+    private bool _subscribed;
+    private bool _drawIsValid;
+    private DRect? _drawPreview;
+    private InputSystemCursorShape _cursorShape = InputSystemCursorShape.Arrow;
 
     public DisplayMap()
     {
-        Content = _canvas;
-        IsTabStop = false;
-        SizeChanged += (_, _) => Redraw();
+        _focusBorder = new Border
+        {
+            BorderThickness = new Thickness(2),
+            BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
+            CornerRadius = new CornerRadius(5),
+            Child = _canvas
+        };
+        Content = _focusBorder;
+        IsTabStop = true;
+        UseSystemFocusVisuals = true;
+        AutomationProperties.SetName(this, "Recording frame preview");
+        AutomationProperties.SetHelpText(this,
+            "Drag inside the frame to move it, drag an edge or corner to resize, or drag outside it to draw a new frame. " +
+            "Arrow keys move one physical pixel; Shift moves ten. Control and arrow keys resize. Escape cancels a drag.");
+        SizeChanged += (_, _) => OnLayoutChanged();
+        _canvas.SizeChanged += (_, _) => OnLayoutChanged();
+        PointerPressed += OnPointerPressed;
+        PointerMoved += OnPointerMoved;
+        PointerReleased += OnPointerReleased;
+        PointerCanceled += (_, _) => CancelInteraction();
+        PointerCaptureLost += (_, _) => CancelInteraction();
+        KeyDown += OnKeyDown;
+        GotFocus += (_, _) => _focusBorder.BorderBrush = Format.BrushFromHex("#34D5B5");
+        LostFocus += (_, _) =>
+        {
+            CancelInteraction();
+            _focusBorder.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+        };
+        Loaded += (_, _) => SubscribeEditor();
+        Unloaded += (_, _) =>
+        {
+            CancelInteraction();
+            UnsubscribeEditor(Editor as MainViewModel);
+        };
     }
 
     /// <summary>A <see cref="PreviewState"/>.</summary>
@@ -39,15 +98,245 @@ public sealed class DisplayMap : UserControl
         set => SetValue(StateProperty, value);
     }
 
+    /// <summary>The view model that accepts physical-pixel edits, or null for a read-only map.</summary>
+    public object? Editor
+    {
+        get => GetValue(EditorProperty);
+        set => SetValue(EditorProperty, value);
+    }
+
+    public bool IsInteracting => _gestureEditor is not null;
+
+    /// <summary>Restores the frame that was present before the current pointer gesture.</summary>
+    public void CancelInteraction() => FinishInteraction(cancel: true);
+
+    private void OnEditorChanged(MainViewModel? oldEditor)
+    {
+        CancelInteraction();
+        UnsubscribeEditor(oldEditor);
+        if (IsLoaded) SubscribeEditor();
+        UpdateEditability();
+    }
+
+    private void OnLayoutChanged()
+    {
+        CancelInteraction();
+        Redraw();
+    }
+
+    private void SubscribeEditor()
+    {
+        if (_subscribed || Editor is not MainViewModel editor) return;
+        editor.PropertyChanged += OnEditorPropertyChanged;
+        _subscribed = true;
+        UpdateEditability();
+    }
+
+    private void UnsubscribeEditor(MainViewModel? editor)
+    {
+        if (!_subscribed || editor is null) return;
+        editor.PropertyChanged -= OnEditorPropertyChanged;
+        _subscribed = false;
+    }
+
+    private void OnEditorPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (Editor is not MainViewModel editor) return;
+        if (IsInteracting && (!editor.CanEditFrame || editor.SelectedFrameArea != _gestureArea ||
+            editor.FrameEditRevision != _editRevision))
+            CancelInteraction();
+        if (e.PropertyName is nameof(MainViewModel.CanEditFrame) or "" or null)
+            UpdateEditability();
+    }
+
+    private void UpdateEditability()
+    {
+        bool editable = Editor is MainViewModel { CanEditFrame: true } && State is PreviewState { IsResizeMode: false };
+        IsTabStop = editable;
+        AutomationProperties.SetName(this, editable ? "Recording frame preview editor" : "Recording frame preview");
+    }
+
+    private void OnStateChanged()
+    {
+        if (IsInteracting && (State is not PreviewState state ||
+            state.IsResizeMode || state.DisplayBounds != _gestureDisplay || state.Frame != _expected))
+            CancelInteraction();
+        UpdateEditability();
+        Redraw();
+    }
+
+    private bool CanInteract(out MainViewModel editor)
+    {
+        editor = Editor as MainViewModel ?? null!;
+        return editor is { CanEditFrame: true } && State is PreviewState { IsResizeMode: false } && _scale > 0 &&
+            editor.SelectedFrameArea.Width >= MainViewModel.MinSize && editor.SelectedFrameArea.Height >= MainViewModel.MinSize;
+    }
+
+    private bool IsOnDisplay(Windows.Foundation.Point point) =>
+        point.X >= _originX && point.Y >= _originY &&
+        point.X <= _originX + _display.Width * _scale && point.Y <= _originY + _display.Height * _scale;
+
+    private DPoint PhysicalPoint(Windows.Foundation.Point point) => new(
+        _display.Left + (int)Math.Round((point.X - _originX) / _scale),
+        _display.Top + (int)Math.Round((point.Y - _originY) / _scale));
+
+    private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        var point = e.GetCurrentPoint(_canvas);
+        if (point.Properties.IsRightButtonPressed && IsInteracting)
+        {
+            CancelInteraction();
+            e.Handled = true;
+            return;
+        }
+        if (IsInteracting || !point.Properties.IsLeftButtonPressed || !CanInteract(out var editor) ||
+            !IsOnDisplay(point.Position)) return;
+
+        Focus(FocusState.Pointer);
+        _original = ((PreviewState)State!).Frame;
+        _expected = _original;
+        _start = PhysicalPoint(point.Position);
+        _handle = FrameManipulation.HitTest(_original, _start, Math.Max(1, (int)Math.Ceiling(8 / _scale)), includeInterior: true);
+        _drawing = _handle == FrameHandle.None;
+        _drawPreview = null;
+        _drawIsValid = !_drawing;
+        _gestureArea = editor.SelectedFrameArea;
+        _gestureDisplay = _display;
+        _pointerId = e.Pointer.PointerId;
+        editor.BeginFrameInteraction();
+        _editRevision = editor.FrameEditRevision;
+        _gestureEditor = editor;
+        // Capture the stable control, never one of the shapes replaced by Redraw.
+        if (!CapturePointer(e.Pointer))
+        {
+            CancelInteraction();
+            return;
+        }
+        e.Handled = true;
+    }
+
+    private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        var point = e.GetCurrentPoint(_canvas);
+        if (!IsInteracting || e.Pointer.PointerId != _pointerId)
+        {
+            UpdatePointerCursor(point.Position);
+            return;
+        }
+        UpdateInteraction(PhysicalPoint(point.Position));
+        e.Handled = true;
+    }
+
+    private void UpdateInteraction(DPoint current)
+    {
+        if (_gestureEditor is not { } editor || !editor.CanEditFrame) return;
+        DRect frame;
+        if (_drawing)
+        {
+            frame = FrameManipulation.Draw(_start, current, _gestureArea);
+            _drawPreview = frame;
+            _drawIsValid = frame.Width >= MainViewModel.MinSize && frame.Height >= MainViewModel.MinSize;
+            if (!_drawIsValid)
+            {
+                Redraw();
+                return;
+            }
+        }
+        else
+        {
+            frame = FrameManipulation.Drag(_original, _start, current, _handle, _gestureArea,
+                aspectRatio: editor.FrameEditAspectRatio,
+                snapTargets: editor.SnapToEdges ? editor.FrameSnapTargets : null,
+                snapDistance: editor.SnapToEdges ? Math.Max(1, (int)Math.Ceiling(6 / _scale)) : 0);
+        }
+        _expected = frame;
+        editor.SetFrameFromInteraction(frame, freeform: _drawing);
+    }
+
+    private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        if (!IsInteracting || e.Pointer.PointerId != _pointerId) return;
+        UpdateInteraction(PhysicalPoint(e.GetCurrentPoint(_canvas).Position));
+        FinishInteraction(cancel: _drawing && !_drawIsValid);
+        e.Handled = true;
+    }
+
+    private void FinishInteraction(bool cancel)
+    {
+        if (_ending || _gestureEditor is not { } editor) return;
+        _ending = true;
+        _gestureEditor = null;
+        try
+        {
+            ReleasePointerCaptures();
+            editor.FinishFrameInteraction(cancel);
+        }
+        finally
+        {
+            _ending = false;
+            _drawing = false;
+            _drawPreview = null;
+            SetPointerCursor(InputSystemCursorShape.Arrow);
+            Redraw();
+        }
+    }
+
+    private void OnKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape && IsInteracting)
+        {
+            CancelInteraction();
+            e.Handled = true;
+            return;
+        }
+        if (IsInteracting || FocusState == FocusState.Unfocused || !CanInteract(out var editor)) return;
+        int step = IsKeyDown(VirtualKey.Shift) ? 10 : 1;
+        int dx = e.Key == VirtualKey.Left ? -step : e.Key == VirtualKey.Right ? step : 0;
+        int dy = e.Key == VirtualKey.Up ? -step : e.Key == VirtualKey.Down ? step : 0;
+        if (dx == 0 && dy == 0 || IsKeyDown(VirtualKey.Menu)) return;
+        editor.NudgeFrame(dx, dy, resize: IsKeyDown(VirtualKey.Control));
+        e.Handled = true;
+    }
+
+    private static bool IsKeyDown(VirtualKey key) =>
+        InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
+
+    private void UpdatePointerCursor(Windows.Foundation.Point position)
+    {
+        var shape = InputSystemCursorShape.Arrow;
+        if (CanInteract(out _) && IsOnDisplay(position) && State is PreviewState state)
+        {
+            var handle = FrameManipulation.HitTest(state.Frame, PhysicalPoint(position),
+                Math.Max(1, (int)Math.Ceiling(8 / _scale)), includeInterior: true);
+            shape = handle switch
+            {
+                FrameHandle.Move => InputSystemCursorShape.SizeAll,
+                FrameHandle.Left or FrameHandle.Right => InputSystemCursorShape.SizeWestEast,
+                FrameHandle.Top or FrameHandle.Bottom => InputSystemCursorShape.SizeNorthSouth,
+                FrameHandle.TopLeft or FrameHandle.BottomRight => InputSystemCursorShape.SizeNorthwestSoutheast,
+                FrameHandle.TopRight or FrameHandle.BottomLeft => InputSystemCursorShape.SizeNortheastSouthwest,
+                _ => InputSystemCursorShape.Cross
+            };
+        }
+        SetPointerCursor(shape);
+    }
+
+    private void SetPointerCursor(InputSystemCursorShape shape)
+    {
+        if (_cursorShape == shape) return;
+        _cursorShape = shape;
+        ProtectedCursor = InputSystemCursor.Create(shape);
+    }
+
     private void Redraw()
     {
         _canvas.Children.Clear();
-        if (State is not PreviewState state || ActualWidth <= 1 || ActualHeight <= 1) return;
+        if (State is not PreviewState state || _canvas.ActualWidth <= 1 || _canvas.ActualHeight <= 1) return;
 
         _display = state.DisplayBounds;
-        _scale = Math.Min(ActualWidth / _display.Width, ActualHeight / _display.Height);
+        _scale = Math.Min(_canvas.ActualWidth / _display.Width, _canvas.ActualHeight / _display.Height);
         double width = _display.Width * _scale, height = _display.Height * _scale;
-        _originX = Math.Round((ActualWidth - width) / 2);
+        _originX = Math.Round((_canvas.ActualWidth - width) / 2);
         _originY = 0;
         _canvas.Clip = new RectangleGeometry { Rect = new Windows.Foundation.Rect(_originX, _originY, width, height) };
 
@@ -57,6 +346,14 @@ public sealed class DisplayMap : UserControl
 
         if (state.IsResizeMode) DrawResize(state);
         else DrawOutline(state);
+
+        if (_drawing && _drawPreview is { Width: > 0, Height: > 0 } draft)
+        {
+            var (x, y, w, h) = Map(draft);
+            AddOutline(x, y, w, h, Format.BrushFromHex(_drawIsValid ? "#34D5B5" : "#F5B84A"), 2, dashed: true);
+            AddText($"{draft.Width} × {draft.Height}" + (_drawIsValid ? "" : " · minimum 100 × 100"),
+                x + 5, y + 5, _drawIsValid ? "#34D5B5" : "#F5B84A", 11);
+        }
     }
 
     // ---- Scene --------------------------------------------------------------------------------
@@ -163,7 +460,11 @@ public sealed class DisplayMap : UserControl
 
         if (state.ShowHandles)
         {
-            foreach (var (hx, hy) in new[] { (fx, fy), (fx + fw, fy), (fx, fy + fh), (fx + fw, fy + fh) })
+            foreach (var (hx, hy) in new[]
+                {
+                    (fx, fy), (fx + fw / 2, fy), (fx + fw, fy), (fx, fy + fh / 2),
+                    (fx + fw, fy + fh / 2), (fx, fy + fh), (fx + fw / 2, fy + fh), (fx + fw, fy + fh)
+                })
                 AddBox(hx - 3.5, hy - 3.5, 7, 7, "#0F1E22", null, 0, 0, brush, 1.5);
         }
 

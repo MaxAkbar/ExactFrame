@@ -41,11 +41,14 @@ internal sealed class WindowPicker : IWindowPicker
 
         nint module = NativeMethods.GetModuleHandle(null);
         _mouseHook = NativeMethods.SetWindowsHookEx(NativeMethods.WhMouseLl, _mouseProc, module, 0);
+        int mouseError = _mouseHook == 0 ? Marshal.GetLastWin32Error() : 0;
         _keyboardHook = NativeMethods.SetWindowsHookEx(NativeMethods.WhKeyboardLl, _keyboardProc, module, 0);
-        if (_mouseHook == 0)
+        if (_mouseHook == 0 || _keyboardHook == 0)
         {
+            int error = _mouseHook == 0 ? mouseError : Marshal.GetLastWin32Error();
             Unhook();
-            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error(), "Windows couldn’t start window picking.");
+            _pending = null;
+            throw new System.ComponentModel.Win32Exception(error, "Windows couldn’t enable window picking and Escape cancellation.");
         }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellation);

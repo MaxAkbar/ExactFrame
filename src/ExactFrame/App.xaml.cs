@@ -74,6 +74,7 @@ public partial class App : Application
         services.AddSingleton<IHotkeyService, HotkeyService>();
         services.AddSingleton<IOutlineOverlay, OutlineOverlay>();
         services.AddSingleton<IWindowPicker, WindowPicker>();
+        services.AddSingleton<IFrameRegionPicker, FrameRegionPicker>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<DialogService>();
         services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());

@@ -29,6 +29,7 @@ internal sealed class OutlineOverlay : IOutlineOverlay
     private bool _excludeFromCapture = true;
     private bool _disposed;
     private bool _layoutQueued;
+    private FrameEditingOptions _editing = new();
     private readonly DispatcherQueue? _dispatcher = DispatcherQueue.GetForCurrentThread();
     private readonly DispatcherQueueTimer? _magnifierTimer;
 
@@ -44,6 +45,8 @@ internal sealed class OutlineOverlay : IOutlineOverlay
     public event EventHandler? FrameMoved;
 
     public event EventHandler? VisibilityChanged;
+    public event EventHandler? FrameInteractionStarted;
+    public event EventHandler<bool>? FrameInteractionFinished;
 
     public bool IsVisible { get; private set; }
 
@@ -83,6 +86,7 @@ internal sealed class OutlineOverlay : IOutlineOverlay
     public void Hide()
     {
         if (!IsVisible) return;
+        _border?.CancelInteraction();
         IsVisible = false;
         foreach (var shade in _shades ?? []) shade.Hide();
         _guides?.Hide();
@@ -113,9 +117,19 @@ internal sealed class OutlineOverlay : IOutlineOverlay
         if (_border is not null) ApplyCaptureExclusion();
     }
 
+    public void SetEditingOptions(FrameEditingOptions options)
+    {
+        _editing = options;
+        if (_display is not null)
+            _border?.Configure(_display.UsableArea(_keepClear), _editing, Math.Clamp((int)Math.Round(8 * _display.Scale), 8, FrameBorderWindow.GrabMargin));
+    }
+
+    public void CancelFrameInteraction() => _border?.CancelInteraction();
+
     public void Dispose()
     {
         if (_disposed) return;
+        Hide();
         _disposed = true;
         if (_magnifierTimer is not null)
         {
@@ -155,12 +169,15 @@ internal sealed class OutlineOverlay : IOutlineOverlay
         _border = new FrameBorderWindow();
         _magnifier = new EdgeMagnifierWindow();
         _border.Dragged += OnBorderDragged;
+        _border.InteractionStarted += (_, _) => FrameInteractionStarted?.Invoke(this, EventArgs.Empty);
+        _border.InteractionFinished += (_, canceled) => FrameInteractionFinished?.Invoke(this, canceled);
     }
 
     private void Layout()
     {
         if (_display is null || _border is null || _guides is null || _nested is null || _shades is null) return;
 
+        _border.Configure(_display.UsableArea(_keepClear), _editing, Math.Clamp((int)Math.Round(8 * _display.Scale), 8, FrameBorderWindow.GrabMargin));
         _border.Update(Frame, _style, _locked);
         if (GuideWindow.IsNeeded(_style)) _guides.Update(Frame, _display, _style);
         if (_nestedFrames.Count > 0) _nested.Update(Frame, _nestedFrames, _style, _display.Scale);
@@ -260,7 +277,7 @@ internal sealed class OutlineOverlay : IOutlineOverlay
             Bounds = new Rectangle(item.Bounds.X + dx, item.Bounds.Y + dy, item.Bounds.Width, item.Bounds.Height)
         })];
         Frame = frame;
-        Layout();
+        QueueLayout();
         FrameMoved?.Invoke(this, EventArgs.Empty);
     }
 }

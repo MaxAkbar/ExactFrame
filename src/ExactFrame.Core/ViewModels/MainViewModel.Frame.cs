@@ -60,8 +60,11 @@ public sealed partial class MainViewModel
         get => _aspectLocked;
         set
         {
+            if (_aspectLocked != value) InterruptFrameInteraction();
             if (!SetProperty(ref _aspectLocked, value)) return;
             _ratio = (double)_width / _height;
+            ConfigureFrameEditing();
+            OnPropertyChanged(nameof(FrameEditAspectRatio));
             NotifySliderRanges();
         }
     }
@@ -124,6 +127,7 @@ public sealed partial class MainViewModel
 
     private void SelectPreset(ResolutionPreset preset)
     {
+        ClearFrameEditAnnouncement();
         if (preset.IsCustom)
         {
             _preset = preset;
@@ -209,6 +213,8 @@ public sealed partial class MainViewModel
 
     private void OnDisplaysChanged(object? sender, EventArgs e) => Guard(() =>
     {
+        _framePickCancellation?.Cancel();
+        FinishFrameInteraction(cancel: true);
         RefreshDisplays();
         if (IsResizeMode && _followedWindow is not null)
             RefreshTrackedOutline();
@@ -219,6 +225,8 @@ public sealed partial class MainViewModel
     /// <summary>Recomputes the requested frame after any edit, keeps a visible outline in sync and refreshes the UI.</summary>
     private void UpdateFrame(string? message = null)
     {
+        InterruptFrameInteraction();
+        ConfigureFrameEditing();
         _activeFrame = null;
         if (_anchor is not null && _display is not null)
         {
@@ -272,6 +280,7 @@ public sealed partial class MainViewModel
 
     private void NotifyFrame()
     {
+        NotifyFrameEditor();
         UpdateNestedBounds(CurrentFrame);
         SelectOnly(Anchors, a => a.Anchor == _anchor);
         SelectOnly(PlacementOptions, o => o.Key == (_anchor == FrameAnchor.Center ? "center" : _anchor is null ? "keep" : string.Empty));
@@ -287,6 +296,7 @@ public sealed partial class MainViewModel
     /// <summary>Loads a saved frame (a profile or the last session) without announcing it.</summary>
     private void ApplyFrameState(FrameProfile state)
     {
+        InterruptFrameInteraction();
         StopFollowingWindow();
         _explicitAreaSelection = false;
         _mode = state.Mode;

@@ -42,7 +42,7 @@ public static class HelpContent
             ]),
 
         new(OutlineArea, "Outline area", "",
-            "Set the size and position of the frame, and move it on screen.",
+            "Draw, move and resize the frame, or enter exact dimensions and coordinates.",
             [
                 new("Size",
                 [
@@ -62,6 +62,14 @@ public static class HelpContent
                         "Pick a display under the preview. Negative positions are normal on displays left of or above the main one.",
                         "**Keep clear of the taskbar** keeps the frame inside the area the taskbar doesn't cover.")
                 ]),
+                new("Draw and start from a window",
+                [
+                    Bullets(
+                        "Select **Draw on screen**, then drag a rectangle on any connected display. It must be at least 100 × 100 physical pixels and fit inside one display's usable area.",
+                        "Select **Use window bounds**, then click an existing window. ExactFrame uses its visible outer bounds and leaves the window's size alone.",
+                        "Both selections turn the aspect lock off. Turn the chain button back on to keep the new ratio while resizing.",
+                        "Right-click or Esc cancels either picker. Screen drawing also cancels after 30 seconds; window picking after 15 seconds.")
+                ]),
                 new("Additional frames",
                 [
                     Bullets(
@@ -74,10 +82,13 @@ public static class HelpContent
                 new("On screen",
                 [
                     Bullets(
-                        "Drag the outline's border to move it. It can't leave the display.",
-                "Press Esc to hide the outline while ExactFrame has focus.",
+                        "Drag the outline's border to move it. Drag an edge or corner handle to resize it. The frame stays inside the selected display's usable area.",
+                        "In the preview, drag inside the frame to move it, use its handles to resize, or drag outside it to draw a new frame.",
+                        "Focus the preview and use arrow keys to move 1 physical pixel, or Shift + arrows for 10. Ctrl + arrows resizes from the right and bottom edges; add Shift for 10 px.",
+                        "**Snap to edges and centers** aligns pointer moves and handle resizes with the display and nearby windows. Keyboard adjustments bypass snapping.",
+                        "Esc or right-click cancels an active drag. Otherwise Esc hides the outline while ExactFrame has focus.",
                         "Turn on **Click-through** so clicks pass through the border to the app underneath. The middle is always click-through.",
-                        "The preview is to scale. It shows whether the frame fits and its left, top, right and bottom edges."),
+                        "Turn click-through off to edit with the pointer or preview keys. The preview is to scale and shows the frame's physical bounds."),
                     Tip("The colored border is drawn inside the frame, so its outer edges are exactly the area you record.")
                 ])
             ]),
@@ -301,8 +312,11 @@ public static class HelpContent
     /// <summary>Fixed shortcuts, shown after the changeable global hotkeys.</summary>
     public static IReadOnlyList<ShortcutRow> FixedShortcuts { get; } =
     [
-        new("Hide the outline while ExactFrame has focus", ["Esc"]),
+        new("Cancel a drag; otherwise hide the outline while ExactFrame has focus", ["Esc"]),
         new("Open help", ["F1"]),
+        new("Move the frame in the focused preview by 1 px", ["↑ ↓ ← →"]),
+        new("Move the frame in the focused preview by 10 px", ["Shift", "↑ ↓ ← →"]),
+        new("Resize in the focused preview by 1 px; add Shift for 10 px", ["Ctrl", "↑ ↓ ← →"]),
         new("Nudge X or Y by 1 px, or 10 px", ["↑ ↓", "Page Up / Down"]),
         new("Move a size slider by 2 px, or 64 px", ["← →", "Page Up / Down"])
     ];

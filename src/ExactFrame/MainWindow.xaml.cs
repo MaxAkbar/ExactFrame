@@ -187,6 +187,12 @@ public sealed partial class MainWindow : Window
 
     private void OnEscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
+        if (PreviewMap.IsInteracting)
+        {
+            PreviewMap.CancelInteraction();
+            args.Handled = true;
+            return;
+        }
         if (Help.IsOpen)
         {
             Help.IsOpen = false;

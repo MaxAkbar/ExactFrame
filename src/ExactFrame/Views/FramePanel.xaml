@@ -13,6 +13,18 @@
         Visibility="{x:Bind ViewModel.ShowFramePanel, Mode=OneWay}">
         <StackPanel Padding="20" Spacing="20">
 
+            <StackPanel Spacing="8">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Button Content="Draw on screen" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.DrawFrameCommand}" Style="{StaticResource SecondaryButtonStyle}"
+                            ToolTipService.ToolTip="Drag a new frame on one display. Esc or right-click cancels." />
+                    <Button Grid.Column="1" Content="Use window bounds" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.UseWindowBoundsCommand}" Style="{StaticResource SecondaryButtonStyle}"
+                            ToolTipService.ToolTip="Pick a window as the starting frame. Its size stays unchanged." />
+                </Grid>
+                <CheckBox Content="Snap to edges and centers" IsChecked="{x:Bind ViewModel.SnapToEdges, Mode=TwoWay}"
+                          ToolTipService.ToolTip="Align frame moves and handle resizes with display and nearby window edges or centers. Keyboard adjustments remain exact." />
+            </StackPanel>
+
             <!-- Size -->
             <StackPanel Spacing="12">
                 <Grid>

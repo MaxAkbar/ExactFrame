@@ -37,6 +37,7 @@ internal static class NativeMethods
     // Messages
     internal const uint WmNull = 0x0000;
     internal const uint WmSettingChange = 0x001A;
+    internal const uint WmCancelMode = 0x001F;
     internal const uint WmSetCursor = 0x0020;
     internal const uint WmMouseActivate = 0x0021;
     internal const uint WmCopyData = 0x004A;
@@ -85,6 +86,10 @@ internal static class NativeMethods
     internal const int BlackBrush = 4;
     internal const int IdcArrow = 32512;
     internal const int IdcSizeAll = 32646;
+    internal const int IdcSizeNwSe = 32642;
+    internal const int IdcSizeNeSw = 32643;
+    internal const int IdcSizeWe = 32644;
+    internal const int IdcSizeNs = 32645;
 
     // Hooks, monitors, DWM, capture exclusion
     internal const int WhKeyboardLl = 13;
@@ -501,8 +506,20 @@ internal static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool GetCursorPos(out Point point);
 
+    /// <summary>Converts a mouse message's recorded client coordinates to physical screen pixels.</summary>
+    internal static bool TryGetMouseMessageScreenPoint(nint hwnd, nint lParam, out Point point)
+    {
+        // WM_LBUTTONDOWN defines signed low/high words. Its queued event position can precede GetCursorPos.
+        long packed = lParam.ToInt64();
+        point = new Point(unchecked((short)packed), unchecked((short)(packed >> 16)));
+        return ClientToScreen(hwnd, ref point);
+    }
+
     [DllImport("user32.dll")]
     internal static extern nint SetCapture(nint hwnd);
+
+    [DllImport("user32.dll")]
+    internal static extern nint GetCapture();
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

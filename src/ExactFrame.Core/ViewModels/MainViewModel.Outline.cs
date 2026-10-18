@@ -19,7 +19,8 @@ public sealed partial class MainViewModel
         set
         {
             if (!SetProperty(ref _clickThrough, value)) return;
-            _overlay.SetLocked(value || _followedWindow is not null);
+            _overlay.SetLocked(IsBusy || value || _followedWindow is not null);
+            NotifyFrameEditor();
             NotifyStage();
             if (_initialized)
             {
@@ -92,7 +93,8 @@ public sealed partial class MainViewModel
             }
         }
 
-        _overlay.SetLocked(_clickThrough);
+        _overlay.SetLocked(IsBusy || _clickThrough || _followedWindow is not null);
+        ConfigureFrameEditing();
         _overlay.Show(frame, _display, _keepClear, NestedBounds(frame));
 
         if (_hideFromRecorders && (!_overlay.CaptureExclusionApplied || HudCaptureExclusionFailed))
@@ -123,15 +125,9 @@ public sealed partial class MainViewModel
                 _overlay.Show(tracked, _display, _keepClear, []);
             return;
         }
-        var frame = _overlay.Frame;
-        _anchor = null;
-        _x = frame.X;
-        _y = frame.Y;
-        _activeFrame = frame;
-        if (_display is not null && IsOutlineMode)
-            _overlay.Show(frame, _display, _keepClear, NestedBounds(frame));
-        NotifyFrame();
-        SetStatus($"Moved to {frame.X}, {frame.Y}.");
+        if (!CanEditFrame) return;
+        SetFrameFromInteraction(_overlay.Frame);
+        if (_frameEdit is null) SetStatus($"Frame {CurrentFrame.Width} × {CurrentFrame.Height} px at {CurrentFrame.X}, {CurrentFrame.Y}.");
     }
 
     private async Task CopyBoundsAsync()
