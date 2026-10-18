@@ -119,11 +119,7 @@
                                         <ComboBoxItem Content="Landscape · 1920 × 1080" />
                                         <ComboBoxItem Content="Custom output" />
                                     </ComboBox>
-                                    <Grid ColumnSpacing="8" Visibility="{x:Bind HasOutput, Mode=OneWay}">
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <NumberBox Header="Output width" IsEnabled="{x:Bind HasOutput, Mode=OneWay}" Minimum="100" Maximum="16384" Value="{x:Bind OutputWidth, Mode=TwoWay}" />
-                                        <NumberBox Grid.Column="1" Header="Output height" IsEnabled="{x:Bind HasOutput, Mode=OneWay}" Minimum="100" Maximum="16384" Value="{x:Bind OutputHeight, Mode=TwoWay}" />
-                                    </Grid>
+                                    <views:OutputSizeEditor Item="{x:Bind}" Visibility="{x:Bind HasOutput, Mode=OneWay}" />
                                     <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ScalingSummary, Mode=OneWay}" TextWrapping="Wrap" />
                                     <Grid ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>

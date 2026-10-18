@@ -129,6 +129,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _overlay.VisibilityChanged += OnOverlayVisibilityChanged;
         _overlay.FrameInteractionStarted += OnFrameInteractionStarted;
         _overlay.FrameInteractionFinished += OnFrameInteractionFinished;
+        _overlay.NestedFrameInteraction += OnNestedFrameInteraction;
         _windowService.TrackedWindowChanged += OnTrackedWindowChanged;
         _displayService.DisplaysChanged += OnDisplaysChanged;
         _hotkeys.Pressed += OnHotkeyPressed;
@@ -197,6 +198,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         private set
         {
             if (!SetProperty(ref _isBusy, value)) return;
+            if (value) FinishNestedFrameInteraction(cancel: true);
             _overlay.SetLocked(value || _clickThrough || _followedWindow is not null);
             OnPropertyChanged(nameof(IsIdle));
             SaveProfileCommand.NotifyCanExecuteChanged();
@@ -251,6 +253,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _overlay.VisibilityChanged -= OnOverlayVisibilityChanged;
         _overlay.FrameInteractionStarted -= OnFrameInteractionStarted;
         _overlay.FrameInteractionFinished -= OnFrameInteractionFinished;
+        _overlay.NestedFrameInteraction -= OnNestedFrameInteraction;
         _framePickCancellation?.Cancel();
         _windowService.TrackedWindowChanged -= OnTrackedWindowChanged;
         StopFollowingWindow();

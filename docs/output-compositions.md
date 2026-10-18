@@ -12,7 +12,10 @@ These are composition plans. They do not set an encoder resolution, change an OB
 
 ## Position and safe margins
 
-- Drag the colored crop in its small position map, or enter **Crop X/Y** in physical pixels relative to the main frame. This selects **Free position**. Arrow keys move 1 px while the map has focus; Shift moves 10. Esc, right-click or lost focus cancels an active drag.
+- Drag a subframe inside the large preview to move it independently. It gets a selection outline; arrow keys move that selected crop 1 physical pixel, or 10 with Shift. Hold Alt while dragging to move the main frame underneath a subframe. Main-frame handles keep their resize behavior. Overlapping crop borders are hit before interiors; otherwise the last-added overlapping crop is picked.
+- With the outline shown and **Click-through** off, drag an additional frame's border directly on screen. Its interior still passes clicks through to the application. Turning click-through on locks all borders. Moves stay inside the parent inset and preserve source crop dimensions and requested output size.
+- The small position map and **Crop X/Y** remain available for parent-relative movement. Esc, right-click or lost capture cancels an active drag. A newer numeric or preset edit takes precedence over a canceled older drag.
+- Output width and height have sliders and exact pixel boxes, like the main size editor. Sliders normally reach 4096 px; entering a larger supported value extends the range without reducing it. Changing output dimensions does not resize the source crop.
 - An anchor places the crop on a 3 × 3 grid. A free position keeps its proportion of the available horizontal and vertical travel when the parent resizes. Moving the parent moves every composition by the same amount.
 - **Edge inset** sets clearance from the main frame, from 0 to 1000 physical pixels. A large inset can leave no usable crop; the UI reports that it does not fit.
 - **Safe margin** draws an inset content guide on each side of the crop, from 0% (off) to 40%. It appears in the main preview, live overlay and output preview. This is a user-defined composition guide, not a guarantee about any platform's controls or captions.
@@ -40,3 +43,12 @@ The Core tests cover exact-ratio geometry, free positioning on negative origins,
 - Test compositions were not saved. Reopening the app restored the user's prior main-frame settings with no additional frames.
 
 Recorder output, cross-PC behavior, native cancellation during an active pointer drag and mixed-DPI monitor transitions remain separate checks; a successful screen snapshot is not a recording compatibility result. Local check receipts are under ignored `artifacts/composition-checks/20261018-native/`. No captured screen images are retained there.
+
+### Subframe controls follow-up on 2026-10-18
+
+- 399 Core tests passed with no failures or skips. Release x64 builds of the app and Windows-check harness completed with no warnings or errors. The harness was built, not rerun against recorders.
+- On the existing 150% display with a negative screen origin, dragging a subframe in the large preview moved its parent-relative X from 823 to 1092. Right moved it to 1093, and Shift + Right to 1103. The 2385 × 1342 main frame, 738 × 1312 source crop and requested 1080 × 1920 output stayed unchanged.
+- Dragging the output width slider changed both the slider and number box to 2702; the height slider changed both to 2935. Entering 10000 for width extended the slider range and retained 10000 after committing the box. The source crop stayed unchanged.
+- Native review exposed a two-way position-selection binding echo that reset a move before bounds refreshed. Reapplying the current position selection now does nothing. The source-position label also now receives the correct property notification. A regression test covers both, and a final native drag confirmed that the label and numeric position agree.
+- Showing the live outline reported that Windows accepted capture exclusion. The desktop helper did not expose the overlay tool windows as input targets, so direct live-border dragging remains a manual check. Core tests cover the overlay event path, clamping, cancellation, external edits and click-through interruption.
+- Runtime test edits were discarded; reopening the final app restored the user's saved main frame and existing Shorts composition. Local receipts are under ignored `artifacts/subframe-controls/20261018-native/`, without screen images.

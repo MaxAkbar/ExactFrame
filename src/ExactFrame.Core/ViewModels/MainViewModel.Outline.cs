@@ -19,6 +19,7 @@ public sealed partial class MainViewModel
         set
         {
             if (!SetProperty(ref _clickThrough, value)) return;
+            if (value) FinishNestedFrameInteraction(cancel: true);
             _overlay.SetLocked(IsBusy || value || _followedWindow is not null);
             NotifyFrameEditor();
             NotifyStage();

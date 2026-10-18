@@ -84,8 +84,10 @@ handle resizes with the display and nearby window bounds. Numeric entry remains 
 See the [direct frame editing guide and Windows checks](docs/direct-frame-editing.md).
 
 **Additional frames.** In the Frame tab, add a **9:16**, **1:1**, **4:5** or custom guide inside the main frame.
-Name each composition, choose an output size, and edit its crop ratio and scale. Drag its small position map or
-enter parent-relative X/Y to place it freely. Edge inset and safe margins are adjustable. The crop follows the
+Name each composition, choose an output size, and edit its crop ratio and scale. Drag a subframe in the large preview
+or drag its live border on screen. The selected subframe also moves with arrow keys (Shift for 10 px); Alt + drag
+in the preview moves the main frame underneath it. Width and height sliders sit beside the exact output-size boxes.
+The small position map and parent-relative X/Y remain available. Edge inset and safe margins are adjustable. The crop follows the
 main frame when it moves or resizes. **Preview outputs** compares each composition and reports enlargement
 or empty bars; **Refresh from screen** takes an in-memory snapshot of the visible source. These previews do
 not configure or verify recorder output. **Copy bounds** still copies every source region for your recorder.
@@ -209,7 +211,7 @@ settings files.
 - The colored border is drawn **inside** the frame, so the frame's outer edges are the capture rectangle.
   A 6 px invisible band just outside the frame makes the edge easy to grab; it's outside the recorded area.
 - The middle of the frame is click-through. With **Click-through** on, the border is too.
-- Additional frame outlines are always click-through. Their colored borders stay inside their exact capture bounds.
+- Additional frame interiors are click-through. Their borders can be dragged when **Click-through** is off; locking makes those borders click-through too. Colored borders stay inside their exact capture bounds.
 - Dimming, guides and the size label are click-through layers. Guides are drawn inside the frame, so keep
   **Hide from recorders** on while they're visible.
 - **Hide from recorders** uses `SetWindowDisplayAffinity` with `WDA_EXCLUDEFROMCAPTURE`. Recorder support

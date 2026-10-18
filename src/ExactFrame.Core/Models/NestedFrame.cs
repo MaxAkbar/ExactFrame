@@ -43,5 +43,10 @@ public sealed record NestedFrame
 /// <summary>The resolved screen bounds and appearance sent to the preview and on-screen overlay.</summary>
 public sealed record NestedFrameBounds(Rectangle Bounds, string Name, OutlineColor Color)
 {
+    public string Id { get; init; } = string.Empty;
+    public Rectangle MovementArea { get; init; }
     public Rectangle SafeArea { get; init; }
 }
+
+public enum NestedFrameInteractionKind { Started, Moved, Completed, Canceled }
+public sealed record NestedFrameInteraction(string Id, Rectangle Bounds, NestedFrameInteractionKind Kind);

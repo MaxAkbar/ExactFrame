@@ -51,6 +51,9 @@ public sealed class DisplayMap : UserControl
     private bool _subscribed;
     private bool _drawIsValid;
     private DRect? _drawPreview;
+    private string? _nestedGestureId;
+    private DRect _nestedOriginal;
+    private DRect _nestedParent;
     private InputSystemCursorShape _cursorShape = InputSystemCursorShape.Arrow;
 
     public DisplayMap()
@@ -67,7 +70,7 @@ public sealed class DisplayMap : UserControl
         UseSystemFocusVisuals = true;
         AutomationProperties.SetName(this, "Recording frame preview");
         AutomationProperties.SetHelpText(this,
-            "Drag inside the frame to move it, drag an edge or corner to resize, or drag outside it to draw a new frame. " +
+            "Drag a subframe to move it. Hold Alt to move the main frame underneath it. Drag a main-frame edge or corner to resize, or outside it to draw. " +
             "Arrow keys move one physical pixel; Shift moves ten. Control and arrow keys resize. Escape cancels a drag.");
         SizeChanged += (_, _) => OnLayoutChanged();
         _canvas.SizeChanged += (_, _) => OnLayoutChanged();
@@ -147,6 +150,7 @@ public sealed class DisplayMap : UserControl
             CancelInteraction();
         if (e.PropertyName is nameof(MainViewModel.CanEditFrame) or "" or null)
             UpdateEditability();
+        if (e.PropertyName == nameof(MainViewModel.SelectedNestedFrameId)) Redraw();
     }
 
     private void UpdateEditability()
@@ -159,7 +163,8 @@ public sealed class DisplayMap : UserControl
     private void OnStateChanged()
     {
         if (IsInteracting && (State is not PreviewState state ||
-            state.IsResizeMode || state.DisplayBounds != _gestureDisplay || state.Frame != _expected))
+            state.IsResizeMode || state.DisplayBounds != _gestureDisplay || state.Frame != _expected ||
+            (_nestedGestureId is not null && (!state.NestedFrames.Any(frame => frame.Id == _nestedGestureId) || state.Frame != _nestedParent))))
             CancelInteraction();
         UpdateEditability();
         Redraw();
@@ -197,13 +202,23 @@ public sealed class DisplayMap : UserControl
         _expected = _original;
         _start = PhysicalPoint(point.Position);
         _handle = FrameManipulation.HitTest(_original, _start, Math.Max(1, (int)Math.Ceiling(8 / _scale)), includeInterior: true);
+        string? nestedId = !IsKeyDown(VirtualKey.Menu) && _handle is FrameHandle.Move or FrameHandle.None
+            ? editor.HitTestNestedFrame(_start, Math.Max(1, (int)Math.Ceiling(6 / _scale))) : null;
+        if (nestedId is not null && editor.BeginNestedFrameInteraction(nestedId))
+        {
+            _nestedGestureId = nestedId;
+            _nestedOriginal = editor.NestedFrames.First(item => item.Frame.Id == nestedId).Bounds;
+            _nestedParent = _original;
+        }
+        else editor.SelectNestedFrame(null);
         _drawing = _handle == FrameHandle.None;
+        if (_nestedGestureId is not null) _drawing = false;
         _drawPreview = null;
         _drawIsValid = !_drawing;
         _gestureArea = editor.SelectedFrameArea;
         _gestureDisplay = _display;
         _pointerId = e.Pointer.PointerId;
-        editor.BeginFrameInteraction();
+        if (_nestedGestureId is null) editor.BeginFrameInteraction();
         _editRevision = editor.FrameEditRevision;
         _gestureEditor = editor;
         // Capture the stable control, never one of the shapes replaced by Redraw.
@@ -230,6 +245,12 @@ public sealed class DisplayMap : UserControl
     private void UpdateInteraction(DPoint current)
     {
         if (_gestureEditor is not { } editor || !editor.CanEditFrame) return;
+        if (_nestedGestureId is { } id)
+        {
+            editor.MoveNestedFrameFromInteraction(id, new DPoint(_nestedOriginal.X + current.X - _start.X,
+                _nestedOriginal.Y + current.Y - _start.Y));
+            return;
+        }
         DRect frame;
         if (_drawing)
         {
@@ -269,11 +290,13 @@ public sealed class DisplayMap : UserControl
         try
         {
             ReleasePointerCaptures();
-            editor.FinishFrameInteraction(cancel);
+            if (_nestedGestureId is not null) editor.FinishNestedFrameInteraction(cancel);
+            else editor.FinishFrameInteraction(cancel);
         }
         finally
         {
             _ending = false;
+            _nestedGestureId = null;
             _drawing = false;
             _drawPreview = null;
             SetPointerCursor(InputSystemCursorShape.Arrow);
@@ -294,7 +317,12 @@ public sealed class DisplayMap : UserControl
         int dx = e.Key == VirtualKey.Left ? -step : e.Key == VirtualKey.Right ? step : 0;
         int dy = e.Key == VirtualKey.Up ? -step : e.Key == VirtualKey.Down ? step : 0;
         if (dx == 0 && dy == 0 || IsKeyDown(VirtualKey.Menu)) return;
-        editor.NudgeFrame(dx, dy, resize: IsKeyDown(VirtualKey.Control));
+        if (editor.SelectedNestedFrameId is not null)
+        {
+            if (IsKeyDown(VirtualKey.Control)) return;
+            editor.NudgeSelectedNestedFrame(dx, dy);
+        }
+        else editor.NudgeFrame(dx, dy, resize: IsKeyDown(VirtualKey.Control));
         e.Handled = true;
     }
 
@@ -304,7 +332,7 @@ public sealed class DisplayMap : UserControl
     private void UpdatePointerCursor(Windows.Foundation.Point position)
     {
         var shape = InputSystemCursorShape.Arrow;
-        if (CanInteract(out _) && IsOnDisplay(position) && State is PreviewState state)
+        if (CanInteract(out var editor) && IsOnDisplay(position) && State is PreviewState state)
         {
             var handle = FrameManipulation.HitTest(state.Frame, PhysicalPoint(position),
                 Math.Max(1, (int)Math.Ceiling(8 / _scale)), includeInterior: true);
@@ -317,6 +345,9 @@ public sealed class DisplayMap : UserControl
                 FrameHandle.TopRight or FrameHandle.BottomLeft => InputSystemCursorShape.SizeNortheastSouthwest,
                 _ => InputSystemCursorShape.Cross
             };
+            if (!IsKeyDown(VirtualKey.Menu) && handle is FrameHandle.Move or FrameHandle.None &&
+                editor.HitTestNestedFrame(PhysicalPoint(position), Math.Max(1, (int)Math.Ceiling(6 / _scale))) is not null)
+                shape = InputSystemCursorShape.SizeAll;
         }
         SetPointerCursor(shape);
     }
@@ -453,6 +484,8 @@ public sealed class DisplayMap : UserControl
             var nestedBrush = new SolidColorBrush(nestedColor);
             if (style.Line == OutlineLine.Corners) DrawCorners(nx, ny, nw, nh, nestedBrush, stroke);
             else AddOutline(nx, ny, nw, nh, nestedBrush, stroke, dashed: style.Line == OutlineLine.Dashed);
+            if (Editor is MainViewModel editor && nested.Id == editor.SelectedNestedFrameId)
+                AddOutline(nx - 3, ny - 3, nw + 6, nh + 6, Format.BrushFromHex("#F4F7F6"), 1, dashed: true);
             if (!nested.SafeArea.IsEmpty)
             {
                 var (sx, sy, sw, sh) = Map(nested.SafeArea);

@@ -17,6 +17,8 @@ public interface IOutlineOverlay : IDisposable
     /// <summary>True when the gesture was canceled and should restore its original frame.</summary>
     event EventHandler<bool>? FrameInteractionFinished;
 
+    event EventHandler<NestedFrameInteraction>? NestedFrameInteraction;
+
     bool IsVisible { get; }
 
     Rectangle Frame { get; }

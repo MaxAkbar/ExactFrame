@@ -166,6 +166,9 @@ public sealed class NestedFrameItem : ObservableObject
         get => _frame.UseCustomPosition ? 9 : (int)_frame.Anchor;
         set
         {
+            // A two-way selection binding can echo the new index before bounds are refreshed.
+            // Reapplying Free position here would replace a drag with the previous bounds.
+            if (value == AnchorIndex) return;
             if (value is >= 0 and <= 8) Change(_frame with { Anchor = (FrameAnchor)value, UseCustomPosition = false });
             else if (value == 9) Change(NestedFrameGeometry.PositionAt(_parent, _frame, X, Y));
         }
@@ -176,7 +179,7 @@ public sealed class NestedFrameItem : ObservableObject
         _bounds = bounds;
         _parent = parent;
         string dimensions = bounds.IsEmpty ? "Does not fit" : $"{bounds.Width} × {bounds.Height} px · X={bounds.X}, Y={bounds.Y}";
-        SetProperty(ref _dimensions, dimensions);
+        SetProperty(ref _dimensions, dimensions, nameof(Dimensions));
         OnPropertyChanged(nameof(Bounds));
         OnPropertyChanged(nameof(ParentBounds));
         OnPropertyChanged(nameof(XPosition));

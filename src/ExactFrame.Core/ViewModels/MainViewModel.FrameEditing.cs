@@ -24,7 +24,9 @@ public sealed partial class MainViewModel
     public string FrameEditorHint => !IsOutlineMode ? "Window size is measured after you select Resize window."
         : IsClickThrough ? "Turn click-through off to edit the frame."
         : (_frameEditAnnouncement.Length == 0 ? string.Empty : _frameEditAnnouncement + " ") +
-          "Drag to move, use handles to resize, or drag outside to draw. Arrows: 1 px · Shift: 10 px · Ctrl: resize.";
+          (SelectedNestedFrameId is null
+              ? "Drag to move; drag a subframe to move only it. Alt + drag moves the main frame. Arrows: 1 px · Shift: 10 px · Ctrl: resize main frame."
+              : "Subframe selected. Drag or use arrows to move it: 1 px · Shift: 10 px. Alt + drag moves the main frame.");
 
     public bool SnapToEdges
     {
@@ -41,6 +43,8 @@ public sealed partial class MainViewModel
 
     public void BeginFrameInteraction()
     {
+        FinishNestedFrameInteraction(cancel: true);
+        SelectNestedFrame(null);
         if (!CanEditFrame || _frameEdit is not null || _display is null) return;
         _frameEdit = new(CurrentFrame, _activeFrame, _width, _height, _x, _y, _anchor, _ratio, _aspectLocked, _display, _preset);
         _lastEditedFrame = CurrentFrame;
@@ -58,6 +62,7 @@ public sealed partial class MainViewModel
 
     public void FinishFrameInteraction(bool cancel = false)
     {
+        if (cancel) FinishNestedFrameInteraction(cancel: true);
         if (_frameEdit is not { } original) return;
         _frameEdit = null;
         if (cancel) _overlay.CancelFrameInteraction();
@@ -81,6 +86,9 @@ public sealed partial class MainViewModel
 
     private void InterruptFrameInteraction()
     {
+        bool nestedActive = _nestedEditItem is not null;
+        FinishNestedFrameInteraction(cancel: true);
+        if (nestedActive) _overlay.CancelFrameInteraction();
         ClearFrameEditAnnouncement();
         if (_frameEdit is null) return;
         _frameEdit = null;

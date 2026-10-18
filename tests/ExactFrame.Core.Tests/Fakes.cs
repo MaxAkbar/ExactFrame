@@ -116,6 +116,8 @@ internal sealed class FakePicker : IWindowPicker
 
 internal sealed class FakeOverlay : IOutlineOverlay
 {
+    public event EventHandler<NestedFrameInteraction>? NestedFrameInteraction;
+    public void RaiseNested(NestedFrameInteraction interaction) => NestedFrameInteraction?.Invoke(this, interaction);
     public event EventHandler? FrameInteractionStarted;
     public event EventHandler<bool>? FrameInteractionFinished;
     public event EventHandler? FrameMoved;

@@ -29,9 +29,11 @@ internal sealed class FrameBorderWindow : LayeredWindow
     private int _handleRadius = 8;
     private readonly NativeMethods.HookProc _keyboardProc;
     private nint _keyboardHook;
+    private readonly bool _moveOnly;
 
-    public FrameBorderWindow() : base(clickThrough: false)
+    public FrameBorderWindow(bool moveOnly = false, string name = "ExactFrame recording outline") : base(clickThrough: false, name: name)
     {
+        _moveOnly = moveOnly;
         _keyboardProc = KeyboardProc;
     }
 
@@ -93,7 +95,7 @@ internal sealed class FrameBorderWindow : LayeredWindow
                 FillRing(graphics, brush, frame, Rectangle.Inflate(frame, -t, -t));
                 break;
         }
-        if (!_locked)
+        if (!_locked && !_moveOnly)
         {
             using var fill = new SolidBrush(Color.FromArgb(255, 15, 30, 34));
             using var pen = new Pen(brush, 2);
@@ -153,7 +155,7 @@ internal sealed class FrameBorderWindow : LayeredWindow
         {
             case NativeMethods.WmSetCursor when !_locked:
                 NativeMethods.GetCursorPos(out var cursorPosition);
-                var handle = _dragging ? _dragHandle : FrameManipulation.HitTest(_frame, new(cursorPosition.X, cursorPosition.Y), _handleRadius, false);
+                var handle = _moveOnly ? FrameHandle.Move : _dragging ? _dragHandle : FrameManipulation.HitTest(_frame, new(cursorPosition.X, cursorPosition.Y), _handleRadius, false);
                 int cursorId = handle switch {
                     FrameHandle.TopLeft or FrameHandle.BottomRight => NativeMethods.IdcSizeNwSe,
                     FrameHandle.TopRight or FrameHandle.BottomLeft => NativeMethods.IdcSizeNeSw,
@@ -167,7 +169,7 @@ internal sealed class FrameBorderWindow : LayeredWindow
                 if (!NativeMethods.TryGetMouseMessageScreenPoint(hwnd, lParam, out var start)) return 0;
                 _dragStart = new Point(start.X, start.Y);
                 _dragOriginal = _frame;
-                _dragHandle = FrameManipulation.HitTest(_frame, _dragStart, _handleRadius, false);
+                _dragHandle = _moveOnly ? FrameHandle.Move : FrameManipulation.HitTest(_frame, _dragStart, _handleRadius, false);
                 if (_dragHandle == FrameHandle.None) _dragHandle = FrameHandle.Move;
                 _dragging = true;
                 InteractionStarted?.Invoke(this, EventArgs.Empty);

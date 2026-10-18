@@ -75,11 +75,12 @@ public static class HelpContent
                     Bullets(
                         "Add a **9:16** guide for Shorts inside a 16:9 main frame, or add **1:1**, **4:5** and custom guides.",
                         "Name each composition and choose its output size. The source crop and output dimensions are separate: a smaller crop may need enlargement, which can soften text.",
-                        "Drag the colored crop in its small position map, or set **Crop X/Y** in physical pixels relative to the main frame. Arrow keys move 1 px; Shift moves 10. Esc cancels a drag.",
+                        "Drag a subframe directly in the large preview or drag its live border on screen. The selected subframe moves 1 px with arrows or 10 with Shift. Alt + drag moves the main frame underneath it; Esc cancels a drag.",
+                        "Output width and height each have a slider and an exact pixel box. The small position map and **Crop X/Y** remain available for parent-relative adjustments.",
                         "Use an anchor or a free position. The free position stays relative as the main frame resizes. Adjust **Edge inset** for clearance and **Safe margin** for content guides.",
                         "**Preview outputs** shows each final composition with its scaling and safe margin. Different aspect ratios use empty bars instead of stretching.",
                         "**Refresh from screen** captures visible content while ExactFrame briefly hides. Images stay in memory until the dialog closes. Previews fit the window; actual recorder output remains unverified.",
-                        "Move or resize the main frame and the extra guides follow it. Their borders are click-through.",
+                        "Move or resize the main frame and the extra guides follow it. Their interiors are click-through; turn on **Click-through** to lock their borders too.",
                         "**Copy bounds** copies a labeled region for every frame. Set up each region in your recorder or editor.",
                         "Save the setup as a profile to restore all its compositions together. Exported version 2 profiles retain output sizes, free positions and margins; older version 1 files still import as guides.")
                 ]),
