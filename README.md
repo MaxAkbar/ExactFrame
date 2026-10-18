@@ -8,6 +8,30 @@ to-scale display preview, a 3 × 3 anchor grid, outline styles and guides, dimmi
 saved profiles with hotkeys, and a floating control bar next to the outline.
 It can also show several capture guides at once, such as a vertical Shorts frame inside a landscape frame.
 
+## Download and start
+
+[Download ExactFrame 2.0.0](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.0.0).
+Choose the package for your PC:
+
+| Windows PC | Download |
+|---|---|
+| Intel or AMD, 64-bit (most PCs) | [Windows x64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.0.0/ExactFrame-2.0.0-win-x64-portable.zip) |
+| Windows on Arm | [Windows ARM64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.0.0/ExactFrame-2.0.0-win-arm64-portable.zip) |
+
+1. Extract the ZIP to a folder you want to keep, then open **ExactFrame.exe**.
+   No installer, .NET installation or Windows App SDK installation is needed.
+2. Choose a size and select **Show outline**, or use **Resize window** to size another app's content.
+3. Set that area in your recorder. ExactFrame prepares recording areas; it does not record video.
+
+Press **F1** for help. Closing the window keeps ExactFrame in the notification area by default;
+right-click its icon and choose **Quit ExactFrame** to exit fully. If you enable **Start with Windows**,
+keep the executable in a stable location. Settings are stored in your Windows user profile, rather than
+beside the executable.
+
+The release builds are not code-signed. Windows may show an unknown-publisher warning.
+The release includes `SHA256SUMS.txt` to verify the downloaded ZIP files, and its notes describe validation
+and known limitations. [Report a problem](https://github.com/MaxAkbar/ExactFrame/issues).
+
 ## Requirements
 
 - Windows 10 version 1809 or later; Windows 11 recommended. Hiding the outline from recorders needs
@@ -37,6 +61,10 @@ dotnet test tests/ExactFrame.Core.Tests/ExactFrame.Core.Tests.csproj
 Double-click `Build-Portable.cmd`. It publishes a single self-contained `artifacts\win-x64\ExactFrame.exe`
 that runs without installing .NET or the Windows App SDK. For ARM64, replace `win-x64` and `x64` with
 `win-arm64` and `ARM64`.
+
+To build versioned release ZIPs for both architectures, including instructions, the font license and
+SHA-256 checksums, run `./scripts/Build-Release.ps1` in PowerShell. Output goes to
+`artifacts/release/<version>/`. The SDK is pinned in `global.json`; preview SDKs are not selected.
 
 ## Using ExactFrame
 
