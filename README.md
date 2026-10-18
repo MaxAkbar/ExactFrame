@@ -92,8 +92,13 @@ recorder or editing workflow. You can add several guides and remove them individ
 **Style tab.** Outline color, weight (2, 4 or 6 px) and line (solid, dashed or corners only), the size label,
 dimming outside the frame, rule-of-thirds, center-mark and 90% safe-area guides, and the on-screen controls.
 
-**Profiles tab.** **Save current** stores the size, position, display, mode and additional frames. The first nine profiles get
-Ctrl + Alt + 1 to 9 in list order; **Change** next to **Apply profile 1 to 9** picks other keys to hold with the number.
+**Profiles tab.** **Save current** creates a named setup with its size, position, display, mode, aspect lock and additional frames.
+Check **Include appearance when saving or updating** to save its outline style too. The profile's **More actions** menu offers
+**Update from current**, **Rename**, **Duplicate**, **Export**, **Shortcut** and **Delete**. Updating is explicit; saving an existing name
+never replaces it. Numbered shortcuts stay with their profiles when another profile is deleted. New saves take the first free
+Ctrl + Alt + 1 to 9 slot; duplicates and imports start without a shortcut. **Change** next to **Apply profile 1 to 9** picks other held keys.
+**Export all** and **Import** transfer portable profile files. Import reviews display mappings and adds new copies without applying them.
+See [portable profiles](docs/portable-profiles.md) for what is included and how positions move between displays.
 Applying a Resize window profile resizes its app straight away, including from its shortcut while another app has focus.
 If the app has several windows, ExactFrame uses the selected one, otherwise the one in front; if the app isn't open,
 nothing is resized. **Global hotkeys** shows each shortcut; if another app owns one, it says so and **Change** records a

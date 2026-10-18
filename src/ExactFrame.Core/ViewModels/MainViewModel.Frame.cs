@@ -66,6 +66,7 @@ public sealed partial class MainViewModel
             ConfigureFrameEditing();
             OnPropertyChanged(nameof(FrameEditAspectRatio));
             NotifySliderRanges();
+            NotifyProfileHeader();
         }
     }
 
@@ -309,6 +310,9 @@ public sealed partial class MainViewModel
         _width = Math.Clamp(state.Width, MinSize, MaxSize);
         _height = Math.Clamp(state.Height, MinSize, MaxSize);
         _ratio = (double)_width / _height;
+        _aspectLocked = state.IsAspectLocked;
+        _includeProfileAppearance = state.Appearance is not null;
+        ApplyEffectiveStyle(state.Appearance ?? _settings.Style);
         _preset = ResolutionPreset.Match(_width, _height);
         _anchor = state.Anchor;
         _x = state.X;
@@ -318,8 +322,8 @@ public sealed partial class MainViewModel
         if (state.Mode == FrameMode.Resize) _area = state.Area;
 
         // Never leave another app selected: applying the profile resizes the selected window.
-        if (state.Mode == FrameMode.Resize && !string.IsNullOrEmpty(state.TargetProcessName))
-            SetTarget(FindAppWindow(state.TargetProcessName));
+        if (state.Mode == FrameMode.Resize)
+            SetTarget(string.IsNullOrEmpty(state.TargetProcessName) ? null : FindAppWindow(state.TargetProcessName));
 
         SyncSelections();
         PrimaryCommand.NotifyCanExecuteChanged();
@@ -334,11 +338,15 @@ public sealed partial class MainViewModel
         Mode = _mode,
         Width = _width,
         Height = _height,
+        HotkeySlot = _settings.Profiles.FirstOrDefault(p => p.Id == id)?.HotkeySlot ?? 0,
+        IsAspectLocked = _aspectLocked,
+        Appearance = _includeProfileAppearance ? _style : null,
         NestedFrames = [.. NestedFrames.Select(item => item.Frame)],
         Anchor = _anchor,
         X = _x,
         Y = _y,
         DisplayDeviceName = _display is null || _display.IsPrimary ? null : _display.DeviceName,
+        DisplaySnapshot = _display,
         KeepClearOfTaskbar = _keepClear,
         Area = _area,
         TargetProcessName = _targetWindow?.ProcessName

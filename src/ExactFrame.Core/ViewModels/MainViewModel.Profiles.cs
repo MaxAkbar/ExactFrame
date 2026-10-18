@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
+using ExactFrame.Core.Profiles;
 
 namespace ExactFrame.Core.ViewModels;
 
@@ -21,6 +22,16 @@ public sealed partial class MainViewModel
     private readonly HashSet<int> _registeredHotkeys = [];
     private readonly Dictionary<int, HotkeyFailure> _hotkeyFailures = [];
     private bool _toggleHotkeyRegistered;
+    private bool _includeProfileAppearance;
+
+    public bool IncludeProfileAppearance
+    {
+        get => _includeProfileAppearance;
+        set
+        {
+            if (SetProperty(ref _includeProfileAppearance, value)) NotifyProfileHeader();
+        }
+    }
 
     public ObservableCollection<ProfileItem> Profiles { get; } = [];
 
@@ -42,7 +53,8 @@ public sealed partial class MainViewModel
 
     private FrameProfile? ActiveProfile => _settings.Profiles.FirstOrDefault(p => p.Id == _settings.ActiveProfileId);
 
-    private bool IsProfileEdited => ActiveProfile is { } profile && Snapshot(profile.Id, profile.Name) != Normalize(profile);
+    private bool IsProfileEdited => ActiveProfile is { } profile &&
+        (Snapshot(profile.Id, profile.Name) with { DisplaySnapshot = profile.DisplaySnapshot }) != Normalize(profile);
 
     private HotkeyGesture ProfileGesture(int index) => new(_settings.ProfileHotkeyModifiers, VkOne + index);
 
@@ -52,16 +64,21 @@ public sealed partial class MainViewModel
     private async Task ApplyProfileAsync(FrameProfile profile)
     {
         if (IsBusy) return;
+        if (profile.DisplayDeviceName is { } device && !_displays.Any(d => d.DeviceName == device))
+        {
+            SetStatus($"The display saved for “{profile.Name}” is disconnected. Export and import this profile to choose a connected display.", warning: true);
+            return;
+        }
         bool resize = profile.Mode == FrameMode.Resize;
         if (resize) Guard(RefreshWindows);
 
         ApplyFrameState(profile);
         _settings.ActiveProfileId = profile.Id;
-        SaveSettings();
         SelectOnly(Profiles, p => p.Profile.Id == profile.Id);
         if (!resize)
         {
             UpdateFrame($"Applied “{profile.Name}”.");
+            SaveSettings();
             return;
         }
 
@@ -73,9 +90,11 @@ public sealed partial class MainViewModel
             SetStatus(missing
                 ? $"“{profile.Name}” resizes {profile.TargetProcessName}, which isn’t open. Open it, then apply the profile again."
                 : $"Applied “{profile.Name}”. Choose a window to resize.", warning: missing);
+            SaveSettings();
             return;
         }
         await RunBusyAsync(() => ResizeTargetAsync(ResizeReason.Profile, profile.Name));
+        SaveSettings();
     }
 
     private Task ApplyNextProfileAsync()
@@ -95,20 +114,97 @@ public sealed partial class MainViewModel
         string? name = (await _dialogs.PromptProfileNameAsync(suggestion))?.Trim();
         if (string.IsNullOrEmpty(name)) return;
 
-        int existing = _settings.Profiles.FindIndex(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
-        var profile = Snapshot(existing >= 0 ? _settings.Profiles[existing].Id : Guid.NewGuid().ToString("N"), name);
-        if (existing >= 0) _settings.Profiles[existing] = profile;
-        else _settings.Profiles.Add(profile);
+        if (!ValidateProfileName(name)) return;
+        var profile = Snapshot(Guid.NewGuid().ToString("N"), name) with
+        {
+            HotkeySlot = ProfileShortcutAssignments.FirstFree(_settings.Profiles)
+        };
+        if (!TrySaveProfiles([.. _settings.Profiles, profile], profile.Id)) return;
+        if (profile.Appearance is null) ApplyEffectiveStyle(_settings.Style);
+        string hint = profile.HotkeySlot > 0 && _registeredHotkeys.Contains(HotkeyProfileBase + profile.HotkeySlot - 1)
+            ? $" Press {ProfileGesture(profile.HotkeySlot - 1)} to apply it from any app." : string.Empty;
+        SetStatus($"Saved “{name}”." + hint);
+    }
 
-        _settings.ActiveProfileId = profile.Id;
-        SaveSettings();
+    private bool ValidateProfileName(string name, string? exceptId = null)
+    {
+        if (name.Length > 60)
+        {
+            SetStatus("Use a profile name of 60 characters or fewer.", warning: true);
+            return false;
+        }
+        if (_settings.Profiles.Any(p => p.Id != exceptId && string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            SetStatus($"A profile named “{name}” already exists. Choose another name, or use Update with current setup.", warning: true);
+            return false;
+        }
+        return true;
+    }
+
+    private bool TrySaveProfiles(List<FrameProfile> profiles, string? activeId)
+    {
+        var previous = _settings.Profiles;
+        string? previousActive = _settings.ActiveProfileId;
+        _settings.Profiles = profiles;
+        _settings.ActiveProfileId = activeId;
+        if (!SaveSettings())
+        {
+            _settings.Profiles = previous;
+            _settings.ActiveProfileId = previousActive;
+            return false;
+        }
         RegisterHotkeys();
         RebuildProfiles();
+        return true;
+    }
 
-        int index = _settings.Profiles.FindIndex(p => p.Id == profile.Id);
-        string hint = index < ProfileHotkeyCount && _registeredHotkeys.Contains(HotkeyProfileBase + index)
-            ? $" Press {ProfileGesture(index)} to apply it from any app." : string.Empty;
-        SetStatus((existing >= 0 ? $"Updated “{name}”." : $"Saved “{name}”.") + hint);
+    private async Task UpdateProfileAsync(FrameProfile profile)
+    {
+        string appearance = IncludeProfileAppearance ? "including the current appearance" : "using the default appearance";
+        if (!await _dialogs.ConfirmAsync("Update profile?",
+            $"Replace “{profile.Name}” with the current setup, {appearance}? Its name and shortcut will stay the same.", "Update")) return;
+        var updated = Snapshot(profile.Id, profile.Name);
+        if (!TrySaveProfiles(_settings.Profiles.Select(p => p.Id == profile.Id ? updated : p).ToList(), profile.Id)) return;
+        if (updated.Appearance is null) ApplyEffectiveStyle(_settings.Style);
+        SetStatus($"Updated “{profile.Name}”.");
+    }
+
+    private async Task RenameProfileAsync(FrameProfile profile)
+    {
+        string? name = (await _dialogs.PromptProfileNameAsync(profile.Name, "Rename profile", "Rename"))?.Trim();
+        if (string.IsNullOrEmpty(name) || !ValidateProfileName(name, profile.Id)) return;
+        if (TrySaveProfiles(_settings.Profiles.Select(p => p.Id == profile.Id ? p with { Name = name } : p).ToList(), _settings.ActiveProfileId))
+            SetStatus($"Renamed profile to “{name}”.");
+    }
+
+    private async Task DuplicateProfileAsync(FrameProfile profile)
+    {
+        string? name = (await _dialogs.PromptProfileNameAsync(UniqueProfileName(profile.Name + " copy",
+            _settings.Profiles.Select(p => p.Name)), "Duplicate profile", "Duplicate"))?.Trim();
+        if (string.IsNullOrEmpty(name) || !ValidateProfileName(name)) return;
+        var copy = profile with
+        {
+            Id = Guid.NewGuid().ToString("N"), Name = name, HotkeySlot = 0,
+            NestedFrames = [.. profile.NestedFrames.Select(f => f with { Id = Guid.NewGuid().ToString("N") })]
+        };
+        if (TrySaveProfiles([.. _settings.Profiles, copy], _settings.ActiveProfileId))
+            SetStatus($"Duplicated “{profile.Name}” as “{name}”. Choose a shortcut in More actions if needed.");
+    }
+
+    private async Task ChooseProfileShortcutAsync(FrameProfile profile)
+    {
+        int? chosen = await _dialogs.ChooseProfileShortcutAsync(profile, _settings.Profiles);
+        if (chosen is not int slot || slot < 0 || slot > ProfileHotkeyCount || slot == profile.HotkeySlot) return;
+        var owner = slot == 0 ? null : _settings.Profiles.FirstOrDefault(p => p.Id != profile.Id && p.HotkeySlot == slot);
+        if (owner is not null && !await _dialogs.ConfirmAsync("Reassign shortcut?",
+            $"{ProfileGesture(slot - 1)} belongs to “{owner.Name}”. Assign it to “{profile.Name}”? “{owner.Name}” will have no numbered shortcut.", "Reassign")) return;
+        var next = _settings.Profiles.Select(p => p.Id == profile.Id ? p with { HotkeySlot = slot }
+            : p.Id == owner?.Id ? p with { HotkeySlot = 0 } : p).ToList();
+        if (!TrySaveProfiles(next, _settings.ActiveProfileId)) return;
+        bool failed = slot > 0 && !_registeredHotkeys.Contains(HotkeyProfileBase + slot - 1);
+        SetStatus(slot == 0 ? $"Removed the numbered shortcut from “{profile.Name}”."
+            : failed ? $"Assigned {ProfileGesture(slot - 1)} to “{profile.Name}”, but Windows couldn’t register it. Check the shortcut warning."
+            : $"“{profile.Name}” now uses {ProfileGesture(slot - 1)}.", warning: failed);
     }
 
     private async Task DeleteProfileAsync(FrameProfile profile)
@@ -116,44 +212,49 @@ public sealed partial class MainViewModel
         bool confirmed = await _dialogs.ConfirmAsync("Delete profile?", $"“{profile.Name}” will be removed. This can’t be undone.", "Delete");
         if (!confirmed) return;
 
-        _settings.Profiles.RemoveAll(p => p.Id == profile.Id);
-        if (_settings.ActiveProfileId == profile.Id) _settings.ActiveProfileId = null;
-        SaveSettings();
-        RegisterHotkeys();
-        RebuildProfiles();
-        SetStatus($"Deleted “{profile.Name}”.");
+        if (TrySaveProfiles(_settings.Profiles.Where(p => p.Id != profile.Id).ToList(),
+            _settings.ActiveProfileId == profile.Id ? null : _settings.ActiveProfileId))
+            SetStatus($"Deleted “{profile.Name}”.");
     }
 
     private void RebuildProfiles()
     {
         Profiles.Clear();
-        for (int i = 0; i < _settings.Profiles.Count; i++)
+        foreach (var profile in _settings.Profiles)
         {
-            var profile = _settings.Profiles[i];
-            bool hasKeys = i < ProfileHotkeyCount;
+            int index = profile.HotkeySlot - 1;
+            bool hasKeys = index >= 0 && index < ProfileHotkeyCount;
             Profiles.Add(new ProfileItem(
                 profile,
                 DescribeProfile(profile),
-                hasKeys ? ProfileGesture(i).Keys : [],
-                hasKeys && _hotkeyFailures.TryGetValue(HotkeyProfileBase + i, out var failure) ? ProfileProblem(failure) : null,
+                hasKeys ? ProfileGesture(index).Keys : [],
+                hasKeys && _hotkeyFailures.TryGetValue(HotkeyProfileBase + index, out var failure) ? ProfileProblem(failure) : null,
                 () => ApplyProfileAsync(profile),
-                () => DeleteProfileAsync(profile))
+                () => RunBusyAsync(() => DeleteProfileAsync(profile)),
+                () => RunBusyAsync(() => UpdateProfileAsync(profile)),
+                () => RunBusyAsync(() => RenameProfileAsync(profile)),
+                () => RunBusyAsync(() => DuplicateProfileAsync(profile)),
+                () => RunBusyAsync(() => ExportProfilesAsync(profile)),
+                () => RunBusyAsync(() => ChooseProfileShortcutAsync(profile)),
+                _profileTransfer is not null)
             {
                 IsSelected = profile.Id == _settings.ActiveProfileId
             });
         }
         OnPropertyChanged(nameof(HasProfiles));
         OnPropertyChanged(nameof(HasNoProfiles));
+        ExportProfilesCommand.NotifyCanExecuteChanged();
         NotifyProfileHeader();
     }
 
     private string DescribeProfile(FrameProfile profile)
     {
         string size = $"{profile.Width} × {profile.Height}";
+        string appearance = profile.Appearance is null ? string.Empty : " · Saved appearance";
         if (profile.Mode == FrameMode.Resize)
         {
             string target = profile.TargetProcessName ?? "a window";
-            return $"Resize {target} · {size} {AreaLabel(profile.Area)}";
+            return $"Resize {target} · {size} {AreaLabel(profile.Area)}{appearance}";
         }
 
         string display = profile.DisplayDeviceName is null
@@ -162,7 +263,7 @@ public sealed partial class MainViewModel
         string position = profile.Anchor?.DisplayName() ?? $"At {profile.X}, {profile.Y}";
         string nested = profile.NestedFrames is { Count: > 0 } frames
             ? $" · {frames.Count} extra {(frames.Count == 1 ? "frame" : "frames")}" : string.Empty;
-        return $"{size} · {position} · {display}{nested}";
+        return $"{size} · {position} · {display}{nested}{appearance}";
     }
 
     private void NotifyProfileHeader()
@@ -182,8 +283,8 @@ public sealed partial class MainViewModel
         _toggleHotkeyRegistered = TryRegister(HotkeyToggleOutline, _settings.ToggleOutlineHotkey);
         TryRegister(HotkeyToggleLock, _settings.ToggleLockHotkey);
         TryRegister(HotkeyNextProfile, _settings.NextProfileHotkey);
-        for (int i = 0; i < Math.Min(ProfileHotkeyCount, _settings.Profiles.Count); i++)
-            TryRegister(HotkeyProfileBase + i, ProfileGesture(i));
+        foreach (var profile in _settings.Profiles.Where(p => p.HotkeySlot is >= 1 and <= ProfileHotkeyCount))
+            TryRegister(HotkeyProfileBase + profile.HotkeySlot - 1, ProfileGesture(profile.HotkeySlot - 1));
 
         Hotkeys.Clear();
         Hotkeys.Add(HotkeyRow(HotkeyToggleOutline, "Show or hide outline", _settings.ToggleOutlineHotkey));
@@ -224,8 +325,8 @@ public sealed partial class MainViewModel
     private string? ProfileKeysProblem()
     {
         if (!ProfileGesture(0).IsValid) return "Not set";
-        var failures = Enumerable.Range(0, Math.Min(ProfileHotkeyCount, _settings.Profiles.Count))
-            .Select(i => _hotkeyFailures.GetValueOrDefault(HotkeyProfileBase + i))
+        var failures = _settings.Profiles.Where(p => p.HotkeySlot is >= 1 and <= ProfileHotkeyCount)
+            .Select(p => _hotkeyFailures.GetValueOrDefault(HotkeyProfileBase + p.HotkeySlot - 1))
             .OfType<HotkeyFailure>()
             .ToList();
         if (failures.Count == 0) return null;
@@ -271,7 +372,16 @@ public sealed partial class MainViewModel
             default: _settings.NextProfileHotkey = gesture; break;
         }
 
-        SaveSettings();
+        if (!SaveSettings())
+        {
+            switch (id)
+            {
+                case HotkeyToggleOutline: _settings.ToggleOutlineHotkey = current; break;
+                case HotkeyToggleLock: _settings.ToggleLockHotkey = current; break;
+                default: _settings.NextProfileHotkey = current; break;
+            }
+            return;
+        }
         RegisterHotkeys();
         RebuildProfiles();
 
@@ -299,8 +409,13 @@ public sealed partial class MainViewModel
             }
         }
 
+        var previous = _settings.ProfileHotkeyModifiers;
         _settings.ProfileHotkeyModifiers = gesture.Modifiers;
-        SaveSettings();
+        if (!SaveSettings())
+        {
+            _settings.ProfileHotkeyModifiers = previous;
+            return;
+        }
         RegisterHotkeys();
         RebuildProfiles();
 
@@ -324,8 +439,10 @@ public sealed partial class MainViewModel
                 _ = ApplyNextProfileAsync();
                 break;
             default:
-                int index = id - HotkeyProfileBase;
-                if (index >= 0 && index < _settings.Profiles.Count) _ = ApplyProfileAsync(_settings.Profiles[index]);
+                int slot = id - HotkeyProfileBase + 1;
+                if (slot is >= 1 and <= ProfileHotkeyCount && _registeredHotkeys.Contains(id) &&
+                    _settings.Profiles.FirstOrDefault(p => p.HotkeySlot == slot) is { } profile)
+                    _ = ApplyProfileAsync(profile);
                 break;
         }
     }

@@ -8,18 +8,28 @@ public enum FrameMode
     Resize
 }
 
-/// <summary>A saved setup. Profiles 1–9 get a Ctrl + Alt + number hotkey in list order.</summary>
+/// <summary>A saved setup with an optional stable numbered shortcut and appearance.</summary>
 public sealed record FrameProfile
 {
+    private DisplayInfo? _displaySnapshot;
+
     public string Id { get; init; } = Guid.NewGuid().ToString("N");
 
     public string Name { get; init; } = "Profile";
+
+    /// <summary>A stable shortcut number from 1 to 9, or 0 for no numbered shortcut.</summary>
+    public int HotkeySlot { get; init; }
 
     public FrameMode Mode { get; init; } = FrameMode.Outline;
 
     public int Width { get; init; } = 1920;
 
     public int Height { get; init; } = 1080;
+
+    public bool IsAspectLocked { get; init; } = true;
+
+    /// <summary>Optional profile appearance; null uses the application's default appearance.</summary>
+    public OutlineStyle? Appearance { get; init; }
 
     /// <summary>Additional recording guides that move and scale with the main frame.</summary>
     public List<NestedFrame> NestedFrames { get; init; } = [];
@@ -34,6 +44,13 @@ public sealed record FrameProfile
     /// <summary>Windows device name, such as <c>\\.\DISPLAY1</c>. <c>null</c> means the primary display.</summary>
     public string? DisplayDeviceName { get; init; }
 
+    /// <summary>Display geometry for remapping a portable frame; native monitor interface paths are never retained.</summary>
+    public DisplayInfo? DisplaySnapshot
+    {
+        get => _displaySnapshot;
+        init => _displaySnapshot = value is null ? null : value with { MonitorDevicePath = null };
+    }
+
     public bool KeepClearOfTaskbar { get; init; }
 
     public WindowArea Area { get; init; } = WindowArea.Client;
@@ -42,9 +59,11 @@ public sealed record FrameProfile
     public string? TargetProcessName { get; init; }
 
     public bool Equals(FrameProfile? other) => other is not null &&
-        Id == other.Id && Name == other.Name && Mode == other.Mode && Width == other.Width && Height == other.Height &&
+        Id == other.Id && Name == other.Name && HotkeySlot == other.HotkeySlot && Mode == other.Mode &&
+        Width == other.Width && Height == other.Height && IsAspectLocked == other.IsAspectLocked && Appearance == other.Appearance &&
         (NestedFrames ?? []).SequenceEqual(other.NestedFrames ?? []) && Anchor == other.Anchor && X == other.X &&
-        Y == other.Y && DisplayDeviceName == other.DisplayDeviceName && KeepClearOfTaskbar == other.KeepClearOfTaskbar &&
+        Y == other.Y && DisplayDeviceName == other.DisplayDeviceName && DisplaySnapshot == other.DisplaySnapshot &&
+        KeepClearOfTaskbar == other.KeepClearOfTaskbar &&
         Area == other.Area && TargetProcessName == other.TargetProcessName;
 
     public override int GetHashCode()
@@ -52,14 +71,18 @@ public sealed record FrameProfile
         var hash = new HashCode();
         hash.Add(Id);
         hash.Add(Name);
+        hash.Add(HotkeySlot);
         hash.Add(Mode);
         hash.Add(Width);
         hash.Add(Height);
+        hash.Add(IsAspectLocked);
+        hash.Add(Appearance);
         foreach (var frame in NestedFrames ?? []) hash.Add(frame);
         hash.Add(Anchor);
         hash.Add(X);
         hash.Add(Y);
         hash.Add(DisplayDeviceName);
+        hash.Add(DisplaySnapshot);
         hash.Add(KeepClearOfTaskbar);
         hash.Add(Area);
         hash.Add(TargetProcessName);

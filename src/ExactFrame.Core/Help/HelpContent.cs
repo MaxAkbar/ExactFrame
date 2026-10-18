@@ -134,17 +134,29 @@ public static class HelpContent
                     Steps(
                         "Set up the frame the way you want it.",
                         "Open the **Profiles** tab and select **Save current**.",
-                        "Name the profile. Using an existing name updates that profile."),
+                        "Choose a new name. To replace a saved setup, use **Update from current** in its actions menu."),
                     Bullets(
-                        "A profile remembers the size, position, display, mode and additional frames. In Resize window mode it also remembers the app.",
+                        "A profile remembers the size, position, display, mode, aspect lock and additional frames. In Resize window mode it also remembers the app. " +
+                        "Check **Include appearance when saving or updating** to remember its outline style too. Other profiles use the default appearance.",
                         "Select a profile to apply it. The profile button in the title bar shows which one is active, and says " +
                         "**edited** once you change something.",
                         "Applying a Resize window profile resizes its app straight away, including from the profile's shortcut " +
                         "while another app has focus. If the app has several windows, ExactFrame uses the selected one, otherwise " +
                         "the one in front. If the app isn't open, nothing is resized.",
-                        "The first nine profiles get Ctrl + Alt + 1 to 9 in list order, and the **Next profile** shortcut cycles " +
-                        "through them. To hold other keys with the number, select **Change** next to **Apply profile 1 to 9**.",
-                        "Select the trash button on a profile to delete it.")
+                        "Numbered shortcuts stay assigned to the same profile when other profiles are deleted. New saves take the first free slot; " +
+                        "duplicates and imports have none until you choose **Shortcut** in their actions menu. **Next profile** cycles through the list. " +
+                        "To hold other keys with the number, select **Change** next to **Apply profile 1 to 9**.",
+                        "Use a profile's actions menu to update, rename, duplicate, export, assign a shortcut or delete it.")
+                ]),
+                new("Transfer profiles between PCs",
+                [
+                    Steps("Select **Export all**, or **Export** in one profile's actions menu.",
+                        "On the destination PC, select **Import** and choose the saved file.",
+                        "Review the profiles and choose a connected display for every saved display, then select **Import copies**."),
+                    Bullets("Imports add copies without replacing existing profiles, taking shortcuts or resizing an app. Select a profile when ready to apply it.",
+                        "Sizes stay in physical pixels. Custom positions move relative to the chosen display and are kept inside it when they fit. " +
+                        "A size that is too large stays unchanged and shows a warning. Missing source geometry centers a custom position.",
+                        "Portable files include saved appearance and the target app's process name, but leave out shortcut assignments, OBS connections and other settings.")
                 ]),
                 new("Keep running in the background",
                 [

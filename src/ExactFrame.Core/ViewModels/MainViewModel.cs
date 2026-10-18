@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using CSharpDB.Primitives;
 using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
+using ExactFrame.Core.Profiles;
 using ExactFrame.Core.Services;
 using ExactFrame.Core.Settings;
 
@@ -25,6 +26,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IWindowService _windowService;
     private readonly IWindowPicker _windowPicker;
     private readonly IFrameRegionPicker? _framePicker;
+    private readonly IProfileTransferService? _profileTransfer;
+    private readonly bool _profileShortcutsMigrated;
     private readonly IOutlineOverlay _overlay;
     private readonly IHotkeyService _hotkeys;
     private readonly IClipboardService _clipboard;
@@ -52,12 +55,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IDialogService dialogs,
         ISettingsStore store,
         IStartupService startup,
-        IFrameRegionPicker? framePicker = null)
+        IFrameRegionPicker? framePicker = null,
+        IProfileTransferService? profileTransfer = null)
     {
         _displayService = displayService;
         _windowService = windowService;
         _windowPicker = windowPicker;
         _framePicker = framePicker;
+        _profileTransfer = profileTransfer;
         _overlay = overlay;
         _hotkeys = hotkeys;
         _clipboard = clipboard;
@@ -65,6 +70,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _store = store;
         _startup = startup;
         _settings = store.Load();
+        _profileShortcutsMigrated = ProfileShortcutAssignments.EnsureMigrated(_settings);
         _style = _settings.Style;
         _hideFromRecorders = _settings.HideFromRecorders;
 
@@ -102,7 +108,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ToggleClickThroughCommand = new RelayCommand(() => IsClickThrough = !IsClickThrough);
         ToggleHideFromRecordersCommand = new RelayCommand(() => HideFromRecorders = !HideFromRecorders);
         ToggleThirdsCommand = new RelayCommand(() => ShowThirds = !ShowThirds);
-        SaveProfileCommand = new AsyncRelayCommand(SaveProfileAsync);
+        SaveProfileCommand = new AsyncRelayCommand(() => RunBusyAsync(SaveProfileAsync), () => !IsBusy);
+        ImportProfilesCommand = new AsyncRelayCommand(() => RunBusyAsync(ImportProfilesAsync), () => !IsBusy && _profileTransfer is not null);
+        ExportProfilesCommand = new AsyncRelayCommand(() => RunBusyAsync(() => ExportProfilesAsync(null)), () => !IsBusy && _profileTransfer is not null && HasProfiles);
         AddShortsFrameCommand = new RelayCommand(() => AddNestedFrame("Shorts 9:16", 9, 16));
         AddSquareFrameCommand = new RelayCommand(() => AddNestedFrame("Square 1:1", 1, 1));
         AddPortraitFrameCommand = new RelayCommand(() => AddNestedFrame("Portrait 4:5", 4, 5));
@@ -139,6 +147,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public IRelayCommand ToggleHideFromRecordersCommand { get; }
     public IRelayCommand ToggleThirdsCommand { get; }
     public IAsyncRelayCommand SaveProfileCommand { get; }
+    public IAsyncRelayCommand ImportProfilesCommand { get; }
+    public IAsyncRelayCommand ExportProfilesCommand { get; }
     public IRelayCommand RefreshWindowsCommand { get; }
     public IAsyncRelayCommand PickWindowCommand { get; }
     public IAsyncRelayCommand DrawFrameCommand { get; }
@@ -182,6 +192,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             if (!SetProperty(ref _isBusy, value)) return;
             _overlay.SetLocked(value || _clickThrough || _followedWindow is not null);
             OnPropertyChanged(nameof(IsIdle));
+            SaveProfileCommand.NotifyCanExecuteChanged();
+            ImportProfilesCommand.NotifyCanExecuteChanged();
+            ExportProfilesCommand.NotifyCanExecuteChanged();
             NotifyFrameEditor();
             NotifyFooter();
         }
@@ -208,6 +221,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         RegisterHotkeys();
         RebuildProfiles();
         UpdateFrame(Summary());
+        if (_profileShortcutsMigrated && !SaveSettings()) return;
         SetStatus("Choose a size, then show the outline.");
     }
 
@@ -262,7 +276,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     public string StatusTitle =>
         _statusWarning || CaptureExclusionFailed ? "Needs attention"
-        : IsBusy ? "Updating window"
+        : IsBusy ? "Working…"
         : _overlay.IsVisible ? "Outline is live"
         : IsResizeMode ? (IsChipLive ? "Window resized" : "Ready to resize")
         : "Ready to frame";
@@ -334,15 +348,17 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void SaveSettings()
+    private bool SaveSettings()
     {
         try
         {
             _store.Save(_settings);
+            return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or CSharpDbException or InvalidOperationException or JsonException)
         {
             SetStatus($"Settings couldn’t be saved: {ex.Message}", warning: true);
+            return false;
         }
     }
 

@@ -183,13 +183,19 @@ public sealed class ProfileItem : SelectableItem
 
     /// <param name="hotkeyProblem">Why the profile's shortcut isn't registered, or <c>null</c> when it works.</param>
     public ProfileItem(FrameProfile profile, string summary, IReadOnlyList<string> keys, string? hotkeyProblem,
-        Func<Task> apply, Func<Task> delete) : base(apply)
+        Func<Task> apply, Func<Task> delete, Func<Task> update, Func<Task> rename, Func<Task> duplicate,
+        Func<Task> export, Func<Task> shortcut, bool canExport) : base(apply)
     {
         Profile = profile;
         Summary = summary;
         Keys = keys;
         _hotkeyProblem = hotkeyProblem;
         DeleteCommand = new AsyncRelayCommand(delete);
+        UpdateCommand = new AsyncRelayCommand(update);
+        RenameCommand = new AsyncRelayCommand(rename);
+        DuplicateCommand = new AsyncRelayCommand(duplicate);
+        ExportCommand = new AsyncRelayCommand(export, () => canExport);
+        ShortcutCommand = new AsyncRelayCommand(shortcut);
 
         double ratio = profile.Height == 0 ? 1 : (double)profile.Width / profile.Height;
         GlyphWidth = ratio >= 1 ? 22 : Math.Round(22 * ratio);
@@ -211,7 +217,7 @@ public sealed class ProfileItem : SelectableItem
     public double KeysOpacity => HotkeyRegistered ? 1 : 0.45;
 
     public string HotkeyTip => !HasKeys
-        ? "Only the first nine profiles get a shortcut."
+        ? "No numbered shortcut assigned. Use More actions to choose one."
         : _hotkeyProblem ?? "Applies this profile from any app.";
 
     public double GlyphWidth { get; }
@@ -219,6 +225,11 @@ public sealed class ProfileItem : SelectableItem
     public double GlyphHeight { get; }
 
     public IAsyncRelayCommand DeleteCommand { get; }
+    public IAsyncRelayCommand UpdateCommand { get; }
+    public IAsyncRelayCommand RenameCommand { get; }
+    public IAsyncRelayCommand DuplicateCommand { get; }
+    public IAsyncRelayCommand ExportCommand { get; }
+    public IAsyncRelayCommand ShortcutCommand { get; }
 }
 
 /// <param name="problem">Why the shortcut isn't working, such as "Taken by another app", or <c>null</c> when it works.</param>

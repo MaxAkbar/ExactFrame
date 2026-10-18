@@ -15,6 +15,9 @@ public sealed class AppSettings
 
     public List<FrameProfile> Profiles { get; set; } = [.. FrameProfile.Defaults()];
 
+    /// <summary>0 migrates legacy list-position shortcuts once; 1 uses each profile's persisted numbered slot.</summary>
+    public int ProfileShortcutVersion { get; set; }
+
     public List<RememberedAppSize> RememberedAppSizes { get; set; } = [];
 
     public string? ActiveProfileId { get; set; } = "youtube-1080p";
@@ -25,7 +28,7 @@ public sealed class AppSettings
 
     public HotkeyGesture NextProfileHotkey { get; set; } = HotkeyGesture.CtrlAlt(HotkeyGesture.VkF10);
 
-    /// <summary>The keys held with 1 to 9 to apply the first nine profiles.</summary>
+    /// <summary>The keys held with 1 to 9 to apply profiles assigned to those stable numbered slots.</summary>
     public HotkeyModifiers ProfileHotkeyModifiers { get; set; } = HotkeyModifiers.Control | HotkeyModifiers.Alt;
 
     /// <summary>Closing the main window leaves ExactFrame running in the notification area.</summary>

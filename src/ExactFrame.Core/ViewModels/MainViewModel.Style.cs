@@ -78,15 +78,24 @@ public sealed partial class MainViewModel
     private void UpdateStyle(OutlineStyle style)
     {
         if (style == _style) return;
+        if (!_includeProfileAppearance)
+        {
+            _settings.Style = style;
+            SaveSettings();
+        }
+        ApplyEffectiveStyle(style);
+    }
+
+    private void ApplyEffectiveStyle(OutlineStyle style)
+    {
         _style = style;
-        _settings.Style = style;
         _overlay.ApplyStyle(style);
-        SaveSettings();
 
         SelectOnly(Swatches, s => s.Color == _style.Color);
         SelectOnly(Thicknesses, t => t.Key == _style.Thickness.ToString());
         SelectOnly(Lines, l => l.Key == _style.Line.ToString());
         foreach (string name in StyleProperties) OnPropertyChanged(name);
         NotifyStage();
+        NotifyProfileHeader();
     }
 }
