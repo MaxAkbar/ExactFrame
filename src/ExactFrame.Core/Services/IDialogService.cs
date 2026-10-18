@@ -8,6 +8,14 @@ public interface IDialogService
     /// <summary>Asks for a profile name. Returns <c>null</c> when canceled.</summary>
     Task<string?> PromptProfileNameAsync(string suggestion);
 
+    /// <summary>Asks for a profile name for a particular operation.</summary>
+    Task<string?> PromptProfileNameAsync(string suggestion, string title, string confirmLabel) =>
+        PromptProfileNameAsync(suggestion);
+
+    /// <summary>Chooses a stable number slot. Zero means none; null means canceled.</summary>
+    Task<int?> ChooseProfileShortcutAsync(FrameProfile profile, IReadOnlyList<FrameProfile> profiles) =>
+        Task.FromResult<int?>(null);
+
     /// <summary>Records a new shortcut. Returns <c>null</c> when canceled. <paramref name="instructions"/> replaces the default instructions.</summary>
     Task<HotkeyGesture?> RecordHotkeyAsync(string actionName, HotkeyGesture current, string? instructions = null);
 

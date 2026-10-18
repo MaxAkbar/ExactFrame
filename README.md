@@ -70,22 +70,42 @@ SHA-256 checksums, run `./scripts/Build-Release.ps1` in PowerShell. Output goes 
 
 **Outline area.** Pick a size preset, drag the width and height sliders, or type exact values (the chain button keeps the aspect ratio). The sliders run up to the largest size that fits the display, snap to even pixels, and pull toward standard sizes such as 1280, 1920 and 2560 so they're easy to land on. Arrow keys move a focused slider 2 px at a time and Page Up / Page Down 64 px.
 Choose where the frame sits with the anchor grid, or type X and Y. Choose a display under the preview.
-Select **Show outline** (Ctrl + Alt + F8). Drag the border to move it; Esc hides it while ExactFrame has focus.
+Select **Show outline** (Ctrl + Alt + F8). Drag the border to move it or an edge/corner handle to resize it.
+In the preview, drag inside the frame to move it, use its handles to resize, or drag outside it to draw a new frame.
+Focus the preview and use arrow keys for 1 physical pixel, Shift + arrows for 10, or Ctrl + arrows to resize from
+the right/bottom edges. Keyboard adjustments bypass snapping. Esc or right-click cancels an active drag;
+otherwise Esc hides the outline while ExactFrame has focus. Turn click-through off to edit with the pointer or preview keys.
+
+**Draw on screen** lets you drag a new rectangle on any connected display. **Use window bounds** starts with an
+existing window's visible outer bounds and leaves that window's size alone. These freeform selections turn the
+aspect lock off; turn the chain button back on to preserve the new ratio while resizing. Frames must be at least
+100 × 100 physical pixels and fit inside one display's usable area. **Snap to edges and centers** aligns moves and
+handle resizes with the display and nearby window bounds. Numeric entry remains available for exact adjustments.
+See the [direct frame editing guide and Windows checks](docs/direct-frame-editing.md).
 
 **Additional frames.** In the Frame tab, add a **9:16**, **1:1**, **4:5** or custom guide inside the main frame.
-Each guide has an editable aspect ratio, scale percentage and position within the main frame. The displayed
-width, height, X and Y are physical pixels. Extra guides stay inside the main frame and follow it when it
-moves or resizes. Use **Copy bounds** to copy a labeled region for every frame; set up each region in your
-recorder or editing workflow. You can add several guides and remove them individually.
+Name each composition, choose an output size, and edit its crop ratio and scale. Drag a subframe in the large preview
+or drag its live border on screen. The selected subframe also moves with arrow keys (Shift for 10 px); Alt + drag
+in the preview moves the main frame underneath it. Width and height sliders sit beside the exact output-size boxes.
+The small position map and parent-relative X/Y remain available. Edge inset and safe margins are adjustable. The crop follows the
+main frame when it moves or resizes. **Preview outputs** compares each composition and reports enlargement
+or empty bars; **Refresh from screen** takes an in-memory snapshot of the visible source. These previews do
+not configure or verify recorder output. **Copy bounds** still copies every source region for your recorder.
+See [output compositions](docs/output-compositions.md) for examples, compatibility and verification limits.
 
 **Style tab.** Outline color, weight (2, 4 or 6 px) and line (solid, dashed or corners only), the size label,
 dimming outside the frame, rule-of-thirds, center-mark and 90% safe-area guides, and the on-screen controls.
 
-**Profiles tab.** **Save current** stores the size, position, display, mode and additional frames. The first nine profiles get
-Ctrl + Alt + 1 to 9 in list order; **Change** next to **Apply profile 1 to 9** picks other keys to hold with the number.
-Applying a Resize window profile resizes its app straight away, including from its shortcut while another app has focus.
-If the app has several windows, ExactFrame uses the selected one, otherwise the one in front; if the app isn't open,
-nothing is resized. **Global hotkeys** shows each shortcut; if another app owns one, it says so and **Change** records a
+**Profiles tab.** **Save current** creates a named setup with its size, position, display, mode, aspect lock and additional frames.
+Check **Include appearance when saving or updating** to save its outline style too. The profile's **More actions** menu offers
+**Update from current**, **Rename**, **Duplicate**, **Export**, **Shortcut** and **Delete**. Updating is explicit; saving an existing name
+never replaces it. Numbered shortcuts stay with their profiles when another profile is deleted. New saves take the first free
+Ctrl + Alt + 1 to 9 slot; duplicates and imports start without a shortcut. **Change** next to **Apply profile 1 to 9** picks other held keys.
+**Export all** and **Import** transfer portable profile files. Import reviews display mappings and adds new copies without applying them.
+See [portable profiles](docs/portable-profiles.md) for what is included and how positions move between displays.
+Applying a Resize window profile resizes its matching app straight away, including from its shortcut while another app has focus.
+If several windows match, ExactFrame uses an explicitly selected matching window or asks you to choose one; it no longer
+chooses the frontmost window automatically. If nothing matches, nothing is resized. **Global hotkeys** shows each shortcut; if another app owns one, it says so and **Change** records a
 new one.
 
 Windows sends AltGr as Ctrl + Alt, so on many keyboards a Ctrl + Alt shortcut is a character: AltGr + 2 is @ on a Spanish
@@ -121,6 +141,15 @@ the app's display. If the saved size cannot fit, it leaves the app alone and sho
 **Forget size** beside the app to remove its saved size; the next manual resize saves a new one.
 If you choose **Web page** before selecting an app with a remembered Client area size, that choice applies to the
 current resize while retaining the remembered dimensions.
+
+Open **Match this application** to narrow profiles and remembered sizes by full executable path, window title
+(Contains or Exact), and window class. All nonblank conditions must match. Enter an application process name or use
+**Use selected window details**, then review the matching windows and selected window's title, path, class and bounds.
+Selecting a match here only previews it; **Resize window** applies the size. **Save setup as profile** retains the rule,
+and **Update active resize profile** replaces an existing resize setup after confirmation. Specific remembered rules
+take priority over a process-only default; equally specific conflicting rules skip automatic resizing.
+See [application targeting](docs/application-targeting.md) for behavior, transfer compatibility and checks.
+
 After resizing, the outline follows that app when it moves or changes size, including across displays. Move
 the app itself; its outline is click-through while following. The outline hides if the app is minimized or
 hidden and returns when it becomes visible. Hiding the outline, choosing another app, editing the requested
@@ -191,7 +220,7 @@ settings files.
 - The colored border is drawn **inside** the frame, so the frame's outer edges are the capture rectangle.
   A 6 px invisible band just outside the frame makes the edge easy to grab; it's outside the recorded area.
 - The middle of the frame is click-through. With **Click-through** on, the border is too.
-- Additional frame outlines are always click-through. Their colored borders stay inside their exact capture bounds.
+- Additional frame interiors are click-through. Their borders can be dragged when **Click-through** is off; locking makes those borders click-through too. Colored borders stay inside their exact capture bounds.
 - Dimming, guides and the size label are click-through layers. Guides are drawn inside the frame, so keep
   **Hide from recorders** on while they're visible.
 - **Hide from recorders** uses `SetWindowDisplayAffinity` with `WDA_EXCLUDEFROMCAPTURE`. Recorder support
@@ -224,8 +253,9 @@ depends on interfaces, so every behavior can be tested without Windows.
 
 ## Windows smoke checks
 
-The Core logic is unit-tested and the app's C# was compile-checked against the Windows App SDK 2.5.1
-projections. XAML compilation, rendering and native behavior need a Windows run:
+The Core logic is unit-tested and the Windows app, including XAML, builds against Windows App SDK 2.5.1.
+Rendering, pointer input, mixed-DPI behavior and recorder output need a Windows run. Follow the
+[direct frame editing checks](docs/direct-frame-editing.md#windows-interaction-checks) for the new editor:
 
 - Show a 1280 × 720 outline at 100% and 150% scaling; confirm in your recorder that its outer bounds are exactly
   1280 × 720. Drag the border, then turn on click-through and confirm clicks pass through the border.

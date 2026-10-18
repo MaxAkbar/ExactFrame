@@ -60,9 +60,13 @@ public sealed partial class MainViewModel
         get => _aspectLocked;
         set
         {
+            if (_aspectLocked != value) InterruptFrameInteraction();
             if (!SetProperty(ref _aspectLocked, value)) return;
             _ratio = (double)_width / _height;
+            ConfigureFrameEditing();
+            OnPropertyChanged(nameof(FrameEditAspectRatio));
             NotifySliderRanges();
+            NotifyProfileHeader();
         }
     }
 
@@ -124,6 +128,7 @@ public sealed partial class MainViewModel
 
     private void SelectPreset(ResolutionPreset preset)
     {
+        ClearFrameEditAnnouncement();
         if (preset.IsCustom)
         {
             _preset = preset;
@@ -209,6 +214,8 @@ public sealed partial class MainViewModel
 
     private void OnDisplaysChanged(object? sender, EventArgs e) => Guard(() =>
     {
+        _framePickCancellation?.Cancel();
+        FinishFrameInteraction(cancel: true);
         RefreshDisplays();
         if (IsResizeMode && _followedWindow is not null)
             RefreshTrackedOutline();
@@ -219,6 +226,8 @@ public sealed partial class MainViewModel
     /// <summary>Recomputes the requested frame after any edit, keeps a visible outline in sync and refreshes the UI.</summary>
     private void UpdateFrame(string? message = null)
     {
+        InterruptFrameInteraction();
+        ConfigureFrameEditing();
         _activeFrame = null;
         if (_anchor is not null && _display is not null)
         {
@@ -272,6 +281,7 @@ public sealed partial class MainViewModel
 
     private void NotifyFrame()
     {
+        NotifyFrameEditor();
         UpdateNestedBounds(CurrentFrame);
         SelectOnly(Anchors, a => a.Anchor == _anchor);
         SelectOnly(PlacementOptions, o => o.Key == (_anchor == FrameAnchor.Center ? "center" : _anchor is null ? "keep" : string.Empty));
@@ -287,6 +297,7 @@ public sealed partial class MainViewModel
     /// <summary>Loads a saved frame (a profile or the last session) without announcing it.</summary>
     private void ApplyFrameState(FrameProfile state)
     {
+        InterruptFrameInteraction();
         StopFollowingWindow();
         _explicitAreaSelection = false;
         _mode = state.Mode;
@@ -299,6 +310,9 @@ public sealed partial class MainViewModel
         _width = Math.Clamp(state.Width, MinSize, MaxSize);
         _height = Math.Clamp(state.Height, MinSize, MaxSize);
         _ratio = (double)_width / _height;
+        _aspectLocked = state.IsAspectLocked;
+        _includeProfileAppearance = state.Appearance is not null;
+        ApplyEffectiveStyle(state.Appearance ?? _settings.Style);
         _preset = ResolutionPreset.Match(_width, _height);
         _anchor = state.Anchor;
         _x = state.X;
@@ -308,8 +322,11 @@ public sealed partial class MainViewModel
         if (state.Mode == FrameMode.Resize) _area = state.Area;
 
         // Never leave another app selected: applying the profile resizes the selected window.
-        if (state.Mode == FrameMode.Resize && !string.IsNullOrEmpty(state.TargetProcessName))
-            SetTarget(FindAppWindow(state.TargetProcessName));
+        if (state.Mode == FrameMode.Resize)
+        {
+            LoadTargetMatch(state.TargetProcessName, state.TargetMatch);
+            SetTarget(string.IsNullOrEmpty(state.TargetProcessName) ? null : FindAppWindow(state.TargetProcessName, state.TargetMatch));
+        }
 
         SyncSelections();
         PrimaryCommand.NotifyCanExecuteChanged();
@@ -324,14 +341,19 @@ public sealed partial class MainViewModel
         Mode = _mode,
         Width = _width,
         Height = _height,
+        HotkeySlot = _settings.Profiles.FirstOrDefault(p => p.Id == id)?.HotkeySlot ?? 0,
+        IsAspectLocked = _aspectLocked,
+        Appearance = _includeProfileAppearance ? _style : null,
         NestedFrames = [.. NestedFrames.Select(item => item.Frame)],
         Anchor = _anchor,
         X = _x,
         Y = _y,
         DisplayDeviceName = _display is null || _display.IsPrimary ? null : _display.DeviceName,
+        DisplaySnapshot = _display,
         KeepClearOfTaskbar = _keepClear,
         Area = _area,
-        TargetProcessName = _targetWindow?.ProcessName
+        TargetProcessName = _targetProcessName ?? _targetWindow?.ProcessName,
+        TargetMatch = CurrentTargetMatch
     });
 
     private static FrameProfile Normalize(FrameProfile profile) => profile with
@@ -339,7 +361,8 @@ public sealed partial class MainViewModel
         X = profile.Anchor is null ? profile.X : 0,
         Y = profile.Anchor is null ? profile.Y : 0,
         Area = profile.Mode == FrameMode.Resize ? profile.Area : WindowArea.Client,
-        TargetProcessName = profile.Mode == FrameMode.Resize ? profile.TargetProcessName : null
+        TargetProcessName = profile.Mode == FrameMode.Resize ? profile.TargetProcessName : null,
+        TargetMatch = profile.Mode == FrameMode.Resize ? WindowMatcher.Normalize(profile.TargetMatch) : null
     };
 
     private void SyncSelections()

@@ -12,11 +12,11 @@ internal abstract class LayeredWindow : NativeWindow
 {
     private Rectangle _bounds;
 
-    protected LayeredWindow(bool clickThrough)
+    protected LayeredWindow(bool clickThrough, string name = "")
     {
         int exStyle = NativeMethods.WsExLayered | NativeMethods.WsExToolWindow | NativeMethods.WsExNoActivate |
                       NativeMethods.WsExTopmost | (clickThrough ? NativeMethods.WsExTransparent : 0);
-        CreateHandle(exStyle, NativeMethods.WsPopup);
+        CreateHandle(exStyle, NativeMethods.WsPopup, name: name);
     }
 
     public Rectangle Bounds => _bounds;

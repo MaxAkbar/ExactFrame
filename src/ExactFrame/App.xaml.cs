@@ -46,6 +46,9 @@ public partial class App : Application
 
         _mainWindow = _services.GetRequiredService<MainWindow>();
         _services.GetRequiredService<DialogService>().Attach(() => _mainWindow.Content?.XamlRoot);
+        _services.GetRequiredService<ProfileTransferService>().Attach(
+            WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow), () => _mainWindow.Content?.XamlRoot);
+        _services.GetRequiredService<OutputPreviewService>().Attach(_mainWindow);
         _hud = _services.GetRequiredService<HudWindow>();
         _hud.OpenMainRequested += (_, _) => _mainWindow.BringToFront();
         _mainWindow.AppWindow.Closing += OnMainWindowClosing;
@@ -74,9 +77,14 @@ public partial class App : Application
         services.AddSingleton<IHotkeyService, HotkeyService>();
         services.AddSingleton<IOutlineOverlay, OutlineOverlay>();
         services.AddSingleton<IWindowPicker, WindowPicker>();
+        services.AddSingleton<IFrameRegionPicker, FrameRegionPicker>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<DialogService>();
         services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<DialogService>());
+        services.AddSingleton<ProfileTransferService>();
+        services.AddSingleton<IProfileTransferService>(sp => sp.GetRequiredService<ProfileTransferService>());
+        services.AddSingleton<OutputPreviewService>();
+        services.AddSingleton<IOutputPreviewService>(sp => sp.GetRequiredService<OutputPreviewService>());
         string databasePath = CSharpDbAppStore.DefaultPath();
         services.AddSingleton(_ => new CSharpDbAppStore(databasePath, JsonSettingsStore.DefaultPath()));
         services.AddSingleton<ISettingsStore>(sp => sp.GetRequiredService<CSharpDbAppStore>());

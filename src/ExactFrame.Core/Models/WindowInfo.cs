@@ -27,6 +27,9 @@ public sealed record WindowInfo(
     nint Handle, uint ProcessId, uint ThreadId, string Title, string ProcessName, Rectangle Bounds, bool IsMinimized = false,
     int ZOrder = 0)
 {
+    public string? ExecutablePath { get; init; }
+    public string? ClassName { get; init; }
+
     public bool IsSameWindow(WindowInfo? other) =>
         other is not null && other.Handle == Handle && other.ProcessId == ProcessId && other.ThreadId == ThreadId;
 }

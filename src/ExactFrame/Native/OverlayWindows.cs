@@ -1,6 +1,8 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
+using System.Runtime.InteropServices;
+using ExactFrame.Core.Geometry;
 using ExactFrame.Core.Models;
 using ExactFrame.Interop;
 
@@ -13,23 +15,41 @@ namespace ExactFrame.Native;
 /// </summary>
 internal sealed class FrameBorderWindow : LayeredWindow
 {
-    public const int GrabMargin = 6;
+    public const int GrabMargin = 16;
 
     private Rectangle _frame;
     private OutlineStyle _style = new();
     private bool _locked;
     private bool _dragging;
-    private Point _dragOffset;
+    private Point _dragStart;
+    private Rectangle _dragOriginal;
+    private FrameHandle _dragHandle;
+    private Rectangle _area;
+    private FrameEditingOptions _editing = new();
+    private int _handleRadius = 8;
+    private readonly NativeMethods.HookProc _keyboardProc;
+    private nint _keyboardHook;
+    private readonly bool _moveOnly;
 
-    public FrameBorderWindow() : base(clickThrough: false)
+    public FrameBorderWindow(bool moveOnly = false, string name = "ExactFrame recording outline") : base(clickThrough: false, name: name)
     {
+        _moveOnly = moveOnly;
+        _keyboardProc = KeyboardProc;
     }
 
     /// <summary>Raised continuously while the user drags, with the proposed (unclamped) frame.</summary>
     public event EventHandler<Rectangle>? Dragged;
+    public event EventHandler? InteractionStarted;
+    public event EventHandler<bool>? InteractionFinished;
+
+    public void Configure(Rectangle area, FrameEditingOptions editing, int handleRadius)
+    {
+        _area = area; _editing = editing; _handleRadius = handleRadius;
+    }
 
     public void Update(Rectangle frame, OutlineStyle style, bool locked)
     {
+        if (locked && _dragging) { CancelInteraction(); frame = _frame; }
         bool redraw = frame.Size != _frame.Size || style != _style || locked != _locked || Bounds.IsEmpty;
         _frame = frame;
         _style = style;
@@ -74,6 +94,19 @@ internal sealed class FrameBorderWindow : LayeredWindow
             default:
                 FillRing(graphics, brush, frame, Rectangle.Inflate(frame, -t, -t));
                 break;
+        }
+        if (!_locked && !_moveOnly)
+        {
+            using var fill = new SolidBrush(Color.FromArgb(255, 15, 30, 34));
+            using var pen = new Pen(brush, 2);
+            foreach (var point in new[] { new Point(frame.Left, frame.Top), new Point(frame.Left + frame.Width / 2, frame.Top),
+                new Point(frame.Right, frame.Top), new Point(frame.Left, frame.Top + frame.Height / 2),
+                new Point(frame.Right, frame.Top + frame.Height / 2), new Point(frame.Left, frame.Bottom),
+                new Point(frame.Left + frame.Width / 2, frame.Bottom), new Point(frame.Right, frame.Bottom) })
+            {
+                var handle = new Rectangle(point.X - 4, point.Y - 4, 8, 8);
+                graphics.FillRectangle(fill, handle); graphics.DrawRectangle(pen, handle);
+            }
         }
     }
 
@@ -121,31 +154,76 @@ internal sealed class FrameBorderWindow : LayeredWindow
         switch (message)
         {
             case NativeMethods.WmSetCursor when !_locked:
-                NativeMethods.SetCursor(NativeMethods.LoadCursor(0, NativeMethods.IdcSizeAll));
+                NativeMethods.GetCursorPos(out var cursorPosition);
+                var handle = _moveOnly ? FrameHandle.Move : _dragging ? _dragHandle : FrameManipulation.HitTest(_frame, new(cursorPosition.X, cursorPosition.Y), _handleRadius, false);
+                int cursorId = handle switch {
+                    FrameHandle.TopLeft or FrameHandle.BottomRight => NativeMethods.IdcSizeNwSe,
+                    FrameHandle.TopRight or FrameHandle.BottomLeft => NativeMethods.IdcSizeNeSw,
+                    FrameHandle.Left or FrameHandle.Right => NativeMethods.IdcSizeWe,
+                    FrameHandle.Top or FrameHandle.Bottom => NativeMethods.IdcSizeNs,
+                    _ => NativeMethods.IdcSizeAll };
+                NativeMethods.SetCursor(NativeMethods.LoadCursor(0, cursorId));
                 return 1;
 
             case NativeMethods.WmLButtonDown when !_locked:
-                NativeMethods.GetCursorPos(out var start);
-                _dragOffset = new Point(start.X - _frame.X, start.Y - _frame.Y);
+                if (!NativeMethods.TryGetMouseMessageScreenPoint(hwnd, lParam, out var start)) return 0;
+                _dragStart = new Point(start.X, start.Y);
+                _dragOriginal = _frame;
+                _dragHandle = _moveOnly ? FrameHandle.Move : FrameManipulation.HitTest(_frame, _dragStart, _handleRadius, false);
+                if (_dragHandle == FrameHandle.None) _dragHandle = FrameHandle.Move;
                 _dragging = true;
+                InteractionStarted?.Invoke(this, EventArgs.Empty);
+                _keyboardHook = NativeMethods.SetWindowsHookEx(NativeMethods.WhKeyboardLl, _keyboardProc, NativeMethods.GetModuleHandle(null), 0);
+                if (_keyboardHook == 0) { CancelInteraction(); return 0; }
                 NativeMethods.SetCapture(hwnd);
+                if (NativeMethods.GetCapture() != hwnd) CancelInteraction();
                 return 0;
 
             case NativeMethods.WmMouseMove when _dragging:
-                NativeMethods.GetCursorPos(out var cursor);
-                Dragged?.Invoke(this, new Rectangle(cursor.X - _dragOffset.X, cursor.Y - _dragOffset.Y, _frame.Width, _frame.Height));
+                if (!NativeMethods.GetCursorPos(out var cursor)) { CancelInteraction(); return 0; }
+                Dragged?.Invoke(this, FrameManipulation.Drag(_dragOriginal, _dragStart, new(cursor.X, cursor.Y), _dragHandle, _area,
+                    aspectRatio: _editing.AspectRatio, snapTargets: _editing.SnapTargets, snapDistance: _editing.SnapDistance));
                 return 0;
 
             case NativeMethods.WmLButtonUp:
-                _dragging = false;
-                NativeMethods.ReleaseCapture();
+                if (_dragging && NativeMethods.GetCursorPos(out var end))
+                    Dragged?.Invoke(this, FrameManipulation.Drag(_dragOriginal, _dragStart, new(end.X, end.Y), _dragHandle, _area,
+                        aspectRatio: _editing.AspectRatio, snapTargets: _editing.SnapTargets, snapDistance: _editing.SnapDistance));
+                FinishInteraction(cancel: false);
                 return 0;
 
             case NativeMethods.WmCaptureChanged:
-                _dragging = false;
+            case NativeMethods.WmCancelMode:
+            case NativeMethods.WmRButtonDown:
+                CancelInteraction();
                 break;
         }
         return base.WndProc(hwnd, message, wParam, lParam);
+    }
+
+    public void CancelInteraction() => FinishInteraction(cancel: true);
+
+    private void FinishInteraction(bool cancel)
+    {
+        if (!_dragging) return;
+        _dragging = false;
+        if (_keyboardHook != 0) { NativeMethods.UnhookWindowsHookEx(_keyboardHook); _keyboardHook = 0; }
+        NativeMethods.ReleaseCapture();
+        InteractionFinished?.Invoke(this, cancel);
+    }
+
+    private nint KeyboardProc(int code, nint wParam, nint lParam)
+    {
+        if (code >= 0 && _dragging && (uint)wParam is NativeMethods.WmKeyDown or NativeMethods.WmSysKeyDown &&
+            Marshal.PtrToStructure<NativeMethods.KeyboardLowLevel>(lParam).VirtualKey == 0x1B)
+        { CancelInteraction(); return 1; }
+        return NativeMethods.CallNextHookEx(_keyboardHook, code, wParam, lParam);
+    }
+
+    protected override void OnDisposing()
+    {
+        CancelInteraction();
+        base.OnDisposing();
     }
 }
 
@@ -165,7 +243,9 @@ internal sealed class NestedFramesWindow : LayeredWindow
         var relative = frames.Select(frame => frame with
         {
             Bounds = new Rectangle(frame.Bounds.X - parent.X, frame.Bounds.Y - parent.Y,
-                frame.Bounds.Width, frame.Bounds.Height)
+                frame.Bounds.Width, frame.Bounds.Height),
+            SafeArea = frame.SafeArea.IsEmpty ? Rectangle.Empty : new Rectangle(frame.SafeArea.X - parent.X,
+                frame.SafeArea.Y - parent.Y, frame.SafeArea.Width, frame.SafeArea.Height)
         }).ToArray();
         bool redraw = Bounds.Size != parent.Size || style != _style || Math.Abs(scale - _scale) > 0.001 ||
             !_frames.SequenceEqual(relative);
@@ -198,6 +278,11 @@ internal sealed class NestedFramesWindow : LayeredWindow
                     break;
             }
 
+            if (!frame.SafeArea.IsEmpty)
+            {
+                using var safePen = new Pen(color, 1) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+                graphics.DrawRectangle(safePen, frame.SafeArea);
+            }
             if (_style.ShowSizeLabel) DrawLabel(graphics, frame, color, thickness);
         }
     }

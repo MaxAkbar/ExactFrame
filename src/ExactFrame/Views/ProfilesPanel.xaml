@@ -21,13 +21,23 @@
                         HorizontalAlignment="Right"
                         Command="{x:Bind ViewModel.SaveProfileCommand}"
                         Style="{StaticResource SmallButtonStyle}"
-                        ToolTipService.ToolTip="Save the current size, position, display and mode">
+                        ToolTipService.ToolTip="Save the current size, position, display and mode as a new profile">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <FontIcon FontSize="12" Glyph="&#xE710;" />
                             <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontWeight="Medium" Text="Save current" />
                         </StackPanel>
                     </Button>
                 </Grid>
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Command="{x:Bind ViewModel.ImportProfilesCommand}" Content="Import" AutomationProperties.Name="Import profiles" Style="{StaticResource SmallButtonStyle}"
+                            ToolTipService.ToolTip="Import a profile package and choose its displays" />
+                    <Button Command="{x:Bind ViewModel.ExportProfilesCommand}" Content="Export all" AutomationProperties.Name="Export all profiles" Style="{StaticResource SmallButtonStyle}"
+                            ToolTipService.ToolTip="Save all profiles to a portable file" />
+                </StackPanel>
+                <CheckBox IsChecked="{x:Bind ViewModel.IncludeProfileAppearance, Mode=TwoWay}">
+                    <TextBlock Text="Include appearance when saving or updating" TextWrapping="Wrap" FontSize="12.5" />
+                </CheckBox>
 
                 <TextBlock Style="{StaticResource CaptionStyle}" Text="No profiles yet. Set up a frame, then choose Save current." Visibility="{x:Bind ViewModel.HasNoProfiles, Mode=OneWay}" />
 
@@ -67,11 +77,13 @@
                                                 FontWeight="SemiBold"
                                                 Foreground="{StaticResource InkBrush}"
                                                 Text="{x:Bind Name}"
+                                                ToolTipService.ToolTip="{x:Bind Name}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <TextBlock
                                                 FontSize="12"
                                                 Foreground="{StaticResource MutedBrush}"
                                                 Text="{x:Bind Summary}"
+                                                ToolTipService.ToolTip="{x:Bind Summary}"
                                                 TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
                                         <controls:KeyChips
@@ -88,11 +100,22 @@
                                     Margin="0,0,8,0"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
-                                    AutomationProperties.Name="Delete profile"
-                                    Command="{x:Bind DeleteCommand}"
+                                    AutomationProperties.Name="Profile actions"
+                                    AutomationProperties.HelpText="{x:Bind Name}"
                                     Style="{StaticResource GhostButtonStyle}"
-                                    ToolTipService.ToolTip="Delete profile">
-                                    <FontIcon FontSize="13" Glyph="&#xE74D;" />
+                                    ToolTipService.ToolTip="More profile actions">
+                                    <Button.Flyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem Text="Update from current" Command="{x:Bind UpdateCommand}" />
+                                            <MenuFlyoutItem Text="Rename" Command="{x:Bind RenameCommand}" />
+                                            <MenuFlyoutItem Text="Duplicate" Command="{x:Bind DuplicateCommand}" />
+                                            <MenuFlyoutItem Text="Export" Command="{x:Bind ExportCommand}" />
+                                            <MenuFlyoutItem Text="Shortcut" Command="{x:Bind ShortcutCommand}" />
+                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem Text="Delete" Command="{x:Bind DeleteCommand}" />
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                    <FontIcon FontSize="15" Glyph="&#xE712;" />
                                 </Button>
                             </Grid>
                         </DataTemplate>
@@ -146,7 +169,7 @@
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
-                <TextBlock Margin="0,8,0,0" Style="{StaticResource CaptionStyle}" Text="Shortcuts work while another app has focus. The first nine profiles get a number in list order." TextWrapping="Wrap" />
+                <TextBlock Margin="0,8,0,0" Style="{StaticResource CaptionStyle}" Text="Shortcuts work while another app has focus. Number slots stay with each profile. Use its actions menu to assign or remove a shortcut." TextWrapping="Wrap" />
             </StackPanel>
 
             <Border Style="{StaticResource DividerStyle}" />

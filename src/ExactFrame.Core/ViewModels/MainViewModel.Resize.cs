@@ -44,11 +44,12 @@ public sealed partial class MainViewModel
 
     public bool HasTargetWindow => _targetWindow is not null;
 
-    public bool HasRememberedAppSize => _targetWindow is not null && FindRememberedSize(_targetWindow.ProcessName) is not null;
+    public bool HasRememberedAppSize => _targetWindow is not null && FindRememberedSize(_targetWindow) is not null;
 
-    public string RememberedAppSizeText => _targetWindow is { } window && FindRememberedSize(window.ProcessName) is { } saved
+    public string RememberedAppSizeText => _targetWindow is { } window && FindRememberedSize(window) is { } saved
         ? $"Remembered for {window.ProcessName}: {saved.Width} × {saved.Height} px " +
           $"{AreaLabel(saved.Area)}. " +
+          (saved.TargetMatch is null ? "Process match. " : "Specific window match. ") +
           (_area == saved.Area ? "Applied when you select this app." : $"{AreaLabel(_area)} selected for this resize.")
         : string.Empty;
 
@@ -99,8 +100,10 @@ public sealed partial class MainViewModel
     private async Task SelectWindowAsync(WindowInfo window)
     {
         if (IsBusy) return;
+        var saved = FindRememberedSize(window);
+        LoadTargetMatch(window.ProcessName, saved?.TargetMatch);
         SetTarget(window);
-        if (IsResizeMode && FindRememberedSize(window.ProcessName) is { } saved)
+        if (IsResizeMode && saved is not null)
         {
             var area = _explicitAreaSelection ? _area : saved.Area;
             _explicitAreaSelection = false;
@@ -109,6 +112,9 @@ public sealed partial class MainViewModel
         }
         else if (_anchor is null) KeepWindowPosition();
         else UpdateFrame();
+        if (IsResizeMode && saved is null && _settings.RememberedAppSizes.Any(size =>
+                WindowMatcher.Matches(window, size.ProcessName, size.TargetMatch)))
+            SetStatus("Several remembered rules match this window equally. No size was applied. Narrow the conditions and resize manually to remember a distinct rule.", warning: true);
     }
 
     private void SetTarget(WindowInfo? window)
@@ -189,19 +195,23 @@ public sealed partial class MainViewModel
         await SelectWindowAsync(_allWindows.FirstOrDefault(w => w.IsSameWindow(picked)) ?? picked);
     }
 
-    /// <summary>
-    /// The open window of the app a profile names: the selected window when it belongs to that app,
-    /// otherwise the app's frontmost window.
-    /// </summary>
-    private WindowInfo? FindAppWindow(string processName)
+    /// <summary>A selected matching window or a unique match. Ambiguous matches require an explicit choice.</summary>
+    private WindowInfo? FindAppWindow(string processName, WindowMatchCriteria? criteria)
     {
-        var windows = _allWindows.Where(w => string.Equals(w.ProcessName, processName, StringComparison.OrdinalIgnoreCase)).ToList();
-        return windows.FirstOrDefault(w => w.IsSameWindow(_targetWindow)) ?? windows.MinBy(w => w.ZOrder);
+        var windows = _allWindows.Where(w => WindowMatcher.Matches(w, processName, criteria)).ToList();
+        return windows.FirstOrDefault(w => w.IsSameWindow(_targetWindow)) ?? (windows.Count == 1 ? windows[0] : null);
     }
 
-    private RememberedAppSize? FindRememberedSize(string processName) =>
-        _settings.RememberedAppSizes.LastOrDefault(saved =>
-            string.Equals(saved.ProcessName, processName, StringComparison.OrdinalIgnoreCase));
+    private RememberedAppSize? FindRememberedSize(WindowInfo window)
+    {
+        var matches = _settings.RememberedAppSizes.Where(saved => WindowMatcher.Matches(window, saved.ProcessName, saved.TargetMatch))
+            .OrderByDescending(saved => WindowMatcher.Specificity(saved.TargetMatch)).ToList();
+        if (matches.Count == 0) return null;
+        int best = WindowMatcher.Specificity(matches[0].TargetMatch);
+        // Legacy process-only duplicates retain last-write behavior. Conflicting specific rules never auto-resize.
+        var bestMatches = matches.Where(saved => WindowMatcher.Specificity(saved.TargetMatch) == best).ToList();
+        return best == 0 ? bestMatches.Last() : bestMatches.Count == 1 ? bestMatches[0] : null;
+    }
 
     private bool PrepareRememberedSize(WindowInfo window, RememberedAppSize saved, WindowArea area)
     {
@@ -278,8 +288,10 @@ public sealed partial class MainViewModel
             string.IsNullOrWhiteSpace(window.ProcessName)) return;
 
         _settings.RememberedAppSizes.RemoveAll(saved =>
-            string.Equals(saved.ProcessName, window.ProcessName, StringComparison.OrdinalIgnoreCase));
-        _settings.RememberedAppSizes.Add(new RememberedAppSize(window.ProcessName, actual.Width, actual.Height, _area));
+            string.Equals(saved.ProcessName, window.ProcessName, StringComparison.OrdinalIgnoreCase) &&
+            WindowMatcher.Equivalent(saved.TargetMatch, CurrentTargetMatch));
+        _settings.RememberedAppSizes.Add(new RememberedAppSize(window.ProcessName, actual.Width, actual.Height, _area)
+        { TargetMatch = CurrentTargetMatch });
         NotifyResizeState();
         SaveSettings();
     }
@@ -287,8 +299,8 @@ public sealed partial class MainViewModel
     private void ForgetAppSize()
     {
         if (_targetWindow is not { } window) return;
-        int removed = _settings.RememberedAppSizes.RemoveAll(saved =>
-            string.Equals(saved.ProcessName, window.ProcessName, StringComparison.OrdinalIgnoreCase));
+        var matched = FindRememberedSize(window);
+        int removed = matched is null ? 0 : _settings.RememberedAppSizes.RemoveAll(saved => saved == matched);
         if (removed == 0) return;
         NotifyResizeState();
         SetStatus($"Forgot the size for {window.ProcessName}. Resize it again to save a new size.");
@@ -300,6 +312,10 @@ public sealed partial class MainViewModel
     {
         var window = _targetWindow ?? throw new InvalidOperationException("Choose an open app window first.");
         if (_display is null) throw new InvalidOperationException("No display is available.");
+        var currentWindow = _windowService.GetWindows().FirstOrDefault(candidate => candidate.IsSameWindow(window));
+        if (currentWindow is null || !WindowMatcher.Matches(currentWindow, _targetProcessName, DraftTargetMatch))
+            throw new InvalidOperationException("The selected window no longer matches the application conditions. Refresh and preview a matching window first.");
+        window = currentWindow;
         StopFollowingWindow();
 
         var desired = RequestedFrame;
@@ -479,6 +495,7 @@ public sealed partial class MainViewModel
 
     private void NotifyResizeState()
     {
+        RefreshMatchingWindows();
         OnPropertyChanged(nameof(HasTargetWindow));
         OnPropertyChanged(nameof(HasRememberedAppSize));
         OnPropertyChanged(nameof(RememberedAppSizeText));

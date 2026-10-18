@@ -42,7 +42,7 @@ public static class HelpContent
             ]),
 
         new(OutlineArea, "Outline area", "",
-            "Set the size and position of the frame, and move it on screen.",
+            "Draw, move and resize the frame, or enter exact dimensions and coordinates.",
             [
                 new("Size",
                 [
@@ -62,22 +62,38 @@ public static class HelpContent
                         "Pick a display under the preview. Negative positions are normal on displays left of or above the main one.",
                         "**Keep clear of the taskbar** keeps the frame inside the area the taskbar doesn't cover.")
                 ]),
+                new("Draw and start from a window",
+                [
+                    Bullets(
+                        "Select **Draw on screen**, then drag a rectangle on any connected display. It must be at least 100 × 100 physical pixels and fit inside one display's usable area.",
+                        "Select **Use window bounds**, then click an existing window. ExactFrame uses its visible outer bounds and leaves the window's size alone.",
+                        "Both selections turn the aspect lock off. Turn the chain button back on to keep the new ratio while resizing.",
+                        "Right-click or Esc cancels either picker. Screen drawing also cancels after 30 seconds; window picking after 15 seconds.")
+                ]),
                 new("Additional frames",
                 [
                     Bullets(
                         "Add a **9:16** guide for Shorts inside a 16:9 main frame, or add **1:1**, **4:5** and custom guides.",
-                        "Set each guide's aspect ratio, scale and position inside the main frame. The dimensions and coordinates are physical pixels.",
-                        "Move or resize the main frame and the extra guides follow it. Their borders are click-through.",
+                        "Name each composition and choose its output size. The source crop and output dimensions are separate: a smaller crop may need enlargement, which can soften text.",
+                        "Drag a subframe directly in the large preview or drag its live border on screen. The selected subframe moves 1 px with arrows or 10 with Shift. Alt + drag moves the main frame underneath it; Esc cancels a drag.",
+                        "Output width and height each have a slider and an exact pixel box. The small position map and **Crop X/Y** remain available for parent-relative adjustments.",
+                        "Use an anchor or a free position. The free position stays relative as the main frame resizes. Adjust **Edge inset** for clearance and **Safe margin** for content guides.",
+                        "**Preview outputs** shows each final composition with its scaling and safe margin. Different aspect ratios use empty bars instead of stretching.",
+                        "**Refresh from screen** captures visible content while ExactFrame briefly hides. Images stay in memory until the dialog closes. Previews fit the window; actual recorder output remains unverified.",
+                        "Move or resize the main frame and the extra guides follow it. Their interiors are click-through; turn on **Click-through** to lock their borders too.",
                         "**Copy bounds** copies a labeled region for every frame. Set up each region in your recorder or editor.",
-                        "Save the setup as a profile to restore all its guides together.")
+                        "Save the setup as a profile to restore all its compositions together. Exported version 2 profiles retain output sizes, free positions and margins; older version 1 files still import as guides.")
                 ]),
                 new("On screen",
                 [
                     Bullets(
-                        "Drag the outline's border to move it. It can't leave the display.",
-                "Press Esc to hide the outline while ExactFrame has focus.",
+                        "Drag the outline's border to move it. Drag an edge or corner handle to resize it. The frame stays inside the selected display's usable area.",
+                        "In the preview, drag inside the frame to move it, use its handles to resize, or drag outside it to draw a new frame.",
+                        "Focus the preview and use arrow keys to move 1 physical pixel, or Shift + arrows for 10. Ctrl + arrows resizes from the right and bottom edges; add Shift for 10 px.",
+                        "**Snap to edges and centers** aligns pointer moves and handle resizes with the display and nearby windows. Keyboard adjustments bypass snapping.",
+                        "Esc or right-click cancels an active drag. Otherwise Esc hides the outline while ExactFrame has focus.",
                         "Turn on **Click-through** so clicks pass through the border to the app underneath. The middle is always click-through.",
-                        "The preview is to scale. It shows whether the frame fits and its left, top, right and bottom edges."),
+                        "Turn click-through off to edit with the pointer or preview keys. The preview is to scale and shows the frame's physical bounds."),
                     Tip("The colored border is drawn inside the frame, so its outer edges are exactly the area you record.")
                 ])
             ]),
@@ -123,17 +139,29 @@ public static class HelpContent
                     Steps(
                         "Set up the frame the way you want it.",
                         "Open the **Profiles** tab and select **Save current**.",
-                        "Name the profile. Using an existing name updates that profile."),
+                        "Choose a new name. To replace a saved setup, use **Update from current** in its actions menu."),
                     Bullets(
-                        "A profile remembers the size, position, display, mode and additional frames. In Resize window mode it also remembers the app.",
+                        "A profile remembers the size, position, display, mode, aspect lock and additional frames. In Resize window mode it also remembers the app. " +
+                        "Check **Include appearance when saving or updating** to remember its outline style too. Other profiles use the default appearance.",
                         "Select a profile to apply it. The profile button in the title bar shows which one is active, and says " +
                         "**edited** once you change something.",
                         "Applying a Resize window profile resizes its app straight away, including from the profile's shortcut " +
-                        "while another app has focus. If the app has several windows, ExactFrame uses the selected one, otherwise " +
-                        "the one in front. If the app isn't open, nothing is resized.",
-                        "The first nine profiles get Ctrl + Alt + 1 to 9 in list order, and the **Next profile** shortcut cycles " +
-                        "through them. To hold other keys with the number, select **Change** next to **Apply profile 1 to 9**.",
-                        "Select the trash button on a profile to delete it.")
+                        "while another app has focus. ExactFrame uses a selected matching window or one unique match. " +
+                        "If several windows match, select one under **Match this application** before resizing. If nothing matches, nothing is resized.",
+                        "Numbered shortcuts stay assigned to the same profile when other profiles are deleted. New saves take the first free slot; " +
+                        "duplicates and imports have none until you choose **Shortcut** in their actions menu. **Next profile** cycles through the list. " +
+                        "To hold other keys with the number, select **Change** next to **Apply profile 1 to 9**.",
+                        "Use a profile's actions menu to update, rename, duplicate, export, assign a shortcut or delete it.")
+                ]),
+                new("Transfer profiles between PCs",
+                [
+                    Steps("Select **Export all**, or **Export** in one profile's actions menu.",
+                        "On the destination PC, select **Import** and choose the saved file.",
+                        "Review the profiles and choose a connected display for every saved display, then select **Import copies**."),
+                    Bullets("Imports add copies without replacing existing profiles, taking shortcuts or resizing an app. Select a profile when ready to apply it.",
+                        "Sizes stay in physical pixels. Custom positions move relative to the chosen display and are kept inside it when they fit. " +
+                        "A size that is too large stays unchanged and shows a warning. Missing source geometry centers a custom position.",
+                        "Portable files include saved appearance and the target app's process name, but leave out shortcut assignments, OBS connections and other settings.")
                 ]),
                 new("Keep running in the background",
                 [
@@ -186,6 +214,9 @@ public static class HelpContent
                         "A minimized or maximized app is first restored to a normal window.",
                         "The app is brought to the front, moved to the display, measured, adjusted and checked.",
                         "After a manual resize, ExactFrame remembers the measured size and measurement choice for that app.",
+                        "**Match this application** adds optional exact executable path, Contains or Exact window title, and exact window class conditions. All conditions must match, ignoring letter case. Use selected window details to fill them, or enter the app's process name to preview matches without selecting an app first.",
+                        "Selecting a match in that section only previews its title, path, class, position and size. Choose **Resize window** to apply, **Save setup as profile** to save, or **Update active resize profile** to replace the active resize setup after confirmation.",
+                        "Remembered sizes can differ between windows of one app. More specific conditions take priority over process-only sizes. If equally specific rules conflict, no remembered size is applied. **Forget size** removes only the matched rule.",
                         "Client area leaves out the title bar even when the app draws its own, like the tab strip in Chrome and Edge or the title bar in VS Code. In a browser it includes the toolbar; choose Web page to size only the page.",
                         "Web page mode prefers the rendered document's Windows accessibility bounds, with a Chromium page HWND or matching page element as fallback. If no page can be measured, ExactFrame shows an error before moving the app. Restore a minimized browser first.",
                         "Selecting that app again applies its remembered size automatically. It keeps the current position if it fits, otherwise centers the app.",
@@ -301,8 +332,11 @@ public static class HelpContent
     /// <summary>Fixed shortcuts, shown after the changeable global hotkeys.</summary>
     public static IReadOnlyList<ShortcutRow> FixedShortcuts { get; } =
     [
-        new("Hide the outline while ExactFrame has focus", ["Esc"]),
+        new("Cancel a drag; otherwise hide the outline while ExactFrame has focus", ["Esc"]),
         new("Open help", ["F1"]),
+        new("Move the frame in the focused preview by 1 px", ["↑ ↓ ← →"]),
+        new("Move the frame in the focused preview by 10 px", ["Shift", "↑ ↓ ← →"]),
+        new("Resize in the focused preview by 1 px; add Shift for 10 px", ["Ctrl", "↑ ↓ ← →"]),
         new("Nudge X or Y by 1 px, or 10 px", ["↑ ↓", "Page Up / Down"]),
         new("Move a size slider by 2 px, or 64 px", ["← →", "Page Up / Down"])
     ];

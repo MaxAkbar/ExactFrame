@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ExactFrame.Controls;
@@ -20,27 +21,57 @@ internal sealed class DialogService : IDialogService
     /// <summary>Connects the service to the window that hosts the dialogs.</summary>
     public void Attach(Func<XamlRoot?> root) => _root = root;
 
-    public async Task<string?> PromptProfileNameAsync(string suggestion)
+    public Task<string?> PromptProfileNameAsync(string suggestion) =>
+        PromptProfileNameAsync(suggestion, "Save profile", "Save");
+
+    public async Task<string?> PromptProfileNameAsync(string suggestion, string title, string confirmLabel)
     {
         var name = new TextBox { Text = suggestion, PlaceholderText = "Profile name", MaxLength = 60 };
+        AutomationProperties.SetName(name, "Profile name");
         name.Loaded += (_, _) =>
         {
             name.Focus(FocusState.Programmatic);
             name.SelectAll();
         };
 
-        var dialog = Create("Save profile", "Save", new StackPanel
+        var dialog = Create(title, confirmLabel, new StackPanel
         {
             Spacing = 10,
             Children =
             {
-                Caption("Saves the size, position, display and mode. Using an existing name updates that profile."),
+                Caption("Choose a name for this saved setup."),
                 name
             }
         });
+        dialog.IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(name.Text);
         name.TextChanged += (_, _) => dialog.IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(name.Text);
 
         return await ShowAsync(dialog) == ContentDialogResult.Primary ? name.Text.Trim() : null;
+    }
+
+    public async Task<int?> ChooseProfileShortcutAsync(FrameProfile profile, IReadOnlyList<FrameProfile> profiles)
+    {
+        var slots = new ComboBox { Header = "Number slot", HorizontalAlignment = HorizontalAlignment.Stretch };
+        AutomationProperties.SetName(slots, "Profile shortcut number slot");
+        slots.Items.Add(new ComboBoxItem { Content = "None", Tag = 0 });
+        for (int slot = 1; slot <= 9; slot++)
+        {
+            var owner = profiles.FirstOrDefault(item => item.HotkeySlot == slot);
+            string ownerLabel = owner is null ? "Available" : owner.Id == profile.Id ? $"{owner.Name} (this profile)" : owner.Name;
+            slots.Items.Add(new ComboBoxItem { Content = $"{slot} — {ownerLabel}", Tag = slot });
+        }
+        slots.SelectedIndex = Math.Clamp(profile.HotkeySlot, 0, 9);
+        var dialog = Create($"Shortcut for {profile.Name}", "Use slot", new StackPanel
+        {
+            Spacing = 12,
+            Children =
+            {
+                Caption("Number slots stay with their profiles when the list changes. Choosing an occupied slot requires confirmation."),
+                slots
+            }
+        });
+        return await ShowAsync(dialog) == ContentDialogResult.Primary && slots.SelectedItem is ComboBoxItem { Tag: int selected }
+            ? selected : null;
     }
 
     public async Task<HotkeyGesture?> RecordHotkeyAsync(string actionName, HotkeyGesture current, string? instructions = null)

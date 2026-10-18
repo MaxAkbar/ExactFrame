@@ -848,7 +848,7 @@ public sealed class MainViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task A_resize_profile_uses_the_frontmost_window_of_its_app()
+    public async Task A_resize_profile_requires_a_choice_when_several_app_windows_match()
     {
         var behind = FakeWindows.Terminal with { Handle = 0x2102, Title = "Build", ZOrder = 7 };
         var front = FakeWindows.Terminal with { Handle = 0x2202, Title = "Logs", ZOrder = 2 };
@@ -858,7 +858,10 @@ public sealed class MainViewModelTests : IDisposable
 
         await ((IAsyncRelayCommand)vm.Profiles[0].SelectCommand).ExecuteAsync(null);
 
-        Assert.True(Assert.Single(_windows.Resizes).Window.IsSameWindow(front));
+        Assert.Empty(_windows.Resizes);
+        Assert.False(vm.HasTargetWindow);
+        Assert.Equal(2, vm.MatchingWindows.Count);
+        Assert.Contains("matches 2 windows", vm.StatusDetail);
     }
 
     [Fact]

@@ -12,6 +12,13 @@ public interface IOutlineOverlay : IDisposable
     /// <summary>Raised when the outline is shown or hidden.</summary>
     event EventHandler? VisibilityChanged;
 
+    event EventHandler? FrameInteractionStarted;
+
+    /// <summary>True when the gesture was canceled and should restore its original frame.</summary>
+    event EventHandler<bool>? FrameInteractionFinished;
+
+    event EventHandler<NestedFrameInteraction>? NestedFrameInteraction;
+
     bool IsVisible { get; }
 
     Rectangle Frame { get; }
@@ -33,4 +40,8 @@ public interface IOutlineOverlay : IDisposable
     void SetLocked(bool locked);
 
     void SetCaptureExclusion(bool exclude);
+
+    void SetEditingOptions(FrameEditingOptions options);
+
+    void CancelFrameInteraction();
 }

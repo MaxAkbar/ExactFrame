@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:views="using:ExactFrame.Views"
+    xmlns:controls="using:ExactFrame.Controls"
     xmlns:helpers="using:ExactFrame.Helpers"
     xmlns:vm="using:ExactFrame.Core.ViewModels">
 
@@ -12,6 +13,18 @@
         VerticalScrollBarVisibility="Auto"
         Visibility="{x:Bind ViewModel.ShowFramePanel, Mode=OneWay}">
         <StackPanel Padding="20" Spacing="20">
+
+            <StackPanel Spacing="8">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Button Content="Draw on screen" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.DrawFrameCommand}" Style="{StaticResource SecondaryButtonStyle}"
+                            ToolTipService.ToolTip="Drag a new frame on one display. Esc or right-click cancels." />
+                    <Button Grid.Column="1" Content="Use window bounds" HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.UseWindowBoundsCommand}" Style="{StaticResource SecondaryButtonStyle}"
+                            ToolTipService.ToolTip="Pick a window as the starting frame. Its size stays unchanged." />
+                </Grid>
+                <CheckBox Content="Snap to edges and centers" IsChecked="{x:Bind ViewModel.SnapToEdges, Mode=TwoWay}"
+                          ToolTipService.ToolTip="Align frame moves and handle resizes with display and nearby window edges or centers. Keyboard adjustments remain exact." />
+            </StackPanel>
 
             <!-- Size -->
             <StackPanel Spacing="12">
@@ -69,13 +82,15 @@
             <!-- Additional recording guides -->
             <StackPanel Spacing="12">
                 <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Additional frames" />
-                <TextBlock Style="{StaticResource CaptionStyle}" Text="Show several capture shapes at once. Extra frames stay inside the main frame as you move or resize it." TextWrapping="Wrap" />
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="Compose several outputs from one recording frame. Drag a crop below or enter its position, then choose the final output size." TextWrapping="Wrap" />
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <Button Command="{x:Bind ViewModel.AddShortsFrameCommand}" Content="+ 9:16" Style="{StaticResource SmallButtonStyle}" ToolTipService.ToolTip="Add a vertical Shorts frame" />
                     <Button Command="{x:Bind ViewModel.AddSquareFrameCommand}" Content="+ 1:1" Style="{StaticResource SmallButtonStyle}" ToolTipService.ToolTip="Add a square frame" />
                     <Button Command="{x:Bind ViewModel.AddPortraitFrameCommand}" Content="+ 4:5" Style="{StaticResource SmallButtonStyle}" ToolTipService.ToolTip="Add a portrait frame" />
                     <Button Command="{x:Bind ViewModel.AddCustomFrameCommand}" Content="+ Custom" Style="{StaticResource SmallButtonStyle}" ToolTipService.ToolTip="Add a frame with an editable aspect ratio" />
                 </StackPanel>
+                <Button Content="Preview outputs" Command="{x:Bind ViewModel.PreviewOutputsCommand}" Style="{StaticResource SecondaryButtonStyle}"
+                        ToolTipService.ToolTip="Compare final compositions and optionally refresh a local screen snapshot" />
                 <TextBlock Style="{StaticResource CaptionStyle}" Text="No additional frames. Add 9:16 for a Shorts guide inside a 16:9 main frame." Visibility="{x:Bind ViewModel.HasNoNestedFrames, Mode=OneWay}" TextWrapping="Wrap" />
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.NestedFrames}">
                     <ItemsRepeater.Layout>
@@ -92,10 +107,20 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <Border Width="10" Height="10" VerticalAlignment="Center" Background="{x:Bind helpers:Format.Brush(ColorHex)}" CornerRadius="5" />
-                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource BodyStrongStyle}" Text="{x:Bind Name}" />
+                                        <TextBox Grid.Column="1" AutomationProperties.Name="Composition name" MaxLength="80" Text="{x:Bind Name, Mode=TwoWay}" />
                                         <Button Grid.Column="2" HorizontalAlignment="Right" AutomationProperties.Name="Remove additional frame" Command="{x:Bind RemoveCommand}" Content="Remove" Style="{StaticResource GhostButtonStyle}" />
                                     </Grid>
                                     <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind Dimensions, Mode=OneWay}" />
+                                    <ComboBox Header="Output size" HorizontalAlignment="Stretch" SelectedIndex="{x:Bind OutputPresetIndex, Mode=TwoWay}">
+                                        <ComboBoxItem Content="Guide only" />
+                                        <ComboBoxItem Content="Shorts · 1080 × 1920" />
+                                        <ComboBoxItem Content="Square · 1080 × 1080" />
+                                        <ComboBoxItem Content="Portrait · 1080 × 1350" />
+                                        <ComboBoxItem Content="Landscape · 1920 × 1080" />
+                                        <ComboBoxItem Content="Custom output" />
+                                    </ComboBox>
+                                    <views:OutputSizeEditor Item="{x:Bind}" Visibility="{x:Bind HasOutput, Mode=OneWay}" />
+                                    <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ScalingSummary, Mode=OneWay}" TextWrapping="Wrap" />
                                     <Grid ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -116,7 +141,20 @@
                                         <ComboBoxItem Content="Bottom left" />
                                         <ComboBoxItem Content="Bottom center" />
                                         <ComboBoxItem Content="Bottom right" />
+                                        <ComboBoxItem Content="Free position" />
                                     </ComboBox>
+                                    <controls:NestedPositionMap Item="{x:Bind}" />
+                                    <TextBlock Style="{StaticResource CaptionStyle}" Text="Drag the colored crop. Arrows move 1 px; Shift moves 10. X and Y are relative to the main frame." TextWrapping="Wrap" />
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <NumberBox Header="Crop X" Minimum="0" Maximum="16384" Value="{x:Bind XPosition, Mode=TwoWay}" />
+                                        <NumberBox Grid.Column="1" Header="Crop Y" Minimum="0" Maximum="16384" Value="{x:Bind YPosition, Mode=TwoWay}" />
+                                    </Grid>
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <NumberBox Header="Edge inset (px)" Minimum="0" Maximum="1000" Value="{x:Bind InsetPixels, Mode=TwoWay}" />
+                                        <NumberBox Grid.Column="1" Header="Safe margin (%)" Minimum="0" Maximum="40" Value="{x:Bind SafeMarginPercent, Mode=TwoWay}" />
+                                    </Grid>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
