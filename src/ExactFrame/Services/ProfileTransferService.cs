@@ -127,6 +127,10 @@ internal sealed class ProfileTransferService : IProfileTransferService
         if (appearanceCount > 0)
             content.Children.Add(Caption($"{appearanceCount} {(appearanceCount == 1 ? "profile includes" : "profiles include")} " +
                 "outline appearance, restored when that profile is applied."));
+        int matchCount = package.Profiles.Count(entry => entry.Profile.TargetMatch is not null);
+        if (matchCount > 0)
+            content.Children.Add(Caption($"{matchCount} profiles include window matching conditions. Executable paths, titles and classes " +
+                "are preserved; review them under Match this application before resizing on this PC."));
         content.Children.Add(new TextBlock { Text = "Choose a display for each saved display", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold });
         content.Children.Add(Caption("Confirm the destination; display numbers can differ between PCs. Sizes remain in physical pixels. " +
             "Positions move to the chosen display and stay inside it when possible. Sizes are never reduced."));

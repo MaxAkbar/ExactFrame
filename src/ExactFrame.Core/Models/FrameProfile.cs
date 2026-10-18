@@ -58,13 +58,15 @@ public sealed record FrameProfile
     /// <summary>Process name to select in Resize window mode, such as <c>devenv</c>.</summary>
     public string? TargetProcessName { get; init; }
 
+    public WindowMatchCriteria? TargetMatch { get; init; }
+
     public bool Equals(FrameProfile? other) => other is not null &&
         Id == other.Id && Name == other.Name && HotkeySlot == other.HotkeySlot && Mode == other.Mode &&
         Width == other.Width && Height == other.Height && IsAspectLocked == other.IsAspectLocked && Appearance == other.Appearance &&
         (NestedFrames ?? []).SequenceEqual(other.NestedFrames ?? []) && Anchor == other.Anchor && X == other.X &&
         Y == other.Y && DisplayDeviceName == other.DisplayDeviceName && DisplaySnapshot == other.DisplaySnapshot &&
         KeepClearOfTaskbar == other.KeepClearOfTaskbar &&
-        Area == other.Area && TargetProcessName == other.TargetProcessName;
+        Area == other.Area && TargetProcessName == other.TargetProcessName && TargetMatch == other.TargetMatch;
 
     public override int GetHashCode()
     {
@@ -86,6 +88,7 @@ public sealed record FrameProfile
         hash.Add(KeepClearOfTaskbar);
         hash.Add(Area);
         hash.Add(TargetProcessName);
+        hash.Add(TargetMatch);
         return hash.ToHashCode();
     }
 

@@ -146,8 +146,8 @@ public static class HelpContent
                         "Select a profile to apply it. The profile button in the title bar shows which one is active, and says " +
                         "**edited** once you change something.",
                         "Applying a Resize window profile resizes its app straight away, including from the profile's shortcut " +
-                        "while another app has focus. If the app has several windows, ExactFrame uses the selected one, otherwise " +
-                        "the one in front. If the app isn't open, nothing is resized.",
+                        "while another app has focus. ExactFrame uses a selected matching window or one unique match. " +
+                        "If several windows match, select one under **Match this application** before resizing. If nothing matches, nothing is resized.",
                         "Numbered shortcuts stay assigned to the same profile when other profiles are deleted. New saves take the first free slot; " +
                         "duplicates and imports have none until you choose **Shortcut** in their actions menu. **Next profile** cycles through the list. " +
                         "To hold other keys with the number, select **Change** next to **Apply profile 1 to 9**.",
@@ -214,6 +214,9 @@ public static class HelpContent
                         "A minimized or maximized app is first restored to a normal window.",
                         "The app is brought to the front, moved to the display, measured, adjusted and checked.",
                         "After a manual resize, ExactFrame remembers the measured size and measurement choice for that app.",
+                        "**Match this application** adds optional exact executable path, Contains or Exact window title, and exact window class conditions. All conditions must match, ignoring letter case. Use selected window details to fill them, or enter the app's process name to preview matches without selecting an app first.",
+                        "Selecting a match in that section only previews its title, path, class, position and size. Choose **Resize window** to apply, **Save setup as profile** to save, or **Update active resize profile** to replace the active resize setup after confirmation.",
+                        "Remembered sizes can differ between windows of one app. More specific conditions take priority over process-only sizes. If equally specific rules conflict, no remembered size is applied. **Forget size** removes only the matched rule.",
                         "Client area leaves out the title bar even when the app draws its own, like the tab strip in Chrome and Edge or the title bar in VS Code. In a browser it includes the toolbar; choose Web page to size only the page.",
                         "Web page mode prefers the rendered document's Windows accessibility bounds, with a Chromium page HWND or matching page element as fallback. If no page can be measured, ExactFrame shows an error before moving the app. Restore a minimized browser first.",
                         "Selecting that app again applies its remembered size automatically. It keeps the current position if it fits, otherwise centers the app.",

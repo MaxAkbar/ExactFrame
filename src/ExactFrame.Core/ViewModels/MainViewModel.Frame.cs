@@ -323,7 +323,10 @@ public sealed partial class MainViewModel
 
         // Never leave another app selected: applying the profile resizes the selected window.
         if (state.Mode == FrameMode.Resize)
-            SetTarget(string.IsNullOrEmpty(state.TargetProcessName) ? null : FindAppWindow(state.TargetProcessName));
+        {
+            LoadTargetMatch(state.TargetProcessName, state.TargetMatch);
+            SetTarget(string.IsNullOrEmpty(state.TargetProcessName) ? null : FindAppWindow(state.TargetProcessName, state.TargetMatch));
+        }
 
         SyncSelections();
         PrimaryCommand.NotifyCanExecuteChanged();
@@ -349,7 +352,8 @@ public sealed partial class MainViewModel
         DisplaySnapshot = _display,
         KeepClearOfTaskbar = _keepClear,
         Area = _area,
-        TargetProcessName = _targetWindow?.ProcessName
+        TargetProcessName = _targetProcessName ?? _targetWindow?.ProcessName,
+        TargetMatch = CurrentTargetMatch
     });
 
     private static FrameProfile Normalize(FrameProfile profile) => profile with
@@ -357,7 +361,8 @@ public sealed partial class MainViewModel
         X = profile.Anchor is null ? profile.X : 0,
         Y = profile.Anchor is null ? profile.Y : 0,
         Area = profile.Mode == FrameMode.Resize ? profile.Area : WindowArea.Client,
-        TargetProcessName = profile.Mode == FrameMode.Resize ? profile.TargetProcessName : null
+        TargetProcessName = profile.Mode == FrameMode.Resize ? profile.TargetProcessName : null,
+        TargetMatch = profile.Mode == FrameMode.Resize ? WindowMatcher.Normalize(profile.TargetMatch) : null
     };
 
     private void SyncSelections()

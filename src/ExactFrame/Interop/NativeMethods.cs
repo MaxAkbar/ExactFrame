@@ -8,6 +8,15 @@ namespace ExactFrame.Interop;
 /// <summary>The narrow Win32 boundary. Everything here uses physical pixels (the app is per-monitor DPI aware).</summary>
 internal static class NativeMethods
 {
+    [DllImport("kernel32.dll", SetLastError = true)]
+    internal static extern Microsoft.Win32.SafeHandles.SafeProcessHandle OpenProcess(uint access,
+        [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
+
+    [DllImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool QueryFullProcessImageName(Microsoft.Win32.SafeHandles.SafeProcessHandle process,
+        uint flags, StringBuilder path, ref uint size);
+
     // Window styles
     internal const int WsPopup = unchecked((int)0x80000000);
     internal const int WsExTopmost = 0x8;

@@ -37,6 +37,7 @@ public static class ProfilePackageSerializer
             throw Invalid($"A profile file must contain between 1 and {MaxProfiles} profiles.");
         var package = new ProfilePackage
         {
+            Version = profiles.Any(profile => profile?.TargetMatch is not null) ? 3 : 2,
             Profiles = [.. profiles.Select(profile =>
             {
                 if (profile is null) throw Invalid("A profile is missing.");
@@ -188,8 +189,8 @@ public static class ProfilePackageSerializer
 
     private static void Validate(ProfilePackage package)
     {
-        if (package.Format != Format || package.Version is not (1 or 2))
-            throw Invalid("This is not a supported ExactFrame profile file (format versions 1 and 2).");
+        if (package.Format != Format || package.Version is not (1 or 2 or 3))
+            throw Invalid("This is not a supported ExactFrame profile file (format versions 1, 2 and 3).");
         if (package.Profiles is null || package.Profiles.Count is < 1 or > MaxProfiles)
             throw Invalid($"A profile file must contain between 1 and {MaxProfiles} profiles.");
         var profileIds = new HashSet<string>(StringComparer.Ordinal);
@@ -210,6 +211,13 @@ public static class ProfilePackageSerializer
                 Text(process, 120, "process name");
                 if (process.IndexOfAny(['/', '\\', ':', '\0']) >= 0)
                     throw Invalid("A target process must be a process name, not a file path.");
+            }
+            if (profile.TargetMatch is { } match)
+            {
+                if (package.Version < 3) throw Invalid("Window matching conditions require profile format version 3.");
+                if (profile.Mode != FrameMode.Resize || string.IsNullOrWhiteSpace(profile.TargetProcessName))
+                    throw Invalid("Window matching conditions require a Resize window profile and an application process name.");
+                if (WindowMatcher.ValidationError(match) is { } error) throw Invalid(error);
             }
             if (profile.NestedFrames is null || profile.NestedFrames.Count > MaxGuides)
                 throw Invalid($"A profile can contain at most {MaxGuides} additional guides.");
@@ -310,6 +318,8 @@ public static class ProfilePackageSerializer
                 Anchor = entry.Profile.Anchor, X = entry.Profile.X, Y = entry.Profile.Y,
                 DisplayDeviceName = entry.Profile.DisplayDeviceName, KeepClearOfTaskbar = entry.Profile.KeepClearOfTaskbar,
                 Area = entry.Profile.Area, TargetProcessName = entry.Profile.TargetProcessName,
+                TargetMatch = entry.Profile.TargetMatch is { } match ? new WireMatch
+                { ExecutablePath = match.ExecutablePath, Title = match.Title, ClassName = match.ClassName, TitleMode = match.TitleMode } : null,
                 IsAspectLocked = entry.Profile.IsAspectLocked,
                 Appearance = entry.Profile.Appearance is { } appearance ? new WireAppearance
                 {
@@ -359,6 +369,8 @@ public static class ProfilePackageSerializer
                         })],
                         Anchor = profile.Anchor, X = profile.X, Y = profile.Y, DisplayDeviceName = profile.DisplayDeviceName,
                         KeepClearOfTaskbar = profile.KeepClearOfTaskbar, Area = profile.Area, TargetProcessName = profile.TargetProcessName,
+                        TargetMatch = profile.TargetMatch is { } match ? new WindowMatchCriteria
+                        { ExecutablePath = match.ExecutablePath, Title = match.Title, ClassName = match.ClassName, TitleMode = match.TitleMode } : null,
                         IsAspectLocked = profile.IsAspectLocked, HotkeySlot = 0,
                         Appearance = profile.Appearance is { } appearance ? new OutlineStyle
                         {
@@ -407,8 +419,18 @@ public static class ProfilePackageSerializer
         public required bool KeepClearOfTaskbar { get; init; }
         public required WindowArea Area { get; init; }
         public string? TargetProcessName { get; init; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public WireMatch? TargetMatch { get; init; }
         public required bool IsAspectLocked { get; init; }
         public WireAppearance? Appearance { get; init; }
+    }
+
+    private sealed class WireMatch
+    {
+        public string? ExecutablePath { get; init; }
+        public string? Title { get; init; }
+        public string? ClassName { get; init; }
+        public required WindowTitleMatchMode TitleMode { get; init; }
     }
 
     private sealed class WireGuide

@@ -128,10 +128,11 @@ internal sealed class WindowService : IWindowService, IDisposable
     {
         var windows = new List<WindowInfo>();
         var processNames = new Dictionary<uint, string>();
+        var processPaths = new Dictionary<uint, string?>();
         // EnumWindows goes from the frontmost window back, which gives each window its z-order.
         NativeMethods.Check(NativeMethods.EnumWindows((hwnd, _) =>
         {
-            var window = Describe(hwnd, processNames);
+            var window = Describe(hwnd, processNames, processPaths);
             if (window is not null) windows.Add(window with { ZOrder = windows.Count });
             return true;
         }, 0), "list open windows");
@@ -139,7 +140,8 @@ internal sealed class WindowService : IWindowService, IDisposable
     }
 
     /// <summary>Describes a top-level window of another process, or returns <c>null</c> when it isn't a candidate.</summary>
-    internal static WindowInfo? Describe(nint hwnd, Dictionary<uint, string>? processNames = null)
+    internal static WindowInfo? Describe(nint hwnd, Dictionary<uint, string>? processNames = null,
+        Dictionary<uint, string?>? processPaths = null)
     {
         if (!NativeMethods.IsWindowVisible(hwnd)) return null;
         uint thread = NativeMethods.GetWindowThreadProcessId(hwnd, out uint process);
@@ -160,7 +162,15 @@ internal sealed class WindowService : IWindowService, IDisposable
 
         bool minimized = NativeMethods.IsIconic(hwnd);
         var bounds = minimized ? NormalBounds(hwnd) : VisibleBounds(hwnd);
-        return new WindowInfo(hwnd, process, thread, title.ToString(), processName, bounds, minimized);
+        if (processPaths is null || !processPaths.TryGetValue(process, out string? path))
+        {
+            path = ExecutablePath(process);
+            processPaths?.TryAdd(process, path);
+        }
+        var className = new StringBuilder(512);
+        string? windowClass = NativeMethods.GetClassName(hwnd, className, className.Capacity) > 0 ? className.ToString() : null;
+        return new WindowInfo(hwnd, process, thread, title.ToString(), processName, bounds, minimized)
+        { ExecutablePath = path, ClassName = windowClass };
     }
 
     public Rectangle Measure(WindowInfo window, WindowArea area)
@@ -535,5 +545,15 @@ internal sealed class WindowService : IWindowService, IDisposable
         {
             return "app";
         }
+    }
+
+    private static string? ExecutablePath(uint processId)
+    {
+        const uint queryLimitedInformation = 0x1000;
+        using var process = NativeMethods.OpenProcess(queryLimitedInformation, false, processId);
+        if (process.IsInvalid) return null;
+        var path = new StringBuilder(32768);
+        uint length = (uint)path.Capacity;
+        return NativeMethods.QueryFullProcessImageName(process, 0, path, ref length) ? path.ToString() : null;
     }
 }

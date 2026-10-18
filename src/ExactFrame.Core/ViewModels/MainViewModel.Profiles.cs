@@ -87,7 +87,12 @@ public sealed partial class MainViewModel
         if (_targetWindow is null)
         {
             bool missing = !string.IsNullOrEmpty(profile.TargetProcessName);
-            SetStatus(missing
+            bool ambiguous = MatchingWindows.Count > 1;
+            SetStatus(TargetMatchError.Length > 0 ? TargetMatchError : ambiguous
+                ? $"“{profile.Name}” matches {MatchingWindows.Count} windows. Select one under Match this application, then choose Resize window."
+                : missing && profile.TargetMatch is not null
+                ? $"No window matches “{profile.Name}”. Review the matching conditions, open the intended window, then refresh."
+                : missing
                 ? $"“{profile.Name}” resizes {profile.TargetProcessName}, which isn’t open. Open it, then apply the profile again."
                 : $"Applied “{profile.Name}”. Choose a window to resize.", warning: missing);
             SaveSettings();
@@ -106,6 +111,7 @@ public sealed partial class MainViewModel
 
     private async Task SaveProfileAsync()
     {
+        if (!ValidateTargetMatchForSave()) return;
         string size = _preset.IsCustom ? $"{_width} × {_height}" : _preset.Name;
         string suggestion = IsResizeMode && _targetWindow is not null
             ? $"{_targetWindow.ProcessName} {size}"
@@ -160,6 +166,7 @@ public sealed partial class MainViewModel
 
     private async Task UpdateProfileAsync(FrameProfile profile)
     {
+        if (!ValidateTargetMatchForSave()) return;
         string appearance = IncludeProfileAppearance ? "including the current appearance" : "using the default appearance";
         if (!await _dialogs.ConfirmAsync("Update profile?",
             $"Replace “{profile.Name}” with the current setup, {appearance}? Its name and shortcut will stay the same.", "Update")) return;
@@ -254,7 +261,8 @@ public sealed partial class MainViewModel
         if (profile.Mode == FrameMode.Resize)
         {
             string target = profile.TargetProcessName ?? "a window";
-            return $"Resize {target} · {size} {AreaLabel(profile.Area)}{appearance}";
+            string match = profile.TargetMatch is null ? string.Empty : " · Window conditions";
+            return $"Resize {target} · {size} {AreaLabel(profile.Area)}{match}{appearance}";
         }
 
         string display = profile.DisplayDeviceName is null
@@ -268,6 +276,8 @@ public sealed partial class MainViewModel
 
     private void NotifyProfileHeader()
     {
+        OnPropertyChanged(nameof(HasActiveResizeProfile));
+        UpdateTargetProfileCommand?.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(ActiveProfileName));
         OnPropertyChanged(nameof(ProfileEyebrow));
     }

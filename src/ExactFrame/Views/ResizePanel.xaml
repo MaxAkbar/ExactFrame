@@ -13,6 +13,53 @@
         Visibility="{x:Bind ViewModel.IsResizeMode, Mode=OneWay}">
         <StackPanel Padding="20,16,20,20" Spacing="18">
 
+            <Expander Header="Match this application" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <StackPanel Spacing="10">
+                    <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.TargetApplicationText, Mode=OneWay}" TextWrapping="Wrap" />
+                    <TextBox Header="Application process name" AutomationProperties.Name="Target application process" MaxLength="120" PlaceholderText="For example, msedge or devenv"
+                             Text="{x:Bind ViewModel.TargetProcessName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Style="{StaticResource CaptionStyle}" Text="Optional conditions must all match. Blank fields allow any value. Matching uses literal text and ignores letter case." TextWrapping="Wrap" />
+                    <Button Content="Use selected window details" Command="{x:Bind ViewModel.UseSelectedWindowMatchCommand}" Style="{StaticResource SmallButtonStyle}" />
+                    <TextBox Header="Executable path (exact)" AutomationProperties.Name="Target executable path" MaxLength="2048"
+                             Text="{x:Bind ViewModel.TargetExecutablePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Header="Window title" AutomationProperties.Name="Target window title" MaxLength="2048"
+                             Text="{x:Bind ViewModel.TargetTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <ComboBox Header="Title matching" HorizontalAlignment="Stretch" SelectedIndex="{x:Bind ViewModel.TargetTitleModeIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="Contains" /><ComboBoxItem Content="Exact" />
+                    </ComboBox>
+                    <TextBox Header="Window class (exact)" AutomationProperties.Name="Target window class" MaxLength="2048"
+                             Text="{x:Bind ViewModel.TargetClassName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Clear conditions" Command="{x:Bind ViewModel.ClearWindowMatchCommand}" Style="{StaticResource SmallButtonStyle}" />
+                        <Button Content="Refresh matches" Command="{x:Bind ViewModel.RefreshWindowsCommand}" Style="{StaticResource SmallButtonStyle}" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.TargetMatchSummary, Mode=OneWay}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                    <ScrollViewer MaxHeight="180" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.MatchingWindows}">
+                            <ItemsRepeater.Layout><StackLayout Spacing="4" /></ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="vm:WindowItem">
+                                    <RadioButton GroupName="MatchingWindow" Command="{x:Bind SelectCommand}" IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                                 Style="{StaticResource ChipRadioStyle}" ToolTipService.ToolTip="{x:Bind Title}">
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{x:Bind Meta}" Style="{StaticResource CaptionStyle}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </RadioButton>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </ScrollViewer>
+                    <Border Padding="10" Background="{StaticResource FooterBrush}" CornerRadius="6">
+                        <TextBlock Text="{x:Bind ViewModel.TargetWindowPreview, Mode=OneWay}" Style="{StaticResource CaptionStyle}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    </Border>
+                    <TextBlock Style="{StaticResource CaptionStyle}" Text="Manual resizing remembers the size for these conditions. Save a profile to keep the conditions with a complete setup." TextWrapping="Wrap" />
+                    <Button Content="Save setup as profile" Command="{x:Bind ViewModel.SaveProfileCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button Content="Update active resize profile" Command="{x:Bind ViewModel.UpdateTargetProfileCommand}"
+                            Visibility="{x:Bind ViewModel.HasActiveResizeProfile, Mode=OneWay}" Style="{StaticResource SmallButtonStyle}" />
+                </StackPanel>
+            </Expander>
+
             <!-- Window list -->
             <StackPanel Spacing="8">
                 <Grid ColumnSpacing="8">

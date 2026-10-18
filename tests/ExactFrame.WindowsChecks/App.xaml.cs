@@ -51,6 +51,13 @@ public sealed partial class App : Application
             _monitors = monitors;
             if (monitors.Count == 0) throw new InvalidOperationException("An unlocked interactive Windows desktop is required.");
             using var windows = new WindowService(new TitleBarDetector());
+            if (arguments.Contains("--targeting-metadata-only"))
+            {
+                _nativePassed = TargetingMetadataChecks.Run(windows, _checks);
+                WriteReport(monitors, null);
+                if (!_nativePassed) Environment.ExitCode = 1;
+                return;
+            }
             _fixture = PatternWindow();
             var hwnd = Win32Interop.GetWindowFromWindowId(_fixture.AppWindow.Id);
             _fixture.Activate();

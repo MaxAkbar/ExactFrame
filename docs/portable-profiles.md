@@ -21,7 +21,7 @@ Each profile has a **More actions** menu:
 
 New saves receive the first free numbered shortcut, if one is available. Existing installations keep the former first-nine assignments during a one-time migration. Deleting or reordering profiles does not move those assignments. Imported profiles and duplicates have no numbered shortcut until assigned. **Change** beside **Apply profile 1 to 9** changes the keys held with the number. Registration conflicts and shortcuts that type characters retain their existing warnings.
 
-Applying a Resize profile can resize its app immediately. Importing, duplicating, renaming, updating and exporting do not resize an app. A profile tied to a disconnected display cannot be applied; export it and import a copy to choose a connected display.
+Applying a Resize profile can resize its matching app immediately. A selected matching window wins; otherwise exactly one window must match. With several matches and no selected match, choose one under **Match this application**, then resize. Importing, duplicating, renaming, updating and exporting do not resize an app. A profile tied to a disconnected display cannot be applied; export it and import a copy to choose a connected display.
 
 ## Transfer a setup
 
@@ -32,9 +32,9 @@ Applying a Resize profile can resize its app immediately. Importing, duplicating
 
 Physical pixel sizes and anchors are preserved. A custom position is translated relative to the source display's usable origin onto the chosen display. If the frame fits, its position is clamped inside the destination's usable area. Taskbar clearance uses the saved setting. Different DPI scaling does not scale the pixel dimensions. A frame too large for the destination keeps its size and produces a warning. Missing source geometry centers a custom position and produces a warning. A display disconnecting during review stops the import before profiles are added.
 
-Files contain profiles, optional saved appearance and source display geometry. They omit numbered shortcut assignments, native monitor interface paths, OBS addresses/passwords, startup settings and unrelated app data. Profile names and target app process names are readable in the file; review these when sharing it.
+Files contain profiles, optional saved appearance and source display geometry. They omit numbered shortcut assignments, native monitor interface paths, OBS addresses/passwords, startup settings and unrelated app data. Profile names, target process names and optional executable paths, title text and window classes are readable in the file; review these when sharing it. Matching conditions are retained across PCs, so a different install path may require editing under **Match this application**.
 
-The current version 2 format also preserves output composition sizes, free positions and margins. Version 1 files remain importable with their original guide defaults. Both versions accept at most 100 profiles, 16 additional frames per profile, and 1 MiB per file. Invalid, unsupported, incomplete or conflicting documents are rejected as a whole. The file is validated before review and remapping; no partial import is retained if saving fails. Exporting more than 100 saved profiles at once requires smaller individual exports.
+Exports with window matching conditions use version 3, which requires a reader that understands those conditions. Other exports remain version 2, preserving output composition sizes, free positions and margins. Versions 1 and 2 remain importable with process-only targeting and their original guide defaults. All supported versions accept at most 100 profiles, 16 additional frames per profile, and 1 MiB per file. Invalid, unsupported, incomplete or conflicting documents are rejected as a whole. Conditions in a version 1 or 2 file are rejected instead of silently broadened. The file is validated before review and remapping; no partial import is retained if saving fails. Exporting more than 100 saved profiles at once requires smaller individual exports.
 
 ## Verification
 

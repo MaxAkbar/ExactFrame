@@ -103,9 +103,9 @@ never replaces it. Numbered shortcuts stay with their profiles when another prof
 Ctrl + Alt + 1 to 9 slot; duplicates and imports start without a shortcut. **Change** next to **Apply profile 1 to 9** picks other held keys.
 **Export all** and **Import** transfer portable profile files. Import reviews display mappings and adds new copies without applying them.
 See [portable profiles](docs/portable-profiles.md) for what is included and how positions move between displays.
-Applying a Resize window profile resizes its app straight away, including from its shortcut while another app has focus.
-If the app has several windows, ExactFrame uses the selected one, otherwise the one in front; if the app isn't open,
-nothing is resized. **Global hotkeys** shows each shortcut; if another app owns one, it says so and **Change** records a
+Applying a Resize window profile resizes its matching app straight away, including from its shortcut while another app has focus.
+If several windows match, ExactFrame uses an explicitly selected matching window or asks you to choose one; it no longer
+chooses the frontmost window automatically. If nothing matches, nothing is resized. **Global hotkeys** shows each shortcut; if another app owns one, it says so and **Change** records a
 new one.
 
 Windows sends AltGr as Ctrl + Alt, so on many keyboards a Ctrl + Alt shortcut is a character: AltGr + 2 is @ on a Spanish
@@ -141,6 +141,15 @@ the app's display. If the saved size cannot fit, it leaves the app alone and sho
 **Forget size** beside the app to remove its saved size; the next manual resize saves a new one.
 If you choose **Web page** before selecting an app with a remembered Client area size, that choice applies to the
 current resize while retaining the remembered dimensions.
+
+Open **Match this application** to narrow profiles and remembered sizes by full executable path, window title
+(Contains or Exact), and window class. All nonblank conditions must match. Enter an application process name or use
+**Use selected window details**, then review the matching windows and selected window's title, path, class and bounds.
+Selecting a match here only previews it; **Resize window** applies the size. **Save setup as profile** retains the rule,
+and **Update active resize profile** replaces an existing resize setup after confirmation. Specific remembered rules
+take priority over a process-only default; equally specific conflicting rules skip automatic resizing.
+See [application targeting](docs/application-targeting.md) for behavior, transfer compatibility and checks.
+
 After resizing, the outline follows that app when it moves or changes size, including across displays. Move
 the app itself; its outline is click-through while following. The outline hides if the app is minimized or
 hidden and returns when it becomes visible. Hiding the outline, choosing another app, editing the requested

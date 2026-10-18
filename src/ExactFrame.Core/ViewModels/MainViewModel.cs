@@ -101,7 +101,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             SetMode(FrameMode.Outline);
             SelectedTab = SettingsTab.Profiles;
         });
-        PrimaryCommand = new AsyncRelayCommand(PrimaryAsync, () => !IsBusy && (IsOutlineMode || _targetWindow is not null));
+        PrimaryCommand = new AsyncRelayCommand(PrimaryAsync, () => !IsBusy && (IsOutlineMode || CanResizeSelectedWindow));
         RestoreCommand = new AsyncRelayCommand(() => RunBusyAsync(RestoreTargetAsync), () => !IsBusy && CanRestore);
         ForgetAppSizeCommand = new RelayCommand(ForgetAppSize, () => HasRememberedAppSize && !IsBusy);
         CopyBoundsCommand = new AsyncRelayCommand(CopyBoundsAsync);
@@ -121,6 +121,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         AddPortraitFrameCommand = new RelayCommand(() => AddNestedFrame("Portrait 4:5", 4, 5));
         AddCustomFrameCommand = new RelayCommand(() => AddNestedFrame("Custom frame", 16, 9));
         RefreshWindowsCommand = new RelayCommand(() => Guard(RefreshWindows));
+        UseSelectedWindowMatchCommand = new RelayCommand(UseSelectedWindowMatch, () => _targetWindow is not null && !IsBusy);
+        ClearWindowMatchCommand = new RelayCommand(() => LoadTargetMatch(_targetProcessName, null));
+        UpdateTargetProfileCommand = new AsyncRelayCommand(() => RunBusyAsync(() => UpdateProfileAsync(ActiveProfile!)),
+            () => !IsBusy && HasActiveResizeProfile);
         PickWindowCommand = new AsyncRelayCommand(PickWindowAsync);
         DrawFrameCommand = new AsyncRelayCommand(() => RunBusyAsync(DrawFrameAsync), () => IsOutlineMode && !IsBusy && _framePicker is not null);
         UseWindowBoundsCommand = new AsyncRelayCommand(() => RunBusyAsync(UseWindowBoundsAsync), () => IsOutlineMode && !IsBusy);
@@ -201,6 +205,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             if (value) FinishNestedFrameInteraction(cancel: true);
             _overlay.SetLocked(value || _clickThrough || _followedWindow is not null);
             OnPropertyChanged(nameof(IsIdle));
+            UseSelectedWindowMatchCommand.NotifyCanExecuteChanged();
+            UpdateTargetProfileCommand.NotifyCanExecuteChanged();
             SaveProfileCommand.NotifyCanExecuteChanged();
             ImportProfilesCommand.NotifyCanExecuteChanged();
             ExportProfilesCommand.NotifyCanExecuteChanged();

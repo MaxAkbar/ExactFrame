@@ -241,7 +241,7 @@ public sealed class ProfilePackageTests
 
     [Theory]
     [InlineData("format", "another-app")]
-    [InlineData("version", 3)]
+    [InlineData("version", 4)]
     [InlineData("version", 0)]
     public void Unsupported_format_or_version_is_rejected(string property, object value)
     {
