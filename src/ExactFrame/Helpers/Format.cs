@@ -10,6 +10,39 @@ namespace ExactFrame.Helpers;
 public static class Format
 {
     private static readonly Dictionary<string, SolidColorBrush> BrushCache = [];
+    private static readonly Dictionary<string, SolidColorBrush> ThemeBrushCache = [];
+    private static ElementTheme _theme = ElementTheme.Default;
+    private static bool _highContrast;
+
+    // Programmatically built content shares mutable semantic brushes. Updating their colors also
+    // updates existing help paragraphs, profile icons and keycaps on a live Windows theme change.
+    public static void UpdateTheme(ElementTheme theme, bool highContrast = false)
+    {
+        _theme = theme;
+        _highContrast = highContrast;
+        foreach (var (key, brush) in ThemeBrushCache) brush.Color = ResolveThemeBrush(key).Color;
+    }
+
+    public static SolidColorBrush ThemeBrush(string key)
+    {
+        if (!ThemeBrushCache.TryGetValue(key, out var brush))
+            ThemeBrushCache[key] = brush = new SolidColorBrush(ResolveThemeBrush(key).Color);
+        return brush;
+    }
+
+    private static SolidColorBrush ResolveThemeBrush(string key)
+    {
+        string theme = _highContrast ? "HighContrast" : _theme == ElementTheme.Light ? "Light" : "Default";
+        SolidColorBrush? Find(ResourceDictionary dictionary)
+        {
+            if (dictionary.ThemeDictionaries.TryGetValue(theme, out var themed) && themed is ResourceDictionary palette &&
+                palette.TryGetValue(key, out var value) && value is SolidColorBrush brush) return brush;
+            foreach (var merged in dictionary.MergedDictionaries)
+                if (Find(merged) is { } found) return found;
+            return null;
+        }
+        return Find(Application.Current.Resources) ?? (SolidColorBrush)Application.Current.Resources[key];
+    }
 
     public static string Upper(string? value) => (value ?? string.Empty).ToUpperInvariant();
 
@@ -37,17 +70,17 @@ public static class Format
 
     public static SolidColorBrush PrimaryBrush(bool isHide) => BrushFromHex(isHide ? "#122422" : "#0E7A6D");
 
-    public static SolidColorBrush ChipBrush(bool live) => BrushFromHex(live ? "#2434D5B5" : "#0FFFFFFF");
+    public static SolidColorBrush ChipBrush(bool live) => ThemeBrush(live ? "MintTintBrush" : "StageChipBrush");
 
-    public static SolidColorBrush ChipTextBrush(bool live) => BrushFromHex(live ? "#BFF3E6" : "#B8CBC9");
+    public static SolidColorBrush ChipTextBrush(bool live) => ThemeBrush(live ? "LiveTextBrush" : "StageSoftBrush");
 
-    public static SolidColorBrush ChipDotBrush(bool live) => BrushFromHex(live ? "#34D5B5" : "#6F8A88");
+    public static SolidColorBrush ChipDotBrush(bool live) => ThemeBrush(live ? "MintBrush" : "IdleDotBrush");
 
-    public static SolidColorBrush SelectedBrush(bool selected) => BrushFromHex(selected ? "#0E7A6D" : "#5E706E");
+    public static SolidColorBrush SelectedBrush(bool selected) => ThemeBrush(selected ? "AccentStrongBrush" : "MutedBrush");
 
-    public static SolidColorBrush SelectedTileBrush(bool selected) => BrushFromHex(selected ? "#E2F2EE" : "#EEF2F1");
+    public static SolidColorBrush SelectedTileBrush(bool selected) => ThemeBrush(selected ? "AccentTintBrush" : "TrackBrush");
 
-    public static SolidColorBrush NavBrush(bool selected) => BrushFromHex(selected ? "#0A5F55" : "#3C4F4D");
+    public static SolidColorBrush NavBrush(bool selected) => ThemeBrush(selected ? "AccentStrongBrush" : "InkSoftBrush");
 
     public static FontFamily NavFont(bool selected) =>
         (FontFamily)Application.Current.Resources[selected ? "SansSemiBoldFont" : "SansMediumFont"];
@@ -55,7 +88,7 @@ public static class Format
     public static Windows.UI.Text.FontWeight NavWeight(bool selected) =>
         selected ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Medium;
 
-    public static SolidColorBrush FitBrush(bool fits) => BrushFromHex(fits ? "#7FE0C9" : "#F5B84A");
+    public static SolidColorBrush FitBrush(bool fits) => ThemeBrush(fits ? "MintTextBrush" : "StageWarnBrush");
 
     public static string FitGlyph(bool fits) => fits ? "\uE73E" : "\uE7BA";
 

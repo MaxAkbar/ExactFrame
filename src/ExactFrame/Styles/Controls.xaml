@@ -17,27 +17,28 @@
         <Setter Property="FontFamily" Value="{StaticResource SansSemiBoldFont}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkBrush}" />
     </Style>
 
     <Style x:Key="BodyStrongStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource SansMediumFont}" />
         <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkBrush}" />
     </Style>
 
     <Style x:Key="LabelStyle" TargetType="TextBlock">
+        <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="FontFamily" Value="{StaticResource SansFont}" />
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="Foreground" Value="{StaticResource InkSoftBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkSoftBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <Style x:Key="CaptionStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource SansFont}" />
         <Setter Property="FontSize" Value="12.5" />
-        <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource MutedBrush}" />
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
@@ -46,29 +47,39 @@
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="11" />
         <Setter Property="CharacterSpacing" Value="80" />
-        <Setter Property="Foreground" Value="{StaticResource StageMutedBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource StageMutedBrush}" />
     </Style>
 
     <Style x:Key="StageValueStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MonoMediumFont}" />
         <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="FontSize" Value="16" />
-        <Setter Property="Foreground" Value="{StaticResource StageBrightBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource StageBrightBrush}" />
     </Style>
 
     <Style x:Key="DividerStyle" TargetType="Border">
         <Setter Property="Height" Value="1" />
-        <Setter Property="Background" Value="{StaticResource DividerBrush}" />
+        <Setter Property="Background" Value="{ThemeResource DividerBrush}" />
     </Style>
 
     <Style x:Key="SegmentTrackStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource TrackBrush}" />
+        <Setter Property="Background" Value="{ThemeResource TrackBrush}" />
         <Setter Property="CornerRadius" Value="9" />
         <Setter Property="Padding" Value="3" />
         <Setter Property="HorizontalAlignment" Value="Right" />
     </Style>
 
     <!-- ===== Buttons =================================================================== -->
+
+    <Style x:Key="ThemeButtonStyle" TargetType="DropDownButton">
+        <Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource InputLineBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkBrush}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+    </Style>
 
     <!-- One template for all flat buttons. The hover overlay uses the foreground color, so it works on light and dark. -->
     <ControlTemplate x:Key="FlatButtonTemplate" TargetType="Button">
@@ -116,8 +127,8 @@
 
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource FlatButtonTemplate}" />
-        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{ThemeResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource AccentTextBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="MinHeight" Value="44" />
@@ -132,9 +143,9 @@
 
     <Style x:Key="SecondaryButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource FlatButtonTemplate}" />
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource InputLineBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+        <Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource InputLineBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="MinHeight" Value="44" />
@@ -157,7 +168,7 @@
     <Style x:Key="GhostButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource FlatButtonTemplate}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource InkSoftBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkSoftBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="MinHeight" Value="32" />
@@ -171,7 +182,7 @@
     <Style x:Key="HudButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource FlatButtonTemplate}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource StageSoftBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource StageSoftBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="9" />
         <Setter Property="Width" Value="36" />
@@ -192,7 +203,7 @@
             BorderBrush="{TemplateBinding BorderBrush}"
             BorderThickness="{TemplateBinding BorderThickness}"
             CornerRadius="{TemplateBinding CornerRadius}">
-            <Border x:Name="Overlay" Background="{StaticResource InkBrush}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" />
+            <Border x:Name="Overlay" Background="{ThemeResource InkBrush}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" />
             <ContentPresenter
                 x:Name="ContentPresenter"
                 Margin="{TemplateBinding Padding}"
@@ -224,30 +235,30 @@
                     </VisualState>
                     <VisualState x:Name="Checked">
                         <VisualState.Setters>
-                            <Setter Target="RootGrid.Background" Value="{StaticResource AccentTintBrush}" />
-                            <Setter Target="RootGrid.BorderBrush" Value="{StaticResource AccentBrush}" />
-                            <Setter Target="ContentPresenter.Foreground" Value="{StaticResource AccentStrongBrush}" />
+                            <Setter Target="RootGrid.Background" Value="{ThemeResource AccentTintBrush}" />
+                            <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource AccentBrush}" />
+                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentStrongBrush}" />
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="CheckedPointerOver">
                         <VisualState.Setters>
-                            <Setter Target="RootGrid.Background" Value="{StaticResource AccentTintBrush}" />
-                            <Setter Target="RootGrid.BorderBrush" Value="{StaticResource AccentBrush}" />
-                            <Setter Target="ContentPresenter.Foreground" Value="{StaticResource AccentStrongBrush}" />
+                            <Setter Target="RootGrid.Background" Value="{ThemeResource AccentTintBrush}" />
+                            <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource AccentBrush}" />
+                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentStrongBrush}" />
                             <Setter Target="Overlay.Opacity" Value="0.05" />
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="CheckedPressed">
                         <VisualState.Setters>
-                            <Setter Target="RootGrid.Background" Value="{StaticResource AccentTintBrush}" />
-                            <Setter Target="RootGrid.BorderBrush" Value="{StaticResource AccentBrush}" />
-                            <Setter Target="ContentPresenter.Foreground" Value="{StaticResource AccentStrongBrush}" />
+                            <Setter Target="RootGrid.Background" Value="{ThemeResource AccentTintBrush}" />
+                            <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource AccentBrush}" />
+                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentStrongBrush}" />
                             <Setter Target="Overlay.Opacity" Value="0.1" />
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="CheckedDisabled">
                         <VisualState.Setters>
-                            <Setter Target="RootGrid.Background" Value="{StaticResource AccentTintBrush}" />
+                            <Setter Target="RootGrid.Background" Value="{ThemeResource AccentTintBrush}" />
                             <Setter Target="RootGrid.Opacity" Value="0.45" />
                         </VisualState.Setters>
                     </VisualState>
@@ -262,9 +273,9 @@
 
     <Style x:Key="ChipToggleStyle" TargetType="ToggleButton">
         <Setter Property="Template" Value="{StaticResource LightToggleTemplate}" />
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource InkSoftBrush}" />
+        <Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource LineBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkSoftBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="0" />
@@ -279,7 +290,7 @@
 
     <ControlTemplate x:Key="HudToggleTemplate" TargetType="ToggleButton">
         <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
-            <Border x:Name="Overlay" Background="White" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" />
+            <Border x:Name="Overlay" Background="{ThemeResource SurfaceBrush}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" />
             <ContentPresenter
                 x:Name="ContentPresenter"
                 HorizontalAlignment="Center"
@@ -306,21 +317,21 @@
                     </VisualState>
                     <VisualState x:Name="Checked">
                         <VisualState.Setters>
-                            <Setter Target="RootGrid.Background" Value="{StaticResource HudActiveBrush}" />
-                            <Setter Target="ContentPresenter.Foreground" Value="{StaticResource MintBrush}" />
+                            <Setter Target="RootGrid.Background" Value="{ThemeResource HudActiveBrush}" />
+                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource MintBrush}" />
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="CheckedPointerOver">
                         <VisualState.Setters>
-                            <Setter Target="RootGrid.Background" Value="{StaticResource HudActiveBrush}" />
-                            <Setter Target="ContentPresenter.Foreground" Value="{StaticResource MintBrush}" />
+                            <Setter Target="RootGrid.Background" Value="{ThemeResource HudActiveBrush}" />
+                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource MintBrush}" />
                             <Setter Target="Overlay.Opacity" Value="0.08" />
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="CheckedPressed">
                         <VisualState.Setters>
-                            <Setter Target="RootGrid.Background" Value="{StaticResource HudActiveBrush}" />
-                            <Setter Target="ContentPresenter.Foreground" Value="{StaticResource MintBrush}" />
+                            <Setter Target="RootGrid.Background" Value="{ThemeResource HudActiveBrush}" />
+                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource MintBrush}" />
                             <Setter Target="Overlay.Opacity" Value="0.14" />
                         </VisualState.Setters>
                     </VisualState>
@@ -341,7 +352,7 @@
     <Style x:Key="HudToggleStyle" TargetType="ToggleButton">
         <Setter Property="Template" Value="{StaticResource HudToggleTemplate}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource StageSoftBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource StageSoftBrush}" />
         <Setter Property="CornerRadius" Value="9" />
         <Setter Property="Width" Value="36" />
         <Setter Property="Height" Value="36" />
@@ -351,9 +362,9 @@
 
     <!-- Bordered chip: presets, profiles and windows. -->
     <Style x:Key="ChipRadioStyle" TargetType="RadioButton">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+        <Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource LineBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="12,0" />
@@ -372,7 +383,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}">
-                        <Border x:Name="HoverPlate" Background="{StaticResource HoverBrush}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" />
+                        <Border x:Name="HoverPlate" Background="{ThemeResource HoverBrush}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" />
                         <ContentPresenter
                             x:Name="ContentPresenter"
                             Margin="{TemplateBinding Padding}"
@@ -403,8 +414,8 @@
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{StaticResource AccentTintBrush}" />
-                                        <Setter Target="RootGrid.BorderBrush" Value="{StaticResource AccentBrush}" />
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource AccentTintBrush}" />
+                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource AccentBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Unchecked" />
@@ -420,7 +431,7 @@
     <!-- Segmented control option: sits on a SegmentTrackStyle border. -->
     <Style x:Key="SegmentRadioStyle" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource SegmentTextBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource SegmentTextBrush}" />
         <Setter Property="Padding" Value="12,0" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="30" />
@@ -434,11 +445,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Grid x:Name="RootGrid" MinHeight="{TemplateBinding MinHeight}" Background="{TemplateBinding Background}" CornerRadius="7">
-                        <Border x:Name="HoverPlate" Background="{StaticResource HoverBrush}" CornerRadius="7" Opacity="0" />
+                        <Border x:Name="HoverPlate" Background="{ThemeResource HoverBrush}" CornerRadius="7" Opacity="0" />
                         <Border
                             x:Name="CheckedPlate"
-                            Background="White"
-                            BorderBrush="#1F122422"
+                            Background="{ThemeResource SurfaceBrush}"
+                            BorderBrush="{ThemeResource LineBrush}"
                             BorderThickness="1"
                             CornerRadius="7"
                             Opacity="0" />
@@ -476,7 +487,7 @@
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
                                         <Setter Target="CheckedPlate.Opacity" Value="1" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{StaticResource InkBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource InkBrush}" />
                                         <Setter Target="ContentPresenter.FontFamily" Value="{StaticResource SansSemiBoldFont}" />
                                         <Setter Target="ContentPresenter.FontWeight" Value="SemiBold" />
                                     </VisualState.Setters>
@@ -502,14 +513,14 @@
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Grid x:Name="RootGrid" Background="Transparent" CornerRadius="6">
-                        <Border x:Name="HoverPlate" Background="{StaticResource HoverBrush}" CornerRadius="6" Opacity="0" />
+                        <Border x:Name="HoverPlate" Background="{ThemeResource HoverBrush}" CornerRadius="6" Opacity="0" />
                         <Border
                             x:Name="Dot"
                             Width="6"
                             Height="6"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Background="#AEBDBB"
+                            Background="{ThemeResource MutedBrush}"
                             CornerRadius="2" />
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -533,10 +544,10 @@
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{StaticResource AccentTintBrush}" />
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource AccentTintBrush}" />
                                         <Setter Target="Dot.Width" Value="10" />
                                         <Setter Target="Dot.Height" Value="10" />
-                                        <Setter Target="Dot.Background" Value="{StaticResource AccentBrush}" />
+                                        <Setter Target="Dot.Background" Value="{ThemeResource AccentBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Unchecked" />
@@ -560,8 +571,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Grid Background="Transparent">
-                        <Ellipse x:Name="HoverRing" Stroke="{StaticResource InputLineBrush}" StrokeThickness="2" Opacity="0" />
-                        <Ellipse x:Name="SelectedRing" Stroke="{StaticResource AccentBrush}" StrokeThickness="2" Opacity="0" />
+                        <Ellipse x:Name="HoverRing" Stroke="{ThemeResource InputLineBrush}" StrokeThickness="2" Opacity="0" />
+                        <Ellipse x:Name="SelectedRing" Stroke="{ThemeResource AccentBrush}" StrokeThickness="2" Opacity="0" />
                         <Ellipse Width="22" Height="22" Fill="{TemplateBinding Background}" Stroke="#38122422" StrokeThickness="1" />
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -597,8 +608,8 @@
     <!-- Display chooser on the dark stage. -->
     <Style x:Key="StageRadioStyle" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="{StaticResource StageLineBrush}" />
-        <Setter Property="Foreground" Value="{StaticResource StageTextBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource StageLineBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource StageTextBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="12,0,14,0" />
         <Setter Property="MinWidth" Value="0" />
@@ -614,7 +625,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="10">
-                        <Border x:Name="HoverPlate" Background="{StaticResource StageHoverBrush}" CornerRadius="10" Opacity="0" />
+                        <Border x:Name="HoverPlate" Background="{ThemeResource StageHoverBrush}" CornerRadius="10" Opacity="0" />
                         <ContentPresenter
                             x:Name="ContentPresenter"
                             Margin="{TemplateBinding Padding}"
@@ -644,8 +655,8 @@
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.BorderBrush" Value="{StaticResource MintBrush}" />
-                                        <Setter Target="RootGrid.Background" Value="#1A34D5B5" />
+                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource MintBrush}" />
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource SelectedStageBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Unchecked" />
@@ -661,7 +672,7 @@
     <!-- Help topic in the help page's list: borderless, tinted when selected. -->
     <Style x:Key="NavRadioStyle" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource InkSoftBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource InkSoftBrush}" />
         <Setter Property="Padding" Value="10,0" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="38" />
@@ -676,13 +687,13 @@
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Grid x:Name="RootGrid" MinHeight="{TemplateBinding MinHeight}" Background="{TemplateBinding Background}" CornerRadius="8">
-                        <Border x:Name="HoverPlate" Background="{StaticResource HoverBrush}" CornerRadius="8" Opacity="0" />
+                        <Border x:Name="HoverPlate" Background="{ThemeResource HoverBrush}" CornerRadius="8" Opacity="0" />
                         <Border
                             x:Name="SelectedBar"
                             Width="3"
                             Height="16"
                             HorizontalAlignment="Left"
-                            Background="{StaticResource AccentBrush}"
+                            Background="{ThemeResource AccentBrush}"
                             CornerRadius="2"
                             Opacity="0" />
                         <ContentPresenter
@@ -718,9 +729,9 @@
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.Background" Value="{StaticResource AccentTintBrush}" />
+                                        <Setter Target="RootGrid.Background" Value="{ThemeResource AccentTintBrush}" />
                                         <Setter Target="SelectedBar.Opacity" Value="1" />
-                                        <Setter Target="ContentPresenter.Foreground" Value="{StaticResource AccentStrongBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentStrongBrush}" />
                                         <Setter Target="ContentPresenter.FontFamily" Value="{StaticResource SansSemiBoldFont}" />
                                         <Setter Target="ContentPresenter.FontWeight" Value="SemiBold" />
                                     </VisualState.Setters>

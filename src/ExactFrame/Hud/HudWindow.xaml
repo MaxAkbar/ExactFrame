@@ -5,7 +5,7 @@
     xmlns:controls="using:ExactFrame.Controls"
     Title="ExactFrame controls">
 
-    <Grid x:Name="Root" Background="{StaticResource HudBrush}">
+    <Grid x:Name="Root" Background="{ThemeResource HudBrush}">
         <StackPanel
             x:Name="Pill"
             Height="48"
@@ -46,7 +46,7 @@
                     FontFamily="{StaticResource MonoSemiBoldFont}"
                     FontSize="13"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource StageBrightBrush}"
+                    Foreground="{ThemeResource StageBrightBrush}"
                     Text="{x:Bind ViewModel.SizeText, Mode=OneWay}" />
             </Border>
 
@@ -62,7 +62,7 @@
                     VerticalAlignment="Center"
                     FontFamily="{StaticResource MonoFont}"
                     FontSize="12"
-                    Foreground="{StaticResource StageMutedBrush}"
+                    Foreground="{ThemeResource StageMutedBrush}"
                     Text="{x:Bind ViewModel.HudPositionText, Mode=OneWay}" />
                 <Border Width="1" Height="22" Margin="4,0" Background="#1FFFFFFF" />
                 <Button
@@ -75,7 +75,7 @@
                         Width="18"
                         Height="18"
                         Data="M 9,1.5 V 5 M 9,13 V 16.5 M 1.5,9 H 5 M 13,9 H 16.5 M 9,7.6 A 1.4,1.4 0 1 1 8.99,7.6"
-                        Stroke="{StaticResource StageSoftBrush}"
+                        Stroke="{ThemeResource StageSoftBrush}"
                         StrokeEndLineCap="Round"
                         StrokeStartLineCap="Round"
                         StrokeThickness="1.6" />
@@ -132,10 +132,10 @@
                 Visibility="Collapsed"
                 Width="Auto">
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <FontIcon FontSize="15" Foreground="{StaticResource MintBrush}" Glyph="&#xE72E;" />
-                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="13" Foreground="{StaticResource StageTextBrush}" Text="Click-through" />
+                    <FontIcon FontSize="15" Foreground="{ThemeResource MintBrush}" Glyph="&#xE72E;" />
+                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="13" Foreground="{ThemeResource StageTextBrush}" Text="Click-through" />
                     <controls:KeyChips VerticalAlignment="Center" Keys="{x:Bind ViewModel.LockHotkeyKeys, Mode=OneWay}" Variant="Dark" />
-                    <TextBlock VerticalAlignment="Center" FontSize="12.5" Foreground="{StaticResource StageMutedBrush}" Text="to unlock" />
+                    <TextBlock VerticalAlignment="Center" FontSize="12.5" Foreground="{ThemeResource StageMutedBrush}" Text="to unlock" />
                 </StackPanel>
             </Button>
         </StackPanel>

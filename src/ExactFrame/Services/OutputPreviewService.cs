@@ -45,7 +45,7 @@ internal sealed class OutputPreviewService(IDisplayService displays) : IOutputPr
             card.Children.Add(Caption(layout.ScaleText));
             card.Children.Add(Caption(frame.SafeMarginPercent > 0 ? $"Safe margin: {frame.SafeMarginPercent}% on each edge of the crop." : "Safe-margin guide off."));
             card.Children.Add(preview);
-            content.Children.Add(new Border { Padding = new Thickness(12), BorderThickness = new Thickness(1), BorderBrush = Format.BrushFromHex("#CCD8D5"), CornerRadius = new CornerRadius(8), Child = card });
+            content.Children.Add(new Border { Padding = new Thickness(12), BorderThickness = new Thickness(1), BorderBrush = Format.ThemeBrush("LineBrush"), CornerRadius = new CornerRadius(8), Child = card });
         }
         var dialog = new ContentDialog
         {
@@ -53,6 +53,7 @@ internal sealed class OutputPreviewService(IDisplayService displays) : IOutputPr
             Content = new ScrollViewer { Content = content, MaxHeight = 540, VerticalScrollBarVisibility = ScrollBarVisibility.Auto },
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style
         };
+        AppThemeHelper.MatchOwner(dialog);
         dialog.Closed += (_, _) => closed.Cancel();
         bool capturing = false;
         refresh.Click += async (_, _) =>
@@ -101,5 +102,5 @@ internal sealed class OutputPreviewService(IDisplayService displays) : IOutputPr
         cancellation.ThrowIfCancellationRequested();
         using var stream = new MemoryStream(); image.Save(stream, ImageFormat.Png); return stream.ToArray();
     }
-    private static TextBlock Caption(string text) => new() { Text = text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, Foreground = Format.BrushFromHex("#506562") };
+    private static TextBlock Caption(string text) => new() { Text = text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, Foreground = Format.ThemeBrush("MutedBrush") };
 }

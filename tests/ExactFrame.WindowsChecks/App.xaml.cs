@@ -29,6 +29,7 @@ public sealed partial class App : Application
     private Window? _fixture;
     private IReadOnlyList<DisplayInfo> _monitors = [];
     private bool _nativePassed = true;
+    private bool _responsivenessOnly;
     public App() => InitializeComponent();
 
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
@@ -36,6 +37,14 @@ public sealed partial class App : Application
         string[] arguments = Environment.GetCommandLineArgs();
         string? Value(string name) { int index = Array.IndexOf(arguments, name); return index >= 0 && index + 1 < arguments.Length ? arguments[index + 1] : null; }
         _output = Path.GetFullPath(Value("--output") ?? _output);
+        _responsivenessOnly = arguments.Contains("--responsiveness-only");
+        if (_responsivenessOnly && Directory.Exists(_output) && Directory.EnumerateFileSystemEntries(_output).Any())
+        {
+            Debug.WriteLine("Responsiveness output must be a new, empty directory. Existing evidence was preserved.");
+            Environment.ExitCode = 2;
+            Exit();
+            return;
+        }
         Directory.CreateDirectory(_output);
         try
         {
@@ -64,6 +73,12 @@ public sealed partial class App : Application
             await Task.Delay(800);
             uint thread = NativeMethods.GetWindowThreadProcessId(hwnd, out uint process);
             var target = new WindowInfo(hwnd, process, thread, "ExactFrame recording fixture", "ExactFrame.WindowsChecks", DRect.Empty);
+            if (_responsivenessOnly)
+            {
+                await ResponsivenessChecks.Run(windows, target, monitors.First(m => m.IsPrimary), _output, _checks, Value("--performance-browser-title"));
+                WriteReport(monitors, null);
+                return;
+            }
             foreach (var monitor in monitors)
             {
                 if (monitor.WorkArea.Width < 1400 || monitor.WorkArea.Height < 900)
@@ -250,7 +265,8 @@ public sealed partial class App : Application
         File.WriteAllText(Path.Combine(_output, "windows-checks.json"), JsonSerializer.Serialize(new {
             utc = DateTimeOffset.UtcNow, windows = RuntimeInformation.OSDescription, runtime = RuntimeInformation.FrameworkDescription,
             processArchitecture = RuntimeInformation.ProcessArchitecture.ToString(), monitors = monitors.Select(m => new { m.Number, m.Bounds, m.Dpi, m.ScalePercent }),
-            checks = _checks, clips = _clips, error, nativeChecksPassed = error is null && _nativePassed,
+            mode = _responsivenessOnly ? "responsiveness" : "correctness",
+            checks = _checks, clips = _clips, error, nativeChecksPassed = _responsivenessOnly ? (bool?)null : error is null && _nativePassed,
             recordedResult = "Analyze the saved clips separately; API acceptance is not a recording pass."
         }, new JsonSerializerOptions { WriteIndented = true }));
 }

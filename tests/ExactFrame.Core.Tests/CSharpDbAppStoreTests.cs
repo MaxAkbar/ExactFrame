@@ -19,6 +19,7 @@ public sealed class CSharpDbAppStoreTests : IDisposable
     {
         var settings = new AppSettings
         {
+            ThemePreference = AppThemePreference.Dark,
             HideFromRecorders = false,
             Style = new OutlineStyle { Color = OutlineColor.Amber, ShowThirds = true },
             Profiles =
@@ -52,6 +53,7 @@ public sealed class CSharpDbAppStoreTests : IDisposable
         await using (var reopened = new CSharpDbAppStore(DatabasePath))
         {
             var loaded = reopened.Load();
+            Assert.Equal(AppThemePreference.Dark, loaded.ThemePreference);
             Assert.False(loaded.HideFromRecorders);
             Assert.Equal(settings.Style, loaded.Style);
             Assert.Equal(settings.Profiles, loaded.Profiles);

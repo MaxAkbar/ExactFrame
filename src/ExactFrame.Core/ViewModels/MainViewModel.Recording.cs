@@ -44,6 +44,7 @@ public sealed partial class MainViewModel
         return $"Mode: {_mode}; area: {(IsResizeMode ? AreaName : "outline")}; app: {(IsResizeMode ? _targetWindow?.ProcessName ?? "none" : "not selected")}\n" +
                $"Frame in physical pixels: X={frame.X}, Y={frame.Y}, Width={frame.Width}, Height={frame.Height}\n" +
                $"Display: {_display?.Title}, {_display?.ScalePercent}%\n" +
+               "Browser CSS viewport, page zoom and device-pixel ratio (DPR): not measured by ExactFrame\n" +
                $"Outline visible: {_overlay.IsVisible}; control bar enabled: {ShowHud}\n" +
                $"Guides: thirds={ShowThirds}, center={ShowCenterMark}, safe area={ShowSafeArea}; dimming={DimOutside}; magnifier={ShowEdgeMagnifier}; additional guides={NestedFrames.Count}\n" +
                $"Capture exclusion: {CaptureExclusionStatusText}";

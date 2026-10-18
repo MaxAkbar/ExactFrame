@@ -22,7 +22,7 @@
                 </StackPanel>
                 <TextBlock FontSize="12" Text="The password is cleared after connecting and is never saved." TextWrapping="Wrap" Visibility="{x:Bind ViewModel.IsDisconnected, Mode=OneWay}" />
             </StackPanel>
-            <Border Padding="12" Background="{StaticResource FooterBrush}" CornerRadius="8">
+            <Border Padding="12" Background="{ThemeResource FooterBrush}" CornerRadius="8">
                 <StackPanel Spacing="6">
                     <ProgressRing Width="18" Height="18" HorizontalAlignment="Left" IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
                     <TextBlock Text="{x:Bind ViewModel.Status, Mode=OneWay}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
@@ -45,7 +45,7 @@
                 <TextBlock Text="{x:Bind ViewModel.ChangeDescription, Mode=OneWay}" FontSize="12" TextWrapping="Wrap" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Apply to OBS" Command="{x:Bind ViewModel.ApplyCommand}" Background="{StaticResource AccentBrush}" Style="{StaticResource PrimaryButtonStyle}" />
+                <Button Content="Apply to OBS" Command="{x:Bind ViewModel.ApplyCommand}" Background="{ThemeResource AccentBrush}" Style="{StaticResource PrimaryButtonStyle}" />
                 <Button Content="Undo last apply" Command="{x:Bind ViewModel.UndoCommand}" />
             </StackPanel>
             <TextBlock FontSize="12" Text="The scene item must be visible, unlocked and unfiltered. Stop recording or streaming before applying or undoing. Check OBS's preview before recording." TextWrapping="Wrap" />

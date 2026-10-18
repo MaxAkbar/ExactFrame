@@ -46,6 +46,9 @@ internal sealed class WindowService : IWindowService, IDisposable
 
     public event EventHandler<WindowObservation>? TrackedWindowChanged;
 
+    /// <summary>Optional timing sink for the explicit Windows checks; no samples are retained by the app.</summary>
+    internal Action<double>? TrackingMeasured { get; set; }
+
     public void StartTracking(WindowInfo window, WindowArea area)
     {
         StopTracking();
@@ -77,11 +80,19 @@ internal sealed class WindowService : IWindowService, IDisposable
     private void PollTrackedWindow()
     {
         if (_trackedWindow is not { } window) return;
-        var observation = Observe(window, _trackedArea);
-        if (observation == _lastObservation) return;
-        _lastObservation = observation;
-        if (observation.Kind == WindowObservationKind.Closed) StopTracking();
-        TrackedWindowChanged?.Invoke(this, observation);
+        long started = TrackingMeasured is null ? 0 : Stopwatch.GetTimestamp();
+        try
+        {
+            var observation = Observe(window, _trackedArea);
+            if (observation == _lastObservation) return;
+            _lastObservation = observation;
+            if (observation.Kind == WindowObservationKind.Closed) StopTracking();
+            TrackedWindowChanged?.Invoke(this, observation);
+        }
+        finally
+        {
+            if (TrackingMeasured is { } measured) measured(Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+        }
     }
 
     private WindowObservation Observe(WindowInfo window, WindowArea area)

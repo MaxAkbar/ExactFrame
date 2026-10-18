@@ -476,7 +476,7 @@ public sealed class FrameEditingViewModelTests : IDisposable
         Assert.True(_overlay.IsVisible);
         Assert.False(vm.IsAspectLocked);
         Assert.Equal("Custom position", vm.AnchorName);
-        Assert.Contains("800 × 600 logical px at 100%", vm.LogicalSizeNote);
+        Assert.Contains("800 × 600 Windows logical px at 100%", vm.LogicalSizeNote);
         Assert.Equal(3, _regionPicker.DisplayCount);
         Assert.Empty(_windows.Resizes);
     }

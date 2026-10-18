@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
     [ValidateSet('x64', 'ARM64')]
-    [string[]] $Architecture = @('x64', 'ARM64')
+    [string[]] $Architecture = @('x64', 'ARM64'),
+    [switch] $LockedRestore,
+    [string] $OutputRoot = 'artifacts/release'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,7 +14,7 @@ if ($version -notmatch '^\d+\.\d+\.\d+$') {
     throw "Expected a stable version in Directory.Build.props; found '$version'."
 }
 
-$outputDirectory = Join-Path $repoRoot "artifacts/release/$version"
+$outputDirectory = Join-Path ([IO.Path]::GetFullPath($OutputRoot, $repoRoot)) $version
 $buildDirectory = Join-Path $outputDirectory ('build-' + [guid]::NewGuid().ToString('N'))
 $packages = @()
 
@@ -28,7 +30,9 @@ try {
         }
 
         $publishDirectory = Join-Path $buildDirectory $rid
-        & dotnet publish src/ExactFrame/ExactFrame.csproj -c Release -r $rid `
+        [string[]] $restoreArguments = @()
+        if ($LockedRestore) { $restoreArguments += '-p:RestoreLockedMode=true' }
+        & dotnet publish src/ExactFrame/ExactFrame.csproj -c Release -r $rid @restoreArguments `
             "-p:Platform=$targetArchitecture" --self-contained true `
             -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true `
             -p:DebugType=None -p:DebugSymbols=false -p:ContinuousIntegrationBuild=true `

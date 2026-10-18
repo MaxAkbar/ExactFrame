@@ -1,6 +1,6 @@
 # Application targeting
 
-Available in the source build; the published v2.0.0 release predates this work.
+Available in ExactFrame 2.1.0 and later.
 
 ## Choose and preview a target
 

@@ -7,6 +7,8 @@ public sealed class AppSettings
 {
     public int Version { get; set; } = 1;
 
+    public AppThemePreference ThemePreference { get; set; } = AppThemePreference.System;
+
     public OutlineStyle Style { get; set; } = new();
 
     public bool HideFromRecorders { get; set; } = true;

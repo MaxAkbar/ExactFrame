@@ -80,7 +80,7 @@ public sealed class DisplayMap : UserControl
         PointerCanceled += (_, _) => CancelInteraction();
         PointerCaptureLost += (_, _) => CancelInteraction();
         KeyDown += OnKeyDown;
-        GotFocus += (_, _) => _focusBorder.BorderBrush = Format.BrushFromHex("#34D5B5");
+        GotFocus += (_, _) => _focusBorder.BorderBrush = Format.ThemeBrush("MintBrush");
         LostFocus += (_, _) =>
         {
             CancelInteraction();

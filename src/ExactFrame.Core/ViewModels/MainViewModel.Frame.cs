@@ -72,7 +72,7 @@ public sealed partial class MainViewModel
 
     public string LogicalSizeNote => _display is null
         ? string.Empty
-        : $"{Math.Round(_width / _display.Scale)} × {Math.Round(_height / _display.Scale)} logical px at {_display.ScalePercent}% scaling";
+        : $"Requested size: about {Math.Round(_width / _display.Scale)} × {Math.Round(_height / _display.Scale)} Windows logical px at {_display.ScalePercent}% display scaling. This is not a CSS viewport measurement.";
 
     public double XValue
     {

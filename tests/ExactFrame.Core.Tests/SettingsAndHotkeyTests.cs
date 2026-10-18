@@ -41,6 +41,7 @@ public sealed class JsonSettingsStoreTests : IDisposable
     public void Missing_file_returns_defaults()
     {
         var settings = new JsonSettingsStore(SettingsPath).Load();
+        Assert.Equal(AppThemePreference.System, settings.ThemePreference);
         Assert.Equal(3, settings.Profiles.Count);
         Assert.True(settings.HideFromRecorders);
         Assert.Equal(HotkeyGesture.CtrlAlt(HotkeyGesture.VkF8), settings.ToggleOutlineHotkey);
@@ -52,6 +53,7 @@ public sealed class JsonSettingsStoreTests : IDisposable
         var store = new JsonSettingsStore(SettingsPath);
         var settings = new AppSettings
         {
+            ThemePreference = AppThemePreference.Light,
             Style = new OutlineStyle { Color = OutlineColor.Amber, Thickness = 6, Line = OutlineLine.Corners, ShowThirds = true, DimOpacityPercent = 60 },
             HideFromRecorders = false,
             Profiles = [new FrameProfile { Id = "p1", Name = "Left half", Width = 1280, Height = 720, Anchor = null, X = -1280, Y = 40, DisplayDeviceName = @"\\.\DISPLAY2",
@@ -65,6 +67,7 @@ public sealed class JsonSettingsStoreTests : IDisposable
         store.Save(settings);
         var loaded = store.Load();
 
+        Assert.Equal(AppThemePreference.Light, loaded.ThemePreference);
         Assert.Equal(settings.Style, loaded.Style);
         Assert.False(loaded.HideFromRecorders);
         Assert.Equal(settings.Profiles, loaded.Profiles);

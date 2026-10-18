@@ -8,21 +8,30 @@
     xmlns:vm="using:ExactFrame.Core.ViewModels">
 
     <Border
-        Background="{StaticResource SurfaceBrush}"
-        BorderBrush="{StaticResource LineBrush}"
+        Background="{ThemeResource SurfaceBrush}"
+        BorderBrush="{ThemeResource LineBrush}"
         BorderThickness="1"
         CornerRadius="16">
-        <Grid>
+        <Grid x:Name="HelpLayout">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="264" />
+                <ColumnDefinition x:Name="TopicsColumn" Width="264" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
+            <StackPanel x:Name="CompactTopicsBar" Grid.ColumnSpan="2" Margin="16,12" Visibility="Collapsed" Spacing="6">
+                <TextBox x:Name="CompactSearch" AutomationProperties.Name="Search help" PlaceholderText="Search help" Text="{x:Bind Help.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <ComboBox x:Name="CompactTopics"
+                      HorizontalAlignment="Stretch" AutomationProperties.Name="Choose a help topic"
+                      ItemsSource="{x:Bind Help.VisibleTopics}" DisplayMemberPath="Title" SelectionChanged="OnCompactTopicChanged" />
+            </StackPanel>
+
             <!-- ===== Topics ===== -->
             <Grid
+                x:Name="TopicsPane" Grid.RowSpan="2"
                 Padding="16,20,16,16"
-                Background="{StaticResource FooterBrush}"
-                BorderBrush="{StaticResource DividerBrush}"
+                Background="{ThemeResource FooterBrush}"
+                BorderBrush="{ThemeResource DividerBrush}"
                 BorderThickness="0,0,1,0"
                 CornerRadius="16,0,0,16"
                 RowSpacing="14">
@@ -37,7 +46,7 @@
                         FontFamily="{StaticResource SansSemiBoldFont}"
                         FontSize="18"
                         FontWeight="SemiBold"
-                        Foreground="{StaticResource InkBrush}"
+                        Foreground="{ThemeResource InkBrush}"
                         Text="Help" />
                     <TextBlock Style="{StaticResource CaptionStyle}" Text="Guides, shortcuts and fixes" />
                 </StackPanel>
@@ -87,7 +96,7 @@
             </Grid>
 
             <!-- ===== Topic ===== -->
-            <Grid Grid.Column="1">
+            <Grid Grid.Row="1" Grid.Column="1">
                 <ScrollViewer x:Name="ContentScroller" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
                     <StackPanel
                         MaxWidth="760"
@@ -100,12 +109,12 @@
                                 FontFamily="{StaticResource SansSemiBoldFont}"
                                 FontSize="26"
                                 FontWeight="SemiBold"
-                                Foreground="{StaticResource InkBrush}"
+                                Foreground="{ThemeResource InkBrush}"
                                 Text="{x:Bind Help.SelectedTopic.Title, Mode=OneWay}"
                                 TextWrapping="Wrap" />
                             <TextBlock
                                 FontSize="14"
-                                Foreground="{StaticResource MutedBrush}"
+                                Foreground="{ThemeResource MutedBrush}"
                                 Text="{x:Bind Help.SelectedTopic.Summary, Mode=OneWay}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
@@ -113,7 +122,7 @@
                         <!-- Keyboard shortcuts: live, so changed or conflicting shortcuts show as they are -->
                         <StackPanel Spacing="10" Visibility="{x:Bind Help.ShowShortcuts, Mode=OneWay}">
                             <TextBlock Style="{StaticResource SectionTitleStyle}" FontSize="16" Text="Global shortcuts" />
-                            <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="12">
+                            <Border BorderBrush="{ThemeResource LineBrush}" BorderThickness="1" CornerRadius="12">
                                 <ItemsRepeater ItemsSource="{x:Bind Main.Hotkeys}">
                                     <ItemsRepeater.Layout>
                                         <StackLayout />
@@ -123,7 +132,7 @@
                                             <Grid
                                                 MinHeight="48"
                                                 Padding="16,8"
-                                                BorderBrush="{StaticResource DividerBrush}"
+                                                BorderBrush="{ThemeResource DividerBrush}"
                                                 BorderThickness="0,0,0,1"
                                                 ColumnSpacing="16">
                                                 <Grid.ColumnDefinitions>
@@ -131,11 +140,11 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel VerticalAlignment="Center" Spacing="2">
-                                                    <TextBlock FontSize="14" Foreground="{StaticResource InkBrush}" Text="{x:Bind Label}" />
+                                                    <TextBlock FontSize="14" Foreground="{ThemeResource InkBrush}" Text="{x:Bind Label}" />
                                                     <TextBlock
                                                         FontFamily="{StaticResource SansMediumFont}"
                                                         FontSize="12"
-                                                        Foreground="{StaticResource WarnTextBrush}"
+                                                        Foreground="{ThemeResource WarnTextBrush}"
                                                         Text="{x:Bind ProblemHelp}"
                                                         TextWrapping="Wrap"
                                                         Visibility="{x:Bind HasConflict}" />
@@ -152,7 +161,7 @@
                             </Border>
 
                         <TextBlock Margin="0,10,0,0" Style="{StaticResource SectionTitleStyle}" FontSize="16" Text="In ExactFrame" />
-                            <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="12">
+                            <Border BorderBrush="{ThemeResource LineBrush}" BorderThickness="1" CornerRadius="12">
                                 <ItemsRepeater ItemsSource="{x:Bind Help.FixedShortcuts}">
                                     <ItemsRepeater.Layout>
                                         <StackLayout />
@@ -162,7 +171,7 @@
                                             <Grid
                                                 MinHeight="48"
                                                 Padding="16,8"
-                                                BorderBrush="{StaticResource DividerBrush}"
+                                                BorderBrush="{ThemeResource DividerBrush}"
                                                 BorderThickness="0,0,0,1"
                                                 ColumnSpacing="16">
                                                 <Grid.ColumnDefinitions>
@@ -172,7 +181,7 @@
                                                 <TextBlock
                                                     VerticalAlignment="Center"
                                                     FontSize="14"
-                                                    Foreground="{StaticResource InkBrush}"
+                                                    Foreground="{ThemeResource InkBrush}"
                                                     Text="{x:Bind Label}"
                                                     TextWrapping="Wrap" />
                                                 <controls:KeyChips Grid.Column="1" VerticalAlignment="Center" Keys="{x:Bind Keys}" />
@@ -186,7 +195,7 @@
                         <!-- About: versions and settings location -->
                         <StackPanel Spacing="16" Visibility="{x:Bind Help.ShowAbout, Mode=OneWay}">
                             <StackPanel Orientation="Horizontal" Spacing="14">
-                                <Border Width="44" Height="44" Background="{StaticResource AccentBrush}" CornerRadius="12">
+                                <Border Width="44" Height="44" Background="{ThemeResource AccentBrush}" CornerRadius="12">
                                     <Path
                                         Width="24"
                                         Height="24"
@@ -204,14 +213,14 @@
                                     FontFamily="{StaticResource SansSemiBoldFont}"
                                     FontSize="18"
                                     FontWeight="SemiBold"
-                                    Foreground="{StaticResource InkBrush}"
+                                    Foreground="{ThemeResource InkBrush}"
                                     Text="{x:Bind Help.AppTitle}" />
                             </StackPanel>
 
                             <Border
                                 Padding="16,6"
-                                Background="{StaticResource FooterBrush}"
-                                BorderBrush="{StaticResource LineBrush}"
+                                Background="{ThemeResource FooterBrush}"
+                                BorderBrush="{ThemeResource LineBrush}"
                                 BorderThickness="1"
                                 CornerRadius="12">
                                 <ItemsRepeater ItemsSource="{x:Bind Help.AboutRows}">
@@ -225,12 +234,12 @@
                                                     <ColumnDefinition Width="140" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock FontSize="13" Foreground="{StaticResource MutedBrush}" Text="{x:Bind Label}" />
+                                                <TextBlock FontSize="13" Foreground="{ThemeResource MutedBrush}" Text="{x:Bind Label}" />
                                                 <TextBlock
                                                     Grid.Column="1"
                                                     FontFamily="{StaticResource MonoFont}"
                                                     FontSize="13"
-                                                    Foreground="{StaticResource InkBrush}"
+                                                    Foreground="{ThemeResource InkBrush}"
                                                     IsTextSelectionEnabled="True"
                                                     Text="{x:Bind Value}"
                                                     TextWrapping="Wrap" />

@@ -37,7 +37,7 @@ public sealed class MainViewModelTests : IDisposable
         Assert.Equal(new Rectangle(960, 540, 1920, 1080), vm.CurrentFrame);
         Assert.Equal("1920 × 1080", vm.SizeText);
         Assert.Equal("16:9 · Landscape · Display 1", vm.StageSubtitle);
-        Assert.Equal("1280 × 720 logical px at 150% scaling", vm.LogicalSizeNote);
+        Assert.Equal("Requested size: about 1280 × 720 Windows logical px at 150% display scaling. This is not a CSS viewport measurement.", vm.LogicalSizeNote);
         Assert.True(vm.Presets.Single(p => p.Key == "1080p").IsSelected);
         Assert.True(vm.Anchors.Single(a => a.Anchor == Geometry.FrameAnchor.Center).IsSelected);
         Assert.True(vm.IsFit);
@@ -689,7 +689,7 @@ public sealed class MainViewModelTests : IDisposable
         vm.Displays[1].SelectCommand.Execute(null);
 
         Assert.Equal(new Rectangle(3840 + 320, 180, 1920, 1080), vm.CurrentFrame);
-        Assert.Equal("1920 × 1080 logical px at 100% scaling", vm.LogicalSizeNote);
+        Assert.Equal("Requested size: about 1920 × 1080 Windows logical px at 100% display scaling. This is not a CSS viewport measurement.", vm.LogicalSizeNote);
     }
 
     [Fact]
@@ -876,6 +876,46 @@ public sealed class MainViewModelTests : IDisposable
         await ((IAsyncRelayCommand)vm.Profiles[0].SelectCommand).ExecuteAsync(null);
 
         Assert.True(Assert.Single(_windows.Resizes).Window.IsSameWindow(other));
+    }
+
+    [Theory]
+    [InlineData(AppThemePreference.System)]
+    [InlineData(AppThemePreference.Light)]
+    [InlineData(AppThemePreference.Dark)]
+    public void Theme_choice_is_saved_without_changing_the_capture_setup(AppThemePreference preference)
+    {
+        var vm = Create(new AppSettings { ThemePreference = preference == AppThemePreference.Dark
+            ? AppThemePreference.Light : AppThemePreference.Dark });
+        var frame = vm.CurrentFrame;
+        var style = _store.Settings.Style;
+        var profile = _store.Settings.ActiveProfileId;
+        int saves = _store.SaveCount;
+
+        vm.ThemePreference = preference;
+
+        Assert.Equal(preference, _store.Settings.ThemePreference);
+        Assert.Equal(frame, vm.CurrentFrame);
+        Assert.Equal(style, _store.Settings.Style);
+        Assert.Equal(profile, _store.Settings.ActiveProfileId);
+        Assert.Equal(saves + 1, _store.SaveCount);
+        vm.ThemePreference = preference;
+        Assert.Equal(saves + 1, _store.SaveCount);
+    }
+
+    [Fact]
+    public void Unknown_saved_theme_falls_back_to_system()
+    {
+        var vm = Create(new AppSettings { ThemePreference = (AppThemePreference)99 });
+        Assert.Equal(AppThemePreference.System, vm.ThemePreference);
+    }
+
+    [Fact]
+    public void Applying_a_capture_profile_preserves_the_app_theme()
+    {
+        var vm = Create(new AppSettings { ThemePreference = AppThemePreference.Light });
+        vm.Profiles.Last().SelectCommand.Execute(null);
+        Assert.Equal(AppThemePreference.Light, vm.ThemePreference);
+        Assert.Equal(AppThemePreference.Light, _store.Settings.ThemePreference);
     }
 
     // ---- Running in the background ----------------------------------------------------------

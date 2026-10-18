@@ -14,7 +14,7 @@ public enum WindowArea
     /// </summary>
     Client,
 
-    /// <summary>The visible Chromium render widget viewport, excluding browser toolbars and side panels.</summary>
+    /// <summary>The visible Chromium page capture area in physical screen pixels, excluding browser toolbars and side panels. This is not a DOM CSS viewport measurement.</summary>
     PageContent
 }
 

@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ExactFrame.Core.ViewModels;
+using ExactFrame.Core.Models;
 using ExactFrame.Helpers;
 using ExactFrame.Interop;
 using ExactFrame.Views;
@@ -18,14 +19,18 @@ public sealed partial class MainWindow : Window
 {
     private const int DefaultWidth = 1280;
     private const int DefaultHeight = 860;
-    private const int MinimumWidth = 1040;
-    private const int MinimumHeight = 700;
+    private const int MinimumWidth = 640;
+    private const int MinimumHeight = 480;
 
     private readonly HelpView _helpView;
     private readonly ObsViewModel _obs;
     private readonly Func<RecordingSetupViewModel> _recordingSetup;
     private bool _obsOpen;
     private bool _setupOpen;
+    private bool _previewExpanded = true;
+    private bool _compact;
+    private readonly Windows.UI.ViewManagement.UISettings _uiSettings = new();
+    private readonly Microsoft.UI.System.ThemeSettings _themeSettings;
 
     public MainWindow(MainViewModel viewModel, HelpViewModel help, ObsViewModel obs, Func<RecordingSetupViewModel> recordingSetup)
     {
@@ -43,13 +48,28 @@ public sealed partial class MainWindow : Window
         HelpHost.Children.Add(_helpView);
 
         ConfigureWindow();
+        _themeSettings = Microsoft.UI.System.ThemeSettings.CreateForWindowId(AppWindow.Id);
+        Root.SizeChanged += (_, _) => UpdateLayout();
+        PreviewScroller.SizeChanged += (_, _) => ApplyPreviewLayout();
+        Root.ActualThemeChanged += (_, _) => RefreshTheme();
+        Root.Loaded += (_, _) => { ApplyThemePreference(); UpdateLayout(); };
+        _uiSettings.ColorValuesChanged += OnSystemColorsChanged;
+        _uiSettings.TextScaleFactorChanged += OnTextScaleChanged;
+        _themeSettings.Changed += OnHighContrastChanged;
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         AppTitleBar.SizeChanged += (_, _) => UpdateTitleBarRegions();
         ModeSwitch.SizeChanged += (_, _) => UpdateTitleBarRegions();
         ProfileButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
         HelpButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
         CheckSetupButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
-        Closed += (_, _) => ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        ApplyThemePreference();
+        Closed += (_, _) =>
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            _uiSettings.ColorValuesChanged -= OnSystemColorsChanged;
+            _uiSettings.TextScaleFactorChanged -= OnTextScaleChanged;
+            _themeSettings.Changed -= OnHighContrastChanged;
+        };
     }
 
     public MainViewModel ViewModel { get; }
@@ -61,7 +81,9 @@ public sealed partial class MainWindow : Window
         if (_setupOpen || Content?.XamlRoot is not { } root) return;
         _setupOpen = true;
         using var setup = _recordingSetup();
-        try { await new RecordingSetupDialog(setup) { XamlRoot = root }.ShowAsync(); }
+        var dialog = new RecordingSetupDialog(setup) { XamlRoot = root };
+        AppThemeHelper.MatchOwner(dialog);
+        try { await dialog.ShowAsync(); }
         catch (System.Runtime.InteropServices.COMException) { /* Another dialog is already open. */ }
         finally { _setupOpen = false; }
     }
@@ -70,7 +92,9 @@ public sealed partial class MainWindow : Window
     {
         if (_obsOpen || Content?.XamlRoot is not { } root) return;
         _obsOpen = true;
-        try { await new ObsDialog(_obs) { XamlRoot = root }.ShowAsync(); }
+        var dialog = new ObsDialog(_obs) { XamlRoot = root };
+        AppThemeHelper.MatchOwner(dialog);
+        try { await dialog.ShowAsync(); }
         catch (System.Runtime.InteropServices.COMException) { /* Another dialog is already open. */ }
         finally { _obsOpen = false; }
     }
@@ -93,11 +117,7 @@ public sealed partial class MainWindow : Window
         titleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         titleBar.ButtonBackgroundColor = Colors.Transparent;
         titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-        titleBar.ButtonForegroundColor = Format.ColorFromHex("#3C4F4D");
-        titleBar.ButtonInactiveForegroundColor = Format.ColorFromHex("#8FA19F");
-        titleBar.ButtonHoverBackgroundColor = Format.ColorFromHex("#14122422");
-        titleBar.ButtonHoverForegroundColor = Format.ColorFromHex("#122422");
-        titleBar.ButtonPressedBackgroundColor = Format.ColorFromHex("#24122422");
+        // Caption colors are refreshed with the app theme, including Windows contrast colors.
 
         string icon = Path.Combine(AppContext.BaseDirectory, "ExactFrame.ico");
         if (File.Exists(icon)) AppWindow.SetIcon(icon);
@@ -121,26 +141,87 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    /// <summary>Lets clicks reach the mode switch and profile button, which sit inside the draggable title bar.</summary>
+    /// <summary>Keeps the system caption-button inset clear when the custom title bar changes size.</summary>
     private void UpdateTitleBarRegions()
     {
         if (Content?.XamlRoot is not { } root) return;
         double scale = root.RasterizationScale;
         CaptionButtonsColumn.Width = new GridLength(Math.Max(0, AppWindow.TitleBar.RightInset / scale));
 
-        var regions = new[] { RegionFor(ModeSwitch, scale), RegionFor(CheckSetupButton, scale), RegionFor(HelpButton, scale), RegionFor(ProfileButton, scale) };
-        InputNonClientPointerSource.GetForWindowId(AppWindow.Id).SetRegionRects(NonClientRegionKind.Passthrough, regions);
+        // All interactive controls now live below the draggable title bar.
+        InputNonClientPointerSource.GetForWindowId(AppWindow.Id).SetRegionRects(NonClientRegionKind.Passthrough, []);
     }
 
-    private static RectInt32 RegionFor(FrameworkElement element, double scale)
+    private void ApplyThemePreference()
     {
-        var bounds = element.TransformToVisual(null).TransformBounds(
-            new Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
-        return new RectInt32(
-            (int)Math.Round(bounds.X * scale),
-            (int)Math.Round(bounds.Y * scale),
-            (int)Math.Round(bounds.Width * scale),
-            (int)Math.Round(bounds.Height * scale));
+        Root.RequestedTheme = AppThemeHelper.ForPreference(ViewModel.ThemePreference);
+        RefreshTheme();
+    }
+
+    private void OnThemeClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string theme } && Enum.TryParse<AppThemePreference>(theme, out var preference))
+            ViewModel.ThemePreference = preference;
+    }
+
+    private void RefreshTheme()
+    {
+        Format.UpdateTheme(Root.ActualTheme, _themeSettings.HighContrast);
+        var titleBar = AppWindow.TitleBar;
+        titleBar.ButtonForegroundColor = Format.ThemeBrush("InkSoftBrush").Color;
+        titleBar.ButtonInactiveForegroundColor = Format.ThemeBrush("MutedBrush").Color;
+        titleBar.ButtonHoverBackgroundColor = Format.ThemeBrush("HoverBrush").Color;
+        titleBar.ButtonHoverForegroundColor = Format.ThemeBrush("InkBrush").Color;
+        titleBar.ButtonPressedBackgroundColor = Format.ThemeBrush("PressedBrush").Color;
+        titleBar.ButtonPressedForegroundColor = Format.ThemeBrush("InkBrush").Color;
+    }
+
+    private void OnSystemColorsChanged(Windows.UI.ViewManagement.UISettings sender, object args) =>
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => RefreshTheme());
+
+    private void OnHighContrastChanged(Microsoft.UI.System.ThemeSettings sender, object args) =>
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => RefreshTheme());
+
+    private void OnTextScaleChanged(Windows.UI.ViewManagement.UISettings sender, object args) =>
+        DispatcherQueue.TryEnqueue(UpdateLayout);
+
+    private void OnPreviewToggleClick(object sender, RoutedEventArgs e)
+    {
+        _previewExpanded = !_previewExpanded;
+        ApplyPreviewLayout();
+    }
+
+    private void UpdateLayout()
+    {
+        double textScale = Math.Max(1, _uiSettings.TextScaleFactor);
+        bool compact = Root.ActualWidth < 1100 * Math.Min(textScale, 1.5);
+        if (compact != _compact)
+        {
+            _compact = compact;
+            _previewExpanded = !compact;
+        }
+        ApplyPreviewLayout();
+        _helpView.UpdateLayoutForTextScale(textScale);
+        bool stacked = Root.ActualWidth < 1200 * textScale;
+        Grid.SetRow(FooterActions, stacked ? 1 : 0);
+        Grid.SetColumn(FooterActions, stacked ? 0 : 1);
+        FooterStatus.Margin = new Thickness(0, 0, 0, stacked ? 10 : 0);
+    }
+
+    private void ApplyPreviewLayout()
+    {
+        if (!_previewExpanded && PreviewMap.IsInteracting) PreviewMap.CancelInteraction();
+        PreviewScroller.Visibility = _previewExpanded ? Visibility.Visible : Visibility.Collapsed;
+        double textScale = Math.Max(1, _uiSettings.TextScaleFactor);
+        PreviewStage.Height = Math.Max(520 * textScale, PreviewScroller.ActualHeight);
+        PreviewBounds.Visibility = _compact ? Visibility.Collapsed : Visibility.Visible;
+        SettingsCard.Visibility = _compact && _previewExpanded ? Visibility.Collapsed : Visibility.Visible;
+        PreviewColumn.Width = new GridLength(_previewExpanded ? 1 : 0, GridUnitType.Star);
+        SettingsColumn.Width = _compact || !_previewExpanded ? new GridLength(1, GridUnitType.Star) : new GridLength(420 * textScale);
+        Grid.SetColumnSpan(PreviewScroller, _compact ? 2 : 1);
+        PreviewToggle.Content = _previewExpanded ? (_compact ? "Show controls" : "Hide preview") : "Show preview";
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetHelpText(PreviewToggle,
+            _compact ? "Switch between the preview and controls in this compact window." : "Collapse the preview to give controls more space.");
     }
 
     private void OnTabSelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
@@ -152,6 +233,7 @@ public sealed partial class MainWindow : Window
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(MainViewModel.ThemePreference)) ApplyThemePreference();
         if (e.PropertyName is not (nameof(MainViewModel.SelectedTab) or "" or null)) return;
         var item = ViewModel.SelectedTab switch
         {

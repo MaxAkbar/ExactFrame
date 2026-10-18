@@ -121,6 +121,7 @@ internal sealed class DialogService : IDialogService
     private static async Task<ContentDialogResult> ShowAsync(ContentDialog dialog)
     {
         if (dialog.XamlRoot is null) return ContentDialogResult.None;
+        AppThemeHelper.MatchOwner(dialog);
         try
         {
             return await dialog.ShowAsync();
@@ -136,7 +137,7 @@ internal sealed class DialogService : IDialogService
     {
         Text = text,
         TextWrapping = TextWrapping.Wrap,
-        Foreground = Format.BrushFromHex("#5E706E")
+        Foreground = Format.ThemeBrush("MutedBrush")
     };
 
     private static HotkeyModifiers CurrentModifiers()

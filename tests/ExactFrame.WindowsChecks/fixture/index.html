@@ -9,12 +9,12 @@ pre{white-space:pre-wrap}p{max-width:600px}hr{border:0;border-top:1px solid whit
 </style>
 <i id="tl"></i><i id="tr"></i><i id="bl"></i><i id="br"></i>
 <main><h1>ExactFrame recording test pattern</h1><pre id="measure"></pre><hr>
-<p>Keep all four corner markers and the 1 pixel white edge in the saved clip. Use 100% browser zoom. Move between monitors and repeat.</p></main>
+<p>Keep all four corner markers and the 1 CSS pixel white edge in the saved clip. Use 100% browser page zoom for the baseline and record the menu's zoom value separately. Move between monitors and repeat.</p></main>
 <script>
 async function report(){
  const metrics={utc:new Date().toISOString(),widthCss:innerWidth,heightCss:innerHeight,dpr:devicePixelRatio,
  physicalWidth:Math.round(innerWidth*devicePixelRatio),physicalHeight:Math.round(innerHeight*devicePixelRatio),userAgent:navigator.userAgent};
- document.getElementById('measure').textContent=`Viewport: ${metrics.widthCss} × ${metrics.heightCss} CSS px\nDevice pixel ratio: ${metrics.dpr}\nPhysical viewport (rounded): ${metrics.physicalWidth} × ${metrics.physicalHeight} px`;
+ document.getElementById('measure').textContent=`Browser layout viewport: ${metrics.widthCss} × ${metrics.heightCss} CSS px\nBrowser-reported device-pixel ratio: ${metrics.dpr}\nEstimated screen span (CSS × DPR, rounded): ${metrics.physicalWidth} × ${metrics.physicalHeight} px\nBrowser page zoom: read separately from the browser menu\nThese are page reports and an estimate, not ExactFrame or recorder measurements.`;
  if(location.protocol==='http:')try{await fetch('/metrics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(metrics)});}catch{}
 }
 addEventListener('resize',report);setInterval(report,500);report();

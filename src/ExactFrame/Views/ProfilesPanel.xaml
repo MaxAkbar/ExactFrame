@@ -52,6 +52,7 @@
                                     Padding="12,10,48,10"
                                     Command="{x:Bind SelectCommand}"
                                     GroupName="Profile"
+                                    AutomationProperties.Name="{x:Bind Name}"
                                     IsChecked="{x:Bind IsSelected, Mode=OneWay}"
                                     Style="{StaticResource ChipRadioStyle}">
                                     <Grid ColumnSpacing="12">
@@ -75,13 +76,13 @@
                                                 FontFamily="{StaticResource SansSemiBoldFont}"
                                                 FontSize="14"
                                                 FontWeight="SemiBold"
-                                                Foreground="{StaticResource InkBrush}"
+                                                Foreground="{ThemeResource InkBrush}"
                                                 Text="{x:Bind Name}"
                                                 ToolTipService.ToolTip="{x:Bind Name}"
                                                 TextTrimming="CharacterEllipsis" />
                                             <TextBlock
                                                 FontSize="12"
-                                                Foreground="{StaticResource MutedBrush}"
+                                                Foreground="{ThemeResource MutedBrush}"
                                                 Text="{x:Bind Summary}"
                                                 ToolTipService.ToolTip="{x:Bind Summary}"
                                                 TextTrimming="CharacterEllipsis" />
@@ -137,7 +138,7 @@
                             <Grid
                                 MinHeight="50"
                                 Padding="0,6"
-                                BorderBrush="{StaticResource DividerBrush}"
+                                BorderBrush="{ThemeResource DividerBrush}"
                                 BorderThickness="0,0,0,1"
                                 ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
@@ -145,14 +146,14 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel VerticalAlignment="Center" Spacing="2">
-                                    <TextBlock FontSize="13.5" Foreground="{StaticResource InkBrush}" Text="{x:Bind Label}" />
+                                    <TextBlock FontSize="13.5" Foreground="{ThemeResource InkBrush}" Text="{x:Bind Label}" />
                                     <StackPanel Orientation="Horizontal" Spacing="5" Visibility="{x:Bind HasConflict}">
-                                        <FontIcon FontSize="12" Foreground="{StaticResource WarnTextBrush}" Glyph="&#xE7BA;" />
+                                        <FontIcon FontSize="12" Foreground="{ThemeResource WarnTextBrush}" Glyph="&#xE7BA;" />
                                         <TextBlock
                                             FontFamily="{StaticResource SansMediumFont}"
                                             FontSize="12"
                                             FontWeight="Medium"
-                                            Foreground="{StaticResource WarnTextBrush}"
+                                            Foreground="{ThemeResource WarnTextBrush}"
                                             Text="{x:Bind Problem}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>

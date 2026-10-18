@@ -179,6 +179,7 @@ internal sealed class ProfileTransferService : IProfileTransferService
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style
         };
         if (dialog.XamlRoot is null) return null;
+        AppThemeHelper.MatchOwner(dialog);
         ContentDialogResult result;
         try { result = await dialog.ShowAsync(); }
         catch (COMException) { return null; }
@@ -213,6 +214,6 @@ internal sealed class ProfileTransferService : IProfileTransferService
     {
         Text = text,
         TextWrapping = TextWrapping.Wrap,
-        Foreground = Format.BrushFromHex("#5E706E")
+        Foreground = Format.ThemeBrush("MutedBrush")
     };
 }

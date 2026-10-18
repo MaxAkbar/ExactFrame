@@ -158,5 +158,5 @@ internal static class HelpRenderer
 
     private static FontFamily Font(string key) => (FontFamily)Application.Current.Resources[key];
 
-    private static Brush Brush(string key) => (Brush)Application.Current.Resources[key];
+    private static Brush Brush(string key) => Format.ThemeBrush(key);
 }

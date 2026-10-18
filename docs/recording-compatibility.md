@@ -1,6 +1,6 @@
 # Recording compatibility and evidence
 
-ExactFrame measures a desktop rectangle. A successful resize or capture-exclusion API call does not verify a video file. The released 2.0.0 download predates the setup workflow and control bar fix described here.
+ExactFrame measures a desktop rectangle. A successful resize or capture-exclusion API call does not verify a video file. The setup workflow and control bar fix described here are included in ExactFrame 2.1.0.
 
 ## Status definitions
 
@@ -38,10 +38,12 @@ The [sanitized evidence summary](evidence/2026-10-18-recording-checks.json) reco
 ## Check your setup in about a minute
 
 1. Set the frame or resize your app. In the recorder, note the exact capture method, canvas, output size and any encoder rescale setting. Keep browser zoom at the intended value.
-2. Open the [test pattern](../tests/ExactFrame.WindowsChecks/fixture/index.html) in your browser. Keep all four colored corners and the one-pixel white edge visible. Turn on the outline, guides, control bar and other overlays you plan to use. Keep **Hide from recorders** on.
+2. Open the [test pattern](../tests/ExactFrame.WindowsChecks/fixture/index.html) in your browser. Keep all four colored corners and the one-CSS-pixel white edge visible. Turn on the outline, guides, control bar and other overlays you plan to use. Keep **Hide from recorders** on.
 3. Record 5–10 seconds. Stop and open the saved video. Check its file dimensions, four corners, alignment, and the absence of the outline, guides, dimming, magnifier and control bar. Preview alone is insufficient.
 4. Open **Check my setup** in ExactFrame's title bar. Enter recorder/version, effective capture method, browser/app version and zoom, and a clip reference. Mark only what you inspected, then **Copy setup report**. This is a user report, not an automatic pass.
 5. Repeat after changing method, version, zoom, scale or monitor. For mixed-DPI work, record while moving in both directions and inspect before, during and after the transition. If exclusion fails, hide the outline/controls before recording.
+
+For browser work, distinguish [physical capture pixels, Windows logical size and the browser's CSS viewport](browser-sizing.md). ExactFrame does not read CSS dimensions, page zoom or DPR; note browser-reported values separately. A page's CSS × DPR estimate is not proof of a native capture rectangle or recorded output.
 
 The main ExactFrame window is not excluded. Move it outside the recording area or minimize it. Setup reports are copied locally and never uploaded by the app; entries are kept only while the dialog is open.
 

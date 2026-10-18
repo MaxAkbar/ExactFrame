@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "CommunityToolkit.Mvvm": {
+        "type": "Direct",
+        "requested": "[8.4.2, )",
+        "resolved": "8.4.2",
+        "contentHash": "WadCzGEc2U+3e20avRLng4qNtt4zoOGWrdUISqJWrHe3/FSnrYjuM5Sb4yQb09LhkBXrrI4Zt3dLKgRMbItsrg=="
+      },
+      "CSharpDB.Engine": {
+        "type": "Direct",
+        "requested": "[4.6.4, )",
+        "resolved": "4.6.4",
+        "contentHash": "3NeJIwhUFoUG101tH0R7jLEH3y+Er9ZrIyCMPiot7DZ2qs7A3ZsFLyYyjRgomQwOxhkBILkcj8n6JHJPQ9pnHw==",
+        "dependencies": {
+          "CSharpDB.Execution": "[4.6.4]",
+          "CSharpDB.Observability": "[4.6.4]",
+          "CSharpDB.Primitives": "[4.6.4]",
+          "CSharpDB.Sql": "[4.6.4]",
+          "CSharpDB.Storage": "[4.6.4]",
+          "CSharpDB.Storage.Diagnostics": "[4.6.4]"
+        }
+      },
+      "CSharpDB.Execution": {
+        "type": "Transitive",
+        "resolved": "4.6.4",
+        "contentHash": "vbrAJadnyeeNtByHJWyvHDCrHQO4PyPKhz4tIHNtl+dh0+0fWsIX+TqW0etCVB0XaZQBgU37uIC92zihOclhXQ==",
+        "dependencies": {
+          "CSharpDB.ImportExport": "[4.6.4]",
+          "CSharpDB.Primitives": "[4.6.4]",
+          "CSharpDB.Sql": "[4.6.4]",
+          "CSharpDB.Storage": "[4.6.4]"
+        }
+      },
+      "CSharpDB.ImportExport": {
+        "type": "Transitive",
+        "resolved": "4.6.4",
+        "contentHash": "zETNea9IOnJp2d2Vmgo00tMeHdh4a6gcWsLAiKHIMH5scZsuYkt4h3/k53g033fIxb5n4dJ/BQn3DGChg5Z1yg==",
+        "dependencies": {
+          "CSharpDB.Primitives": "[4.6.4]",
+          "CSharpDB.Storage": "[4.6.4]"
+        }
+      },
+      "CSharpDB.Observability": {
+        "type": "Transitive",
+        "resolved": "4.6.4",
+        "contentHash": "WlE5H/neaeiZruZhRJO1PKPGN8ucYIvBvzesk9GDk81FDUWFzuPTPNL12sdyw2CwvdRxrvL19+3WiD8uAVY/6g=="
+      },
+      "CSharpDB.Primitives": {
+        "type": "Transitive",
+        "resolved": "4.6.4",
+        "contentHash": "e6Nj9VffT7qr5hXMTro4yvj9mBnOhbr07IaKassWEbhHCDvlb4VtNf107e0YH5sGslQFlv+dluzDuVwXNlhvMg=="
+      },
+      "CSharpDB.Sql": {
+        "type": "Transitive",
+        "resolved": "4.6.4",
+        "contentHash": "IXBFTUbUYDSmnr+fM24R/F8hUBLQ00TltQ5vbrIvrG6Uu1gaeWQgVP/lTVChuIHdSFQEbfgEs4GQS19/dnLW9Q==",
+        "dependencies": {
+          "CSharpDB.Observability": "[4.6.4]",
+          "CSharpDB.Primitives": "[4.6.4]"
+        }
+      },
+      "CSharpDB.Storage": {
+        "type": "Transitive",
+        "resolved": "4.6.4",
+        "contentHash": "4YQ3MdDnZCJGJBjEuONItpb8duwtZ1B1MDOm9bAfpg2HlayZsA36jk5qh7s2ICiWlFRAF9yWmgHTf2//n29lAw==",
+        "dependencies": {
+          "CSharpDB.Primitives": "[4.6.4]"
+        }
+      },
+      "CSharpDB.Storage.Diagnostics": {
+        "type": "Transitive",
+        "resolved": "4.6.4",
+        "contentHash": "zLhQqRHv32u5izT1ruVqkthxbxh+xwQ5NDHy84HJb4ZlsfOTgm9WbTziAW6wRhESEFgkOF6rUEknaT7qQCfC4g==",
+        "dependencies": {
+          "CSharpDB.Primitives": "[4.6.4]",
+          "CSharpDB.Storage": "[4.6.4]"
+        }
+      }
+    }
+  }
+}

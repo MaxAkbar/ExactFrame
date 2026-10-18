@@ -34,7 +34,7 @@
                         HorizontalAlignment="Right"
                         Style="{StaticResource CaptionStyle}"
                         Text="Physical pixels"
-                        ToolTipService.ToolTip="Sizes stay exact at 125%, 150% or 200% Windows scaling." />
+                        ToolTipService.ToolTip="Physical screen pixels for capture. Windows logical pixels and browser CSS pixels use different units." />
                 </Grid>
 
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.Presets}">
@@ -59,12 +59,12 @@
                                         FontFamily="{StaticResource SansSemiBoldFont}"
                                         FontSize="13"
                                         FontWeight="SemiBold"
-                                        Foreground="{StaticResource InkBrush}"
+                                        Foreground="{ThemeResource InkBrush}"
                                         Text="{x:Bind Label}" />
                                     <TextBlock
                                         FontFamily="{StaticResource MonoFont}"
                                         FontSize="11"
-                                        Foreground="{StaticResource MutedBrush}"
+                                        Foreground="{ThemeResource MutedBrush}"
                                         Text="{x:Bind Detail}" />
                                 </StackPanel>
                             </RadioButton>
@@ -74,7 +74,7 @@
 
                 <views:SizeEditor ViewModel="{x:Bind ViewModel}" />
 
-                <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.LogicalSizeNote, Mode=OneWay}" />
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.LogicalSizeNote, Mode=OneWay}" TextWrapping="Wrap" />
             </StackPanel>
 
             <Border Style="{StaticResource DividerStyle}" />
@@ -98,7 +98,7 @@
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="vm:NestedFrameItem">
-                            <Border Padding="12" Background="{StaticResource FooterBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="10">
+                            <Border Padding="12" Background="{ThemeResource FooterBrush}" BorderBrush="{ThemeResource LineBrush}" BorderThickness="1" CornerRadius="10">
                                 <StackPanel Spacing="8">
                                     <Grid ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>
@@ -180,8 +180,8 @@
                     <Border
                         VerticalAlignment="Top"
                         Padding="6"
-                        Background="{StaticResource FooterBrush}"
-                        BorderBrush="{StaticResource LineBrush}"
+                        Background="{ThemeResource FooterBrush}"
+                        BorderBrush="{ThemeResource LineBrush}"
                         BorderThickness="1"
                         CornerRadius="10">
                         <ItemsRepeater ItemsSource="{x:Bind ViewModel.Anchors}">

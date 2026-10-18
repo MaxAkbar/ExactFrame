@@ -130,7 +130,7 @@
                         VerticalAlignment="Center"
                         FontFamily="{StaticResource MonoFont}"
                         FontSize="13"
-                        Foreground="{StaticResource InkSoftBrush}"
+                        Foreground="{ThemeResource InkSoftBrush}"
                         Text="{x:Bind ViewModel.DimOpacityText, Mode=OneWay}" />
                 </Grid>
             </StackPanel>
@@ -153,7 +153,7 @@
                                 Height="24"
                                 HorizontalAlignment="Center"
                                 Data="M 3,5 H 21 V 19 H 3 Z M 9,5 V 19 M 15,5 V 19 M 3,9.7 H 21 M 3,14.3 H 21"
-                                Stroke="{StaticResource InkSoftBrush}"
+                                Stroke="{ThemeResource InkSoftBrush}"
                                 StrokeThickness="1.4" />
                             <TextBlock HorizontalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="12.5" Text="Thirds" />
                         </StackPanel>
@@ -165,7 +165,7 @@
                                 Height="24"
                                 HorizontalAlignment="Center"
                                 Data="M 3,5 H 21 V 19 H 3 Z M 12,9 V 15 M 9,12 H 15"
-                                Stroke="{StaticResource InkSoftBrush}"
+                                Stroke="{ThemeResource InkSoftBrush}"
                                 StrokeThickness="1.4" />
                             <TextBlock HorizontalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="12.5" Text="Center mark" />
                         </StackPanel>
@@ -177,7 +177,7 @@
                                 Height="24"
                                 HorizontalAlignment="Center"
                                 Data="M 3,5 H 21 V 19 H 3 Z M 6.5,8 H 17.5 V 16 H 6.5 Z"
-                                Stroke="{StaticResource InkSoftBrush}"
+                                Stroke="{ThemeResource InkSoftBrush}"
                                 StrokeDashArray="2,1.5"
                                 StrokeThickness="1.4" />
                             <TextBlock HorizontalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontSize="12.5" Text="Safe area 90%" />

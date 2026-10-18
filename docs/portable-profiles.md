@@ -1,6 +1,6 @@
 # Portable profiles
 
-Available in the current source build. The published v2.0.0 release predates these controls.
+Available in ExactFrame 2.1.0 and later.
 
 ## Save and manage a setup
 

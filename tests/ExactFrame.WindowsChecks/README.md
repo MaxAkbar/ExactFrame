@@ -27,7 +27,7 @@ pwsh -NoProfile -File scripts/Run-WindowsRecordingChecks.ps1 `
   -BrowserProcessId 12345 -BrowserMetricsFile artifacts/recording-browser/metrics.json
 ```
 
-The fixture posts its CSS viewport, device pixel ratio and rounded physical viewport dimensions to the local server. Web page checks compare the production rectangle with these independent DOM dimensions. Metrics must be less than three seconds old. Keep only one fixture page open while collecting metrics. The executable version and DOM user agent are recorded. These checks do not verify browser recording or output pixels.
+The fixture posts its CSS viewport, device pixel ratio and rounded CSS × DPR screen-span estimate to the local server. The existing JSON fields `physicalWidth` and `physicalHeight` retain their names for compatibility; they hold estimates, not native measurements. Web page checks compare the production rectangle with those independent browser reports. Metrics must be less than three seconds old. Keep only one fixture page open while collecting metrics. The executable version and DOM user agent are recorded. Browser menu zoom is recorded separately; it is not inferred from DPR. These checks do not verify browser recording or output pixels. See the [browser sizing guide](../../docs/browser-sizing.md) for unit definitions and a read-only verification snippet.
 
 ## Actual recorder output
 
@@ -54,6 +54,10 @@ All WASAPI audio inputs in the isolated recorder are muted before recording. The
 The magnifier is excluded from this automated run because its visibility depends on the physical pointer. Test it separately with the pointer near an edge. Window Capture, browser clips and monitor transitions during recording are separate matrix rows. Stop the fixture server and close the owned OBS instance afterward.
 
 The runner requests cleanup if its own recording might remain active, including on timeout. Cleanup requires the same isolated profile and an ownership marker in this run's directory. It does not stop an already-active output rejected by the initial checks. If cleanup cannot reach OBS, stop the isolated recorder manually. An inaccessible or non-default input desktop aborts the harness before any fixture or recording is created.
+
+## Responsiveness-only checks
+
+`--responsiveness-only --output artifacts/responsiveness/run-1` measures production tracking, magnifier rendering and synchronous settings storage without recorder setup. This mode uses a real database inside its new output directory; other harness modes still use substitute settings. Use a fresh directory each time. Optional `--performance-browser-title` enables read-only native page tracking of one exact Chrome/Edge window title. See the [protocol and evidence limits](../../docs/usability-and-engineering.md#responsiveness-measurements). A timing report is diagnostic evidence, not a correctness or recording pass.
 
 ## Evidence policy
 

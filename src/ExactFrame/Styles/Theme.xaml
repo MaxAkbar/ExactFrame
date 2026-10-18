@@ -13,63 +13,139 @@
     <!-- Controls (buttons, text boxes, toggles) pick this up everywhere. -->
     <FontFamily x:Key="ContentControlThemeFontFamily">ms-appx:///Assets/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans, Segoe UI Variable Text, Segoe UI</FontFamily>
 
-    <!-- Teal accent for switches, sliders, focus and selection. -->
-    <Color x:Key="SystemAccentColor">#0E7A6D</Color>
-    <Color x:Key="SystemAccentColorLight1">#2D9C8C</Color>
-    <Color x:Key="SystemAccentColorLight2">#5FBFB0</Color>
-    <Color x:Key="SystemAccentColorLight3">#9ED3C8</Color>
-    <Color x:Key="SystemAccentColorDark1">#0E7A6D</Color>
-    <Color x:Key="SystemAccentColorDark2">#0A5F55</Color>
-    <Color x:Key="SystemAccentColorDark3">#084B43</Color>
-
-    <!-- Light surfaces -->
-    <SolidColorBrush x:Key="GroundBrush" Color="#EDF1F0" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="FooterBrush" Color="#F6F8F7" />
-    <SolidColorBrush x:Key="TrackBrush" Color="#EEF2F1" />
-    <SolidColorBrush x:Key="TitleTrackBrush" Color="#DDE5E3" />
-    <SolidColorBrush x:Key="LineBrush" Color="#D9E1DF" />
-    <SolidColorBrush x:Key="DividerBrush" Color="#E3E9E8" />
-    <SolidColorBrush x:Key="InputLineBrush" Color="#A7B5B3" />
-    <SolidColorBrush x:Key="HoverBrush" Color="#0D122422" />
-    <SolidColorBrush x:Key="PressedBrush" Color="#1A122422" />
-
-    <!-- Text -->
-    <SolidColorBrush x:Key="InkBrush" Color="#122422" />
-    <SolidColorBrush x:Key="InkSoftBrush" Color="#3C4F4D" />
-    <SolidColorBrush x:Key="SegmentTextBrush" Color="#44585A" />
-    <SolidColorBrush x:Key="MutedBrush" Color="#5E706E" />
-
-    <!-- Accent -->
-    <SolidColorBrush x:Key="AccentBrush" Color="#0E7A6D" />
-    <SolidColorBrush x:Key="AccentStrongBrush" Color="#0A5F55" />
-    <SolidColorBrush x:Key="AccentTintBrush" Color="#E2F2EE" />
-    <SolidColorBrush x:Key="AccentSoftBrush" Color="#F1F9F7" />
-    <SolidColorBrush x:Key="AccentLineBrush" Color="#9ED3C8" />
-
-    <!-- Warnings -->
-    <SolidColorBrush x:Key="WarnTextBrush" Color="#8A5100" />
-    <SolidColorBrush x:Key="WarnFillBrush" Color="#FDF5E6" />
-    <SolidColorBrush x:Key="WarnLineBrush" Color="#E0B25C" />
-
-    <!-- Dark preview stage -->
-    <SolidColorBrush x:Key="StageBrush" Color="#0F1E22" />
-    <SolidColorBrush x:Key="StageWallpaperBrush" Color="#14272C" />
-    <SolidColorBrush x:Key="StageLineBrush" Color="#2A4147" />
-    <SolidColorBrush x:Key="StageTextBrush" Color="#E6F0EE" />
-    <SolidColorBrush x:Key="StageBrightBrush" Color="#F2F8F7" />
-    <SolidColorBrush x:Key="StageMutedBrush" Color="#93AEAB" />
-    <SolidColorBrush x:Key="StageSoftBrush" Color="#B8CBC9" />
-    <SolidColorBrush x:Key="StageChipBrush" Color="#0FFFFFFF" />
-    <SolidColorBrush x:Key="StageHoverBrush" Color="#14FFFFFF" />
-    <SolidColorBrush x:Key="MintBrush" Color="#34D5B5" />
-    <SolidColorBrush x:Key="MintTextBrush" Color="#7FE0C9" />
-    <SolidColorBrush x:Key="MintTintBrush" Color="#2434D5B5" />
-    <SolidColorBrush x:Key="StageWarnBrush" Color="#F5B84A" />
-
-    <!-- On-screen HUD -->
-    <SolidColorBrush x:Key="HudBrush" Color="#0D1A1E" />
-    <SolidColorBrush x:Key="HudLineBrush" Color="#17FFFFFF" />
-    <SolidColorBrush x:Key="HudActiveBrush" Color="#2934D5B5" />
-
+    <!-- Keep every semantic brush in each dictionary. Contrast colors follow the user palette. -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="GroundBrush" Color="#101B1D" />
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#19282B" />
+            <SolidColorBrush x:Key="FooterBrush" Color="#142225" />
+            <SolidColorBrush x:Key="TrackBrush" Color="#24373A" />
+            <SolidColorBrush x:Key="TitleTrackBrush" Color="#2B4144" />
+            <SolidColorBrush x:Key="LineBrush" Color="#466064" />
+            <SolidColorBrush x:Key="DividerBrush" Color="#344C50" />
+            <SolidColorBrush x:Key="InputLineBrush" Color="#6C898C" />
+            <SolidColorBrush x:Key="HoverBrush" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="PressedBrush" Color="#29FFFFFF" />
+            <SolidColorBrush x:Key="InkBrush" Color="#EDF5F3" />
+            <SolidColorBrush x:Key="InkSoftBrush" Color="#D0DFDC" />
+            <SolidColorBrush x:Key="SegmentTextBrush" Color="#C1D5D1" />
+            <SolidColorBrush x:Key="MutedBrush" Color="#A8C1BC" />
+            <SolidColorBrush x:Key="AccentBrush" Color="#0E7A6D" />
+            <SolidColorBrush x:Key="AccentStrongBrush" Color="#8DE4D0" />
+            <SolidColorBrush x:Key="AccentTintBrush" Color="#244A43" />
+            <SolidColorBrush x:Key="AccentSoftBrush" Color="#203B36" />
+            <SolidColorBrush x:Key="AccentLineBrush" Color="#4F9D8C" />
+            <SolidColorBrush x:Key="WarnTextBrush" Color="#FFD089" />
+            <SolidColorBrush x:Key="WarnFillBrush" Color="#45341D" />
+            <SolidColorBrush x:Key="WarnLineBrush" Color="#AD823D" />
+            <SolidColorBrush x:Key="StageBrush" Color="#0F1E22" />
+            <SolidColorBrush x:Key="StageWallpaperBrush" Color="#14272C" />
+            <SolidColorBrush x:Key="StageLineBrush" Color="#2A4147" />
+            <SolidColorBrush x:Key="StageTextBrush" Color="#E6F0EE" />
+            <SolidColorBrush x:Key="StageBrightBrush" Color="#F2F8F7" />
+            <SolidColorBrush x:Key="StageMutedBrush" Color="#93AEAB" />
+            <SolidColorBrush x:Key="StageSoftBrush" Color="#B8CBC9" />
+            <SolidColorBrush x:Key="StageChipBrush" Color="#0FFFFFFF" />
+            <SolidColorBrush x:Key="StageHoverBrush" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="MintBrush" Color="#34D5B5" />
+            <SolidColorBrush x:Key="MintTextBrush" Color="#7FE0C9" />
+            <SolidColorBrush x:Key="MintTintBrush" Color="#2434D5B5" />
+            <SolidColorBrush x:Key="StageWarnBrush" Color="#F5B84A" />
+            <SolidColorBrush x:Key="HudBrush" Color="#0D1A1E" />
+            <SolidColorBrush x:Key="HudLineBrush" Color="#17FFFFFF" />
+            <SolidColorBrush x:Key="HudActiveBrush" Color="#2934D5B5" />
+            <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="SelectedStageBrush" Color="#1A34D5B5" />
+            <SolidColorBrush x:Key="IdleDotBrush" Color="#6F8A88" />
+            <SolidColorBrush x:Key="LiveTextBrush" Color="#BFF3E6" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="GroundBrush" Color="#EDF1F0" />
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="FooterBrush" Color="#F6F8F7" />
+            <SolidColorBrush x:Key="TrackBrush" Color="#EEF2F1" />
+            <SolidColorBrush x:Key="TitleTrackBrush" Color="#DDE5E3" />
+            <SolidColorBrush x:Key="LineBrush" Color="#D9E1DF" />
+            <SolidColorBrush x:Key="DividerBrush" Color="#E3E9E8" />
+            <SolidColorBrush x:Key="InputLineBrush" Color="#A7B5B3" />
+            <SolidColorBrush x:Key="HoverBrush" Color="#0D122422" />
+            <SolidColorBrush x:Key="PressedBrush" Color="#1A122422" />
+            <SolidColorBrush x:Key="InkBrush" Color="#122422" />
+            <SolidColorBrush x:Key="InkSoftBrush" Color="#3C4F4D" />
+            <SolidColorBrush x:Key="SegmentTextBrush" Color="#44585A" />
+            <SolidColorBrush x:Key="MutedBrush" Color="#5E706E" />
+            <SolidColorBrush x:Key="AccentBrush" Color="#0E7A6D" />
+            <SolidColorBrush x:Key="AccentStrongBrush" Color="#0A5F55" />
+            <SolidColorBrush x:Key="AccentTintBrush" Color="#E2F2EE" />
+            <SolidColorBrush x:Key="AccentSoftBrush" Color="#F1F9F7" />
+            <SolidColorBrush x:Key="AccentLineBrush" Color="#9ED3C8" />
+            <SolidColorBrush x:Key="WarnTextBrush" Color="#8A5100" />
+            <SolidColorBrush x:Key="WarnFillBrush" Color="#FDF5E6" />
+            <SolidColorBrush x:Key="WarnLineBrush" Color="#E0B25C" />
+            <SolidColorBrush x:Key="StageBrush" Color="#0F1E22" />
+            <SolidColorBrush x:Key="StageWallpaperBrush" Color="#14272C" />
+            <SolidColorBrush x:Key="StageLineBrush" Color="#2A4147" />
+            <SolidColorBrush x:Key="StageTextBrush" Color="#E6F0EE" />
+            <SolidColorBrush x:Key="StageBrightBrush" Color="#F2F8F7" />
+            <SolidColorBrush x:Key="StageMutedBrush" Color="#93AEAB" />
+            <SolidColorBrush x:Key="StageSoftBrush" Color="#B8CBC9" />
+            <SolidColorBrush x:Key="StageChipBrush" Color="#0FFFFFFF" />
+            <SolidColorBrush x:Key="StageHoverBrush" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="MintBrush" Color="#34D5B5" />
+            <SolidColorBrush x:Key="MintTextBrush" Color="#7FE0C9" />
+            <SolidColorBrush x:Key="MintTintBrush" Color="#2434D5B5" />
+            <SolidColorBrush x:Key="StageWarnBrush" Color="#F5B84A" />
+            <SolidColorBrush x:Key="HudBrush" Color="#0D1A1E" />
+            <SolidColorBrush x:Key="HudLineBrush" Color="#17FFFFFF" />
+            <SolidColorBrush x:Key="HudActiveBrush" Color="#2934D5B5" />
+            <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="SelectedStageBrush" Color="#1A34D5B5" />
+            <SolidColorBrush x:Key="IdleDotBrush" Color="#6F8A88" />
+            <SolidColorBrush x:Key="LiveTextBrush" Color="#BFF3E6" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="GroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="SurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="FooterBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="TrackBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="TitleTrackBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="DividerBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="InputLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="HoverBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="PressedBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="InkBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="InkSoftBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="SegmentTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="MutedBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccentStrongBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AccentTintBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentSoftBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="WarnTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="WarnFillBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="WarnLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="StageBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="StageWallpaperBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="StageLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="StageTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="StageBrightBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="StageMutedBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="StageSoftBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="StageChipBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="StageHoverBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="MintBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="MintTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="MintTintBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="StageWarnBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="HudBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="HudLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="HudActiveBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentTextBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="SelectedStageBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="IdleDotBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="LiveTextBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

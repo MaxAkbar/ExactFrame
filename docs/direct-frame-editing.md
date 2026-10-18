@@ -1,6 +1,6 @@
 # Direct frame editing
 
-These controls are available in **Outline area** in the current source build. The published v2.0.0 release predates this work.
+These controls are available in **Outline area** in ExactFrame 2.1.0 and later.
 
 ## Set up a frame
 

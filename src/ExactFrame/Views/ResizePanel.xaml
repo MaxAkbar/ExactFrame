@@ -50,7 +50,7 @@
                             </ItemsRepeater.ItemTemplate>
                         </ItemsRepeater>
                     </ScrollViewer>
-                    <Border Padding="10" Background="{StaticResource FooterBrush}" CornerRadius="6">
+                    <Border Padding="10" Background="{ThemeResource FooterBrush}" CornerRadius="6">
                         <TextBlock Text="{x:Bind ViewModel.TargetWindowPreview, Mode=OneWay}" Style="{StaticResource CaptionStyle}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
                     </Border>
                     <TextBlock Style="{StaticResource CaptionStyle}" Text="Manual resizing remembers the size for these conditions. Save a profile to keep the conditions with a complete setup." TextWrapping="Wrap" />
@@ -96,6 +96,8 @@
                                 BorderBrush="Transparent"
                                 Command="{x:Bind SelectCommand}"
                                 GroupName="TargetWindow"
+                                AutomationProperties.Name="{x:Bind Title}"
+                                AutomationProperties.HelpText="{x:Bind Meta}"
                                 IsChecked="{x:Bind IsSelected, Mode=OneWay}"
                                 Style="{StaticResource ChipRadioStyle}"
                                 ToolTipService.ToolTip="{x:Bind Title}">
@@ -120,15 +122,15 @@
                                             FontFamily="{StaticResource SansMediumFont}"
                                             FontSize="13"
                                             FontWeight="Medium"
-                                            Foreground="{StaticResource InkBrush}"
+                                            Foreground="{ThemeResource InkBrush}"
                                             Text="{x:Bind Title}"
                                             TextTrimming="CharacterEllipsis" />
-                                        <TextBlock FontSize="11.5" Foreground="{StaticResource MutedBrush}" Text="{x:Bind Meta}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock FontSize="11.5" Foreground="{ThemeResource MutedBrush}" Text="{x:Bind Meta}" TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
                                     <FontIcon
                                         Grid.Column="2"
                                         FontSize="14"
-                                        Foreground="{StaticResource AccentBrush}"
+                                        Foreground="{ThemeResource AccentBrush}"
                                         Glyph="&#xE73E;"
                                         Visibility="{x:Bind IsSelected, Mode=OneWay}" />
                                 </Grid>
@@ -189,7 +191,7 @@
                                     FontFamily="{StaticResource SansSemiBoldFont}"
                                     FontSize="12.5"
                                     FontWeight="SemiBold"
-                                    Foreground="{StaticResource InkBrush}"
+                                    Foreground="{ThemeResource InkBrush}"
                                     Text="{x:Bind Label}" />
                             </RadioButton>
                         </DataTemplate>
@@ -197,6 +199,7 @@
                 </ItemsRepeater>
 
                 <views:SizeEditor ViewModel="{x:Bind ViewModel}" />
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.LogicalSizeNote, Mode=OneWay}" TextWrapping="Wrap" />
 
                 <Grid MinHeight="36">
                     <TextBlock Style="{StaticResource LabelStyle}" Text="Size applies to" />
@@ -220,6 +223,7 @@
                 </Grid>
 
                 <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.MeasureNote, Mode=OneWay}" />
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="Browser CSS viewport, page zoom and device-pixel ratio (DPR): not measured. See Help → Resize window to check them." TextWrapping="Wrap" />
             </StackPanel>
 
             <Border Style="{StaticResource DividerStyle}" />

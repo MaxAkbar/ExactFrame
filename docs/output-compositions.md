@@ -1,6 +1,6 @@
 # Output compositions
 
-Available in the current source build; the published v2.0.0 release predates this work.
+Available in ExactFrame 2.1.0 and later.
 
 ## Source crops and final output sizes
 

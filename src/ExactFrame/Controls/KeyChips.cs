@@ -54,10 +54,10 @@ public sealed class KeyChips : UserControl
 
         var (fill, line, text) = (Variant, IsWarning) switch
         {
-            (_, true) => ("#FDF5E6", "#E0B25C", "#8A5100"),
-            ("Dark", _) => ("#12FFFFFF", "#29FFFFFF", "#D5E3E1"),
-            ("OnAccent", _) => ("#2EFFFFFF", "#00FFFFFF", "#FFFFFF"),
-            _ => ("#F6F8F7", "#CCD6D4", "#3C4F4D")
+            (_, true) => ("WarnFillBrush", "WarnLineBrush", "WarnTextBrush"),
+            ("Dark", _) => ("HudBrush", "HudLineBrush", "StageTextBrush"),
+            ("OnAccent", _) => ("AccentBrush", "AccentTextBrush", "AccentTextBrush"),
+            _ => ("FooterBrush", "InputLineBrush", "InkSoftBrush")
         };
 
         foreach (string key in keys)
@@ -68,14 +68,14 @@ public sealed class KeyChips : UserControl
                 Padding = new Thickness(6, 0, 6, 0),
                 CornerRadius = new CornerRadius(5),
                 BorderThickness = new Thickness(1, 1, 1, 2),
-                Background = Format.BrushFromHex(fill),
-                BorderBrush = Format.BrushFromHex(line),
+                Background = Format.ThemeBrush(fill),
+                BorderBrush = Format.ThemeBrush(line),
                 Child = new TextBlock
                 {
                     Text = key,
                     FontSize = 11,
                     FontFamily = (FontFamily)Application.Current.Resources["MonoMediumFont"],
-                    Foreground = Format.BrushFromHex(text),
+                    Foreground = Format.ThemeBrush(text),
                     VerticalAlignment = VerticalAlignment.Center
                 }
             });

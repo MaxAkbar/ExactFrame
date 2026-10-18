@@ -7,11 +7,12 @@
     xmlns:vm="using:ExactFrame.Core.ViewModels"
     Title="ExactFrame">
 
-    <Grid x:Name="Root" Background="{StaticResource GroundBrush}">
+    <Grid x:Name="Root" Background="{ThemeResource GroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="72" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="Escape" Invoked="OnEscapeInvoked" />
@@ -28,14 +29,14 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
-                <Border Width="28" Height="28" Background="{StaticResource AccentBrush}" CornerRadius="8">
+                <Border Width="28" Height="28" Background="{ThemeResource AccentBrush}" CornerRadius="8">
                     <Path
                         Width="24"
                         Height="24"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Data="M 5,10 L 5,5 L 10,5 M 14,5 L 19,5 L 19,10 M 19,14 L 19,19 L 14,19 M 10,19 L 5,19 L 5,14"
-                        Stroke="White"
+                        Stroke="{ThemeResource AccentTextBrush}"
                         StrokeEndLineCap="Round"
                         StrokeLineJoin="Round"
                         StrokeStartLineCap="Round"
@@ -46,50 +47,72 @@
                     FontFamily="{StaticResource SansSemiBoldFont}"
                     FontSize="14"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource InkBrush}"
+                    Foreground="{ThemeResource InkBrush}"
                 Text="ExactFrame" />
             </StackPanel>
 
+
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" Padding="16,4,16,8">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
             <Border
                 x:Name="ModeSwitch"
-                Grid.Column="1"
+                Grid.Column="0"
                 VerticalAlignment="Center"
-                Background="{StaticResource TitleTrackBrush}"
+                Background="{ThemeResource TitleTrackBrush}"
                 CornerRadius="10"
                 Padding="3">
                 <StackPanel Orientation="Horizontal" Spacing="2">
                     <RadioButton
-                        Padding="18,0"
+                        Padding="12,6"
                         Click="OnTitleBarNavigate"
                         Command="{x:Bind ViewModel.ShowOutlineModeCommand}"
                         Content="Outline area"
                         GroupName="Mode"
                         IsChecked="{x:Bind ViewModel.IsOutlineMode, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
-                        MinHeight="32"
+                        MinHeight="36"
                         Style="{StaticResource SegmentRadioStyle}"
                         ToolTipService.ToolTip="Show an outline around the area you will record" />
                     <RadioButton
-                        Padding="18,0"
+                        Padding="12,6"
                         Click="OnTitleBarNavigate"
                         Command="{x:Bind ViewModel.ShowResizeModeCommand}"
                         Content="Resize window"
                         GroupName="Mode"
                         IsChecked="{x:Bind ViewModel.IsResizeMode, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}"
-                        MinHeight="32"
+                        MinHeight="36"
                         Style="{StaticResource SegmentRadioStyle}"
                         ToolTipService.ToolTip="Resize another app so its content is an exact size" />
                 </StackPanel>
             </Border>
 
             <StackPanel
-                Grid.Column="2"
+                Grid.Column="1"
                 Margin="0,0,8,0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="6">
+                <DropDownButton x:Name="ThemeButton" Content="{x:Bind ViewModel.ThemeLabel, Mode=OneWay}"
+                                MinHeight="36" Style="{StaticResource ThemeButtonStyle}"
+                                ToolTipService.ToolTip="Choose System, Light or Dark for ExactFrame. System follows Windows.">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout>
+                            <RadioMenuFlyoutItem Text="System" Tag="System" GroupName="AppTheme" Click="OnThemeClick"
+                                                 IsChecked="{x:Bind ViewModel.IsSystemTheme, Mode=OneWay}" />
+                            <RadioMenuFlyoutItem Text="Light" Tag="Light" GroupName="AppTheme" Click="OnThemeClick"
+                                                 IsChecked="{x:Bind ViewModel.IsLightTheme, Mode=OneWay}" />
+                            <RadioMenuFlyoutItem Text="Dark" Tag="Dark" GroupName="AppTheme" Click="OnThemeClick"
+                                                 IsChecked="{x:Bind ViewModel.IsDarkTheme, Mode=OneWay}" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+                <Button x:Name="PreviewToggle" Content="Hide preview" Click="OnPreviewToggleClick"
+                        MinHeight="36" Style="{StaticResource SecondaryButtonStyle}" />
                 <Button x:Name="CheckSetupButton" Content="Check my setup" Click="OnCheckSetupClick"
                         MinHeight="36" Style="{StaticResource SecondaryButtonStyle}"
                         ToolTipService.ToolTip="Verify a saved test recording and copy a setup report" />
@@ -106,6 +129,7 @@
                 </Button>
                 <Button
                     x:Name="ProfileButton"
+                    AutomationProperties.Name="Saved profiles"
                     Padding="12,0,10,0"
                     VerticalAlignment="Center"
                     Click="OnTitleBarNavigate"
@@ -115,32 +139,34 @@
                     ToolTipService.ToolTip="Saved profiles">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock FontSize="11" Foreground="{StaticResource MutedBrush}" Text="{x:Bind ViewModel.ProfileEyebrow, Mode=OneWay}" />
+                            <TextBlock FontSize="11" Foreground="{ThemeResource MutedBrush}" Text="{x:Bind ViewModel.ProfileEyebrow, Mode=OneWay}" />
                             <TextBlock
                                 FontFamily="{StaticResource SansSemiBoldFont}"
                                 FontSize="13"
                                 FontWeight="SemiBold"
                                 Text="{x:Bind ViewModel.ActiveProfileName, Mode=OneWay}" />
                         </StackPanel>
-                        <FontIcon VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource MutedBrush}" Glyph="&#xE70D;" />
+                        <FontIcon VerticalAlignment="Center" FontSize="12" Foreground="{ThemeResource MutedBrush}" Glyph="&#xE70D;" />
                     </StackPanel>
                 </Button>
             </StackPanel>
-        </Grid>
+            </Grid>
+        </ScrollViewer>
 
         <!-- ===== Body: preview stage and settings ===== -->
         <Grid
-            Grid.Row="1"
-            Padding="24,4,24,20"
+            Grid.Row="2"
+            Padding="16,4,16,12"
             ColumnSpacing="20"
             Visibility="{x:Bind helpers:Format.Collapsed(Help.IsOpen), Mode=OneWay}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="420" />
+                <ColumnDefinition x:Name="PreviewColumn" Width="*" />
+                <ColumnDefinition x:Name="SettingsColumn" Width="420" />
             </Grid.ColumnDefinitions>
 
             <!-- Stage -->
-            <Grid Background="{StaticResource StageBrush}" CornerRadius="16" Padding="24" RowSpacing="16">
+            <ScrollViewer x:Name="PreviewScroller" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+            <Grid x:Name="PreviewStage" Background="{ThemeResource StageBrush}" CornerRadius="16" Padding="24" RowSpacing="16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -159,9 +185,9 @@
                             FontFamily="{StaticResource MonoSemiBoldFont}"
                             FontSize="32"
                             FontWeight="SemiBold"
-                            Foreground="{StaticResource StageBrightBrush}"
-                            Text="{x:Bind ViewModel.SizeText, Mode=OneWay}" />
-                        <TextBlock FontSize="13" Foreground="{StaticResource StageMutedBrush}" Text="{x:Bind ViewModel.StageSubtitle, Mode=OneWay}" />
+                            Foreground="{ThemeResource StageBrightBrush}"
+                            Text="{x:Bind ViewModel.SizeText, Mode=OneWay}" TextWrapping="Wrap" />
+                        <TextBlock FontSize="13" Foreground="{ThemeResource StageMutedBrush}" Text="{x:Bind ViewModel.StageSubtitle, Mode=OneWay}" TextWrapping="Wrap" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal" Spacing="8">
                         <Border Height="30" Padding="12,0" Background="{x:Bind helpers:Format.ChipBrush(ViewModel.IsChipLive), Mode=OneWay}" CornerRadius="15">
@@ -170,16 +196,16 @@
                                 <TextBlock FontSize="12.5" Foreground="{x:Bind helpers:Format.ChipTextBrush(ViewModel.IsChipLive), Mode=OneWay}" Text="{x:Bind ViewModel.ChipText, Mode=OneWay}" />
                             </StackPanel>
                         </Border>
-                        <Border Height="30" Padding="12,0" Background="{StaticResource StageChipBrush}" CornerRadius="15" Visibility="{x:Bind ViewModel.ShowRecorderChip, Mode=OneWay}">
+                        <Border Height="30" Padding="12,0" Background="{ThemeResource StageChipBrush}" CornerRadius="15" Visibility="{x:Bind ViewModel.ShowRecorderChip, Mode=OneWay}">
                             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="7">
-                                <FontIcon FontSize="13" Foreground="{StaticResource StageSoftBrush}" Glyph="&#xED1A;" />
-                                <TextBlock FontSize="12.5" Foreground="{StaticResource StageSoftBrush}" Text="Hidden from recorders" />
+                                <FontIcon FontSize="13" Foreground="{ThemeResource StageSoftBrush}" Glyph="&#xED1A;" />
+                                <TextBlock FontSize="12.5" Foreground="{ThemeResource StageSoftBrush}" Text="Hidden from recorders" />
                             </StackPanel>
                         </Border>
-                        <Border Height="30" Padding="12,0" Background="{StaticResource StageChipBrush}" CornerRadius="15" Visibility="{x:Bind ViewModel.ShowLockChip, Mode=OneWay}">
+                        <Border Height="30" Padding="12,0" Background="{ThemeResource StageChipBrush}" CornerRadius="15" Visibility="{x:Bind ViewModel.ShowLockChip, Mode=OneWay}">
                             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="7">
-                                <FontIcon FontSize="13" Foreground="{StaticResource StageSoftBrush}" Glyph="&#xE72E;" />
-                                <TextBlock FontSize="12.5" Foreground="{StaticResource StageSoftBrush}" Text="Click-through" />
+                                <FontIcon FontSize="13" Foreground="{ThemeResource StageSoftBrush}" Glyph="&#xE72E;" />
+                                <TextBlock FontSize="12.5" Foreground="{ThemeResource StageSoftBrush}" Text="Click-through" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -187,8 +213,8 @@
 
                 <Grid Grid.Row="1">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Foreground="{StaticResource StageSoftBrush}" Glyph="&#xE7F4;" />
-                        <TextBlock FontSize="12.5" Foreground="{StaticResource StageSoftBrush}" Text="{x:Bind ViewModel.DisplayLabel, Mode=OneWay}" />
+                        <FontIcon FontSize="14" Foreground="{ThemeResource StageSoftBrush}" Glyph="&#xE7F4;" />
+                        <TextBlock FontSize="12.5" Foreground="{ThemeResource StageSoftBrush}" Text="{x:Bind ViewModel.DisplayLabel, Mode=OneWay}" />
                     </StackPanel>
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="6">
                         <FontIcon FontSize="13" Foreground="{x:Bind helpers:Format.FitBrush(ViewModel.IsFit), Mode=OneWay}" Glyph="{x:Bind helpers:Format.FitGlyph(ViewModel.IsFit), Mode=OneWay}" />
@@ -204,7 +230,7 @@
                 <Grid Grid.Row="2" RowSpacing="8">
                     <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                     <controls:DisplayMap x:Name="PreviewMap" Editor="{x:Bind ViewModel}" State="{x:Bind ViewModel.Preview, Mode=OneWay}" />
-                    <TextBlock Grid.Row="1" FontSize="11.5" Foreground="{StaticResource StageMutedBrush}"
+                    <TextBlock Grid.Row="1" FontSize="11.5" Foreground="{ThemeResource StageMutedBrush}"
                                Text="{x:Bind ViewModel.FrameEditorHint, Mode=OneWay}" TextWrapping="Wrap"
                                AutomationProperties.LiveSetting="Polite" />
                 </Grid>
@@ -225,6 +251,8 @@
                                     <RadioButton
                                         Command="{x:Bind SelectCommand}"
                                         GroupName="Display"
+                                        AutomationProperties.Name="{x:Bind Title}"
+                                        AutomationProperties.HelpText="{x:Bind Resolution}"
                                         IsChecked="{x:Bind IsSelected, Mode=OneWay}"
                                         Style="{StaticResource StageRadioStyle}"
                                         ToolTipService.ToolTip="{x:Bind DeviceName}">
@@ -244,12 +272,12 @@
                                                     FontFamily="{StaticResource SansSemiBoldFont}"
                                                     FontSize="13"
                                                     FontWeight="SemiBold"
-                                                    Foreground="{StaticResource StageTextBrush}"
+                                                    Foreground="{ThemeResource StageTextBrush}"
                                                     Text="{x:Bind Title}" />
                                                 <TextBlock
                                                     FontFamily="{StaticResource MonoFont}"
                                                     FontSize="11"
-                                                    Foreground="{StaticResource StageMutedBrush}"
+                                                    Foreground="{ThemeResource StageMutedBrush}"
                                                     Text="{x:Bind Resolution}" />
                                             </StackPanel>
                                         </StackPanel>
@@ -259,7 +287,7 @@
                         </ItemsRepeater>
                     </StackPanel>
 
-                    <Grid Grid.Column="1" VerticalAlignment="Bottom" ColumnSpacing="22" RowSpacing="2">
+                    <Grid x:Name="PreviewBounds" Grid.Column="1" VerticalAlignment="Bottom" ColumnSpacing="22" RowSpacing="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
@@ -282,11 +310,14 @@
                 </Grid>
             </Grid>
 
+            </ScrollViewer>
+
             <!-- Settings -->
             <Border
+                x:Name="SettingsCard"
                 Grid.Column="1"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource LineBrush}"
+                Background="{ThemeResource SurfaceBrush}"
+                BorderBrush="{ThemeResource LineBrush}"
                 BorderThickness="1"
                 CornerRadius="16">
                 <Grid>
@@ -321,7 +352,7 @@
                         </Button>
                     </Grid>
 
-                    <Border Height="1" VerticalAlignment="Bottom" Background="{StaticResource DividerBrush}" />
+                    <Border Height="1" VerticalAlignment="Bottom" Background="{ThemeResource DividerBrush}" />
 
                     <Grid x:Name="PanelHost" Grid.Row="1" />
                 </Grid>
@@ -331,16 +362,16 @@
         <!-- ===== Help and About: replaces the body while open ===== -->
         <Grid
             x:Name="HelpHost"
-            Grid.Row="1"
-            Padding="24,4,24,20"
+            Grid.Row="2"
+            Padding="16,4,16,12"
             Visibility="{x:Bind Help.IsOpen, Mode=OneWay}" />
 
         <!-- ===== Footer: status and actions ===== -->
         <Grid
-            Grid.Row="2"
-            Padding="24,0"
-            Background="{StaticResource FooterBrush}"
-            BorderBrush="{StaticResource LineBrush}"
+            Grid.Row="3"
+            Padding="16,10"
+            Background="{ThemeResource FooterBrush}"
+            BorderBrush="{ThemeResource LineBrush}"
             BorderThickness="0,1,0,0"
             ColumnSpacing="24">
             <Grid.ColumnDefinitions>
@@ -348,7 +379,8 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Grid VerticalAlignment="Center" ColumnSpacing="14">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+            <Grid x:Name="FooterStatus" VerticalAlignment="Center" ColumnSpacing="14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -361,32 +393,34 @@
                     <TextBlock Style="{StaticResource SectionTitleStyle}" Text="{x:Bind ViewModel.StatusTitle, Mode=OneWay}" />
                     <TextBlock
                         FontSize="12.5"
-                        Foreground="{StaticResource MutedBrush}"
+                        Foreground="{ThemeResource MutedBrush}"
                         Text="{x:Bind ViewModel.StatusDetail, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis"
                         ToolTipService.ToolTip="{x:Bind ViewModel.StatusDetail, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
 
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
+            <ScrollViewer x:Name="FooterActions" Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled">
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
                 <Button Content="Send to OBS" Click="OnSendToObsClick" Style="{StaticResource SecondaryButtonStyle}"
                         ToolTipService.ToolTip="Preview and apply this frame to an OBS Display Capture source" />
                 <Button
                     Command="{x:Bind ViewModel.CopyBoundsCommand}"
+                    AutomationProperties.Name="Copy capture bounds"
                     Style="{StaticResource SecondaryButtonStyle}"
                     ToolTipService.ToolTip="Copy X, Y, width and height for your recorder"
                     Visibility="{x:Bind ViewModel.IsOutlineMode, Mode=OneWay}">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Grid>
                             <FontIcon FontSize="14" Glyph="&#xE8C8;" Visibility="{x:Bind ViewModel.IsNotCopied, Mode=OneWay}" />
-                            <FontIcon FontSize="14" Foreground="{StaticResource AccentBrush}" Glyph="&#xE73E;" Visibility="{x:Bind ViewModel.IsCopied, Mode=OneWay}" />
+                            <FontIcon FontSize="14" Foreground="{ThemeResource AccentBrush}" Glyph="&#xE73E;" Visibility="{x:Bind ViewModel.IsCopied, Mode=OneWay}" />
                         </Grid>
                         <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource SansMediumFont}" FontWeight="Medium" Text="{x:Bind ViewModel.CopyLabel, Mode=OneWay}" />
                         <TextBlock
                             VerticalAlignment="Center"
                             FontFamily="{StaticResource MonoFont}"
                             FontSize="12"
-                            Foreground="{StaticResource MutedBrush}"
+                            Foreground="{ThemeResource MutedBrush}"
                             Text="{x:Bind ViewModel.BoundsText, Mode=OneWay}" />
                     </StackPanel>
                 </Button>
@@ -400,8 +434,9 @@
 
                 <Button
                     MinWidth="180"
-                    Background="{x:Bind helpers:Format.PrimaryBrush(ViewModel.PrimaryIsHide), Mode=OneWay}"
+                    Background="{ThemeResource AccentBrush}"
                     Command="{x:Bind ViewModel.PrimaryCommand}"
+                    AutomationProperties.Name="{x:Bind ViewModel.PrimaryLabel, Mode=OneWay}"
                     Style="{StaticResource PrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <TextBlock
@@ -417,6 +452,7 @@
                     </StackPanel>
                 </Button>
             </StackPanel>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Window>

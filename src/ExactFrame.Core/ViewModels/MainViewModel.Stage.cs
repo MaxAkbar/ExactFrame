@@ -26,7 +26,7 @@ public sealed partial class MainViewModel
         : _area switch
         {
             WindowArea.Client => "Target client area",
-            WindowArea.PageContent => "Target web page",
+            WindowArea.PageContent => "Target page capture area",
             _ => "Target window size"
         };
 

@@ -6,6 +6,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using ExactFrame.Core.Services;
 using ExactFrame.Core.ViewModels;
+using ExactFrame.Helpers;
 using ExactFrame.Interop;
 using ExactFrame.Native;
 using Windows.Graphics;
@@ -47,6 +48,7 @@ public sealed partial class HudWindow : Window
         ViewModel = viewModel;
         _overlay = overlay;
         InitializeComponent();
+        Root.RequestedTheme = AppThemeHelper.ForPreference(ViewModel.ThemePreference);
 
         _hwnd = Win32Interop.GetWindowFromWindowId(AppWindow.Id);
         AppWindow.IsShownInSwitchers = false;
@@ -90,6 +92,9 @@ public sealed partial class HudWindow : Window
     {
         switch (e.PropertyName)
         {
+            case nameof(MainViewModel.ThemePreference):
+                Root.RequestedTheme = AppThemeHelper.ForPreference(ViewModel.ThemePreference);
+                break;
             case nameof(MainViewModel.ShowHud):
             case nameof(MainViewModel.IsClickThrough):
             case nameof(MainViewModel.IsOutlineMode):

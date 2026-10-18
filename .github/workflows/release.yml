@@ -1,0 +1,57 @@
+name: Prepare draft release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Require tag to match source version
+        shell: pwsh
+        run: |
+          [xml] $properties = Get-Content Directory.Build.props -Raw
+          $expected = 'v' + $properties.Project.PropertyGroup.Version
+          if ($env:GITHUB_REF_NAME -cne $expected) { throw "Tag must equal $expected" }
+  build:
+    needs: version
+    uses: ./.github/workflows/ci.yml
+  draft:
+    needs: build
+    runs-on: windows-2025
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: portable-release
+          path: packages
+      - name: Verify packages and create draft
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $checksum = @(Get-ChildItem packages -Recurse -Filter SHA256SUMS.txt)
+          if ($checksum.Count -ne 1) { throw 'Expected one checksum manifest' }
+          $files = @()
+          foreach ($line in Get-Content $checksum[0].FullName) {
+            if ($line -notmatch '^([a-f0-9]{64})  (ExactFrame-\d+\.\d+\.\d+-win-(x64|arm64)-portable\.zip)$') { throw 'Invalid checksum entry' }
+            $file = Join-Path $checksum[0].DirectoryName $Matches[2]
+            if ((Get-FileHash $file -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Matches[1]) { throw 'Checksum mismatch' }
+            $files += $file
+          }
+          $version = $env:RELEASE_TAG.Substring(1)
+          $expected = @("ExactFrame-${version}-win-x64-portable.zip", "ExactFrame-${version}-win-arm64-portable.zip")
+          $actual = @($files | ForEach-Object { Split-Path $_ -Leaf })
+          if ($actual.Count -ne 2 -or (Compare-Object ($expected | Sort-Object) ($actual | Sort-Object))) { throw 'Expected this version of both x64 and ARM64 packages' }
+          gh release create $env:RELEASE_TAG @files $checksum[0].FullName --draft --verify-tag --generate-notes --title "ExactFrame $env:RELEASE_TAG"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }

@@ -57,9 +57,9 @@ public sealed partial class MainViewModel
 
     public string MeasureNote => _area switch
     {
-        WindowArea.Client => $"The app’s content will be {_width} × {_height} px, without its title bar and borders. In Chrome or Edge that leaves out the tabs but includes the toolbar; choose Web page to size only the page.",
-        WindowArea.PageContent => $"The visible web page will be {_width} × {_height} px. Browser tabs, toolbar and side panels sit outside it. Requires a measurable Chromium page.",
-        _ => $"The visible window, title bar included, will be {_width} × {_height} px. Invisible resize borders aren’t counted."
+        WindowArea.Client => $"The requested app content area is {_width} × {_height} physical px, without its title bar and borders. In Chrome or Edge that leaves out the tabs but includes the toolbar; choose Web page to size only the page capture area.",
+        WindowArea.PageContent => $"The requested web page capture area is {_width} × {_height} physical px, not CSS px. Browser tabs, toolbar and side panels sit outside it. Requires a measurable Chromium page.",
+        _ => $"The requested visible window, title bar included, is {_width} × {_height} physical px. Invisible resize borders aren’t counted."
     };
 
     private string AreaName => AreaLabel(_area);

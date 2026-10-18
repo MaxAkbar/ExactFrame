@@ -1,10 +1,14 @@
 <Project>
   <!-- Shared settings for the ExactFrame solution. -->
   <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- Single-file publishing adds runtime/linker packages; keep those graphs separate from builds. -->
+    <NuGetLockFilePath Condition="'$(PublishSingleFile)' == 'true'">packages.portable.$(RuntimeIdentifier).lock.json</NuGetLockFilePath>
+    <NuGetLockFilePath Condition="'$(PublishSingleFile)' == 'true' and '$(RuntimeIdentifier)' == ''">packages.portable.lock.json</NuGetLockFilePath>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <Product>ExactFrame</Product>
   </PropertyGroup>
 </Project>

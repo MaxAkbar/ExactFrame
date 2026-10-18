@@ -37,7 +37,8 @@ public static class HelpContent
                         "Select **Show outline**, or press Ctrl + Alt + F8.",
                         "Select **Copy bounds** and paste X, Y, width and height into your recorder's region settings.",
                         "Leave **Hide from recorders** on, or hide the outline before you start recording."),
-                    Tip("All sizes are physical pixels, so 1920 × 1080 stays exactly 1920 × 1080 at 100%, 150% or 200% scaling.")
+                    Tip("All sizes are physical pixels, so 1920 × 1080 stays exactly 1920 × 1080 at 100%, 150% or 200% scaling."),
+                    Paragraph("Use **Theme** in the top toolbar to choose **System**, **Light** or **Dark**. System follows Windows. The choice is remembered separately from capture profiles; Windows contrast themes take priority.")
                 ])
             ]),
 
@@ -233,6 +234,19 @@ public static class HelpContent
                 "minimized or maximized. ExactFrame remembers this until you close it."),
                     Tip("A 1920 × 1080 client area or web page plus browser chrome won't fit wholly on a 1920 × 1080 display. " +
                         "Use **Whole window**, a smaller size, or the app's own full-screen mode.")
+                ]),
+                new("Browser sizing: physical pixels and CSS",
+                [
+                    Bullets(
+                        "All ExactFrame width and height controls use physical screen pixels. **Web page** measures a page capture area through Windows; it does not read the page's CSS viewport.",
+                        "The Windows logical-size note is a rounded conversion using display scaling. It is not a CSS viewport measurement or a browser zoom reading.",
+                        "CSS viewport dimensions, browser page zoom and device-pixel ratio (DPR) are not measured by ExactFrame. DPR is a browser-reported ratio and can change with page zoom or display changes; Windows scaling alone does not establish it."),
+                    Steps(
+                        "Set the intended page zoom in the browser menu and note the browser version. Turn off device emulation for a normal desktop check, or record the emulation settings separately.",
+                        "In the browser's DevTools Console, read **window.innerWidth** and **window.innerHeight** for CSS layout viewport dimensions, and **window.devicePixelRatio** for DPR. Keep these values separate from ExactFrame's physical dimensions.",
+                        "Record the browser menu's zoom value separately. **window.visualViewport.scale**, when available, describes pinch scaling rather than the browser menu's page zoom.",
+                        "Recheck after changing zoom, display, browser panels or emulation. A recorded video's dimensions still need their own recorder check."),
+                    Tip("CSS viewport dimensions multiplied by DPR give an estimate for a normal desktop page. Scrollbars, rounding, pinch scaling and emulation can affect comparisons; the estimate is not a native capture measurement.")
                 ])
             ]),
 
