@@ -8,18 +8,18 @@ Use it alongside OBS Studio or your usual recorder. ExactFrame helps you set up 
 
 ## Download and open
 
-**[Download ExactFrame 2.1.0](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.1.0)** for Windows:
+**[Download ExactFrame 2.1.1](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.1.1)** for Windows:
 
 | Your PC | Download |
 |---|---|
-| Intel or AMD, 64-bit — most Windows PCs | [x64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.1.0/ExactFrame-2.1.0-win-x64-portable.zip) |
-| Windows on Arm | [ARM64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.1.0/ExactFrame-2.1.0-win-arm64-portable.zip) |
+| Intel or AMD, 64-bit — most Windows PCs | [x64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.1.1/ExactFrame-2.1.1-win-x64-portable.zip) |
+| Windows on Arm | [ARM64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.1.1/ExactFrame-2.1.1-win-arm64-portable.zip) |
 
 Extract the ZIP, then open **ExactFrame.exe**. There is no installer and no separate .NET installation to do. You need **Windows 10 version 1809 or later**; Windows 11 is recommended.
 
 The downloads are currently unsigned, so Windows may show an unknown-publisher warning. Release notes include known limitations and a `SHA256SUMS.txt` file for checking your download.
 
-> **Version 2.1.0** includes the frame editor, OBS integration, portable profiles, application matching and theme choices described below. See the [release notes](docs/releases/v2.1.0.md) for changes and known limitations.
+> **Version 2.1.1** fixes preview dragging in Outline area and includes all 2.1.0 features. See the [release notes](docs/releases/v2.1.1.md) for the fix, checks and known limitations.
 
 ## Set up your first recording
 
