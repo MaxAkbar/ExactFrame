@@ -121,7 +121,9 @@ public sealed partial class MainViewModel
 
     private void AdoptInteractiveFrame(Rectangle frame, bool freeform)
     {
-        ClearFrameEditAnnouncement();
+        // Keep the hint's height stable until the gesture ends. Clearing the previous result
+        // here can resize the preview mid-drag and cancel the interaction from SizeChanged.
+        if (_frameEdit is null) ClearFrameEditAnnouncement();
         _anchor = null; _x = frame.X; _y = frame.Y; _width = frame.Width; _height = frame.Height;
         _activeFrame = null;
         if (freeform) _aspectLocked = false;

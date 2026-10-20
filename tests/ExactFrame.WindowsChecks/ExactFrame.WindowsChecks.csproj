@@ -27,6 +27,7 @@
     <Compile Include="../../src/ExactFrame/Services/TitleBarDetector.cs" Link="Production/TitleBarDetector.cs" />
     <Compile Include="../../src/ExactFrame/Hud/HudWindow.xaml.cs" Link="Hud/HudWindow.xaml.cs" />
     <Compile Include="../../src/ExactFrame/Controls/KeyChips.cs" Link="Production/KeyChips.cs" />
+    <Compile Include="../../src/ExactFrame/Controls/DisplayMap.cs" Link="Production/DisplayMap.cs" />
     <Compile Include="../../src/ExactFrame/Helpers/Format.cs" Link="Production/Format.cs" />
     <Compile Include="../../src/ExactFrame/Helpers/AppThemeHelper.cs" Link="Production/AppThemeHelper.cs" />
     <!-- Persistence, hotkeys and prompts are disabled; no personal settings are touched. -->

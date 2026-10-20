@@ -54,6 +54,13 @@ public sealed partial class App : Application
                 return;
             }
             DesktopState.RequireInteractiveDesktop();
+            if (arguments.Contains("--preview-layout-only"))
+            {
+                _nativePassed = await PreviewLayoutChecks.Run(_checks);
+                WriteReport([], null);
+                if (!_nativePassed) Environment.ExitCode = 1;
+                return;
+            }
             using var messages = new MessageWindow();
             using var displays = new DisplayService(messages);
             var monitors = displays.GetDisplays();

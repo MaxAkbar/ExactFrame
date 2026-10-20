@@ -49,6 +49,7 @@ public sealed class DisplayMap : UserControl
     private bool _drawing;
     private bool _ending;
     private bool _subscribed;
+    private bool _redrawQueued;
     private bool _drawIsValid;
     private DRect? _drawPreview;
     private string? _nestedGestureId;
@@ -86,7 +87,11 @@ public sealed class DisplayMap : UserControl
             CancelInteraction();
             _focusBorder.BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
         };
-        Loaded += (_, _) => SubscribeEditor();
+        Loaded += (_, _) =>
+        {
+            SubscribeEditor();
+            Redraw();
+        };
         Unloaded += (_, _) =>
         {
             CancelInteraction();
@@ -360,6 +365,18 @@ public sealed class DisplayMap : UserControl
     }
 
     private void Redraw()
+    {
+        if (_redrawQueued) return;
+        // State and size notifications can arrive inside pointer routing or a layout pass.
+        // Replacing the visual tree there can reenter WinUI's input/layout processing.
+        _redrawQueued = DispatcherQueue.TryEnqueue(() =>
+        {
+            _redrawQueued = false;
+            if (IsLoaded) Draw();
+        });
+    }
+
+    private void Draw()
     {
         _canvas.Children.Clear();
         if (State is not PreviewState state || _canvas.ActualWidth <= 1 || _canvas.ActualHeight <= 1) return;
@@ -635,6 +652,8 @@ public sealed class DisplayMap : UserControl
 
     private void Place(UIElement element, double x, double y)
     {
+        // Only the stable canvas handles input; these visuals are replaced on every redraw.
+        element.IsHitTestVisible = false;
         Canvas.SetLeft(element, x);
         Canvas.SetTop(element, y);
         _canvas.Children.Add(element);

@@ -68,6 +68,34 @@ public sealed class FrameEditingViewModelTests : IDisposable
     }
 
     [Fact]
+    public void Repeated_drag_keeps_the_previous_hint_until_the_gesture_finishes()
+    {
+        var vm = Create();
+        vm.BeginFrameInteraction();
+        vm.SetFrameFromInteraction(new Rectangle(120, 140, 800, 600), freeform: true);
+        vm.FinishFrameInteraction();
+        string previousHint = vm.FrameEditorHint;
+        var observedHints = new List<string>();
+        vm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(vm.FrameEditorHint)) observedHints.Add(vm.FrameEditorHint);
+        };
+
+        vm.BeginFrameInteraction();
+        vm.SetFrameFromInteraction(new Rectangle(140, 160, 800, 600));
+        vm.SetFrameFromInteraction(new Rectangle(160, 180, 800, 600));
+
+        Assert.Equal(previousHint, vm.FrameEditorHint);
+        Assert.All(observedHints, hint => Assert.Equal(previousHint, hint));
+        vm.FinishFrameInteraction();
+
+        Assert.Contains("Frame 800 × 600 px at 160, 180.", vm.FrameEditorHint);
+        Assert.DoesNotContain("canceled", vm.FrameEditorHint);
+        Assert.Equal(new Rectangle(160, 180, 800, 600), vm.CurrentFrame);
+        Assert.Equal(vm.FrameEditorHint, observedHints[^1]);
+    }
+
+    [Fact]
     public void Native_overlay_start_move_and_cancel_restore_the_original_anchor_and_bounds()
     {
         var vm = Create();
@@ -179,7 +207,7 @@ public sealed class FrameEditingViewModelTests : IDisposable
     }
 
     [Fact]
-    public void New_gesture_replaces_the_previous_announcement_and_cancel_announces_restoration()
+    public void New_gesture_preserves_the_previous_hint_until_cancel_announces_restoration()
     {
         var vm = Create();
         var original = new Rectangle(120, 140, 800, 600);
@@ -190,11 +218,12 @@ public sealed class FrameEditingViewModelTests : IDisposable
 
         vm.BeginFrameInteraction();
         vm.SetFrameFromInteraction(new Rectangle(150, 170, 900, 700), freeform: true);
-        Assert.DoesNotContain("Frame 800 × 600 px at 120, 140.", vm.FrameEditorHint);
+        Assert.Contains("Frame 800 × 600 px at 120, 140.", vm.FrameEditorHint);
         vm.FinishFrameInteraction(cancel: true);
 
         Assert.Equal(original, vm.CurrentFrame);
         Assert.Contains("Frame edit canceled.", vm.FrameEditorHint);
+        Assert.DoesNotContain("Frame 800 × 600 px at 120, 140.", vm.FrameEditorHint);
         vm.XValue = 130;
         Assert.DoesNotContain("Frame edit canceled.", vm.FrameEditorHint);
     }

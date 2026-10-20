@@ -12,6 +12,15 @@ pwsh -NoProfile -File scripts/Run-WindowsRecordingChecks.ps1
 
 Every run uses a new directory under `artifacts/recording-checks/`. Read `windows-checks.json`: compare the request, production measurement, independent native rectangle and DPI. Whole-window checks use DWM extended frame bounds; client checks use `GetClientRect` plus `ClientToScreen`. A whole-window rectangle includes chrome absent from its client rectangle. Neither measurement proves the recorded result.
 
+## Preview drag and layout regression checks
+
+After building this checks project for x64, run its executable with
+`--preview-layout-only --output artifacts/preview-layout/run-1` on an unlocked Windows desktop.
+This opens a disposable preview using the production `DisplayMap` and in-memory settings.
+It checks that pointer input targets a stable surface, rapid frame updates defer redraws,
+and repeated display and layout changes settle. It does not resize other apps or use a recorder.
+Read `windows-checks.json` in the requested output directory for the results.
+
 ## Browser measurements
 
 Start the loopback fixture server in a separate terminal:
