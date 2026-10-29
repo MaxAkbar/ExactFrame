@@ -26,6 +26,21 @@
                           ToolTipService.ToolTip="Align frame moves and handle resizes with display and nearby window edges or centers. Keyboard adjustments remain exact." />
             </StackPanel>
 
+            <!-- Send a frame to SnapStudio -->
+            <StackPanel Spacing="8">
+                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Capture in SnapStudio" />
+                <ComboBox Header="Capture area" ItemsSource="{x:Bind ViewModel.SnapStudioFrames, Mode=OneWay}" DisplayMemberPath="Name"
+                          SelectedValuePath="Id" SelectedValue="{x:Bind ViewModel.SnapStudioFrameId, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <Button Content="Capture in SnapStudio" Command="{x:Bind ViewModel.CaptureInSnapStudioCommand}" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Stretch"/>
+                    <Button Grid.Column="1" Content="Choose app…" Command="{x:Bind ViewModel.ChooseSnapStudioCommand}" Style="{StaticResource SecondaryButtonStyle}"/>
+                </Grid>
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="{x:Bind ViewModel.SnapStudioApplication, Mode=OneWay}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                           ToolTipService.ToolTip="{x:Bind ViewModel.SnapStudioApplication, Mode=OneWay}"/>
+                <TextBlock Style="{StaticResource CaptionStyle}" Text="Capture the exact screen pixels and open them for editing. ExactFrame overlays and both app windows stay out of the capture." TextWrapping="Wrap"/>
+            </StackPanel>
+
             <!-- Size -->
             <StackPanel Spacing="12">
                 <Grid>

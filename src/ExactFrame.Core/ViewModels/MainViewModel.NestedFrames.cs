@@ -198,6 +198,7 @@ public sealed partial class MainViewModel
     {
         foreach (var item in NestedFrames)
             item.UpdateBounds(NestedFrameGeometry.Place(parent, item.Frame), parent);
+        NotifySnapStudioFrames();
     }
 
     private void NotifyNestedCount()

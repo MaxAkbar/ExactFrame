@@ -8,6 +8,7 @@ public sealed class AppSettings
     public int Version { get; set; } = 1;
 
     public AppThemePreference ThemePreference { get; set; } = AppThemePreference.System;
+    public string? SnapStudioExecutablePath { get; set; }
 
     public OutlineStyle Style { get; set; } = new();
 

@@ -74,6 +74,7 @@ When you need more than a basic recording region:
 | Move your saved setups to another PC | [Profile import and export](docs/portable-profiles.md), with a review of display mappings before import |
 | Choose the right app when several similar windows are open | [Application matching](docs/application-targeting.md) by executable path, title or window class, with a preview of matches |
 | Apply a frame to an OBS Display Capture source | [Send to OBS](docs/obs-integration.md), with a preview of the change and undo |
+| Capture a frame as an editable screenshot | [Capture in SnapStudio](docs/snapstudio-integration.md), available in integration-enabled source builds of both apps |
 | Check whether your recording setup behaves as expected | **Check my setup** and the [recording compatibility guide](docs/recording-compatibility.md) |
 | Choose an appearance or work in a smaller window | **Theme → System, Light or Dark**, plus [compact controls and a collapsible preview](docs/usability-and-engineering.md) |
 

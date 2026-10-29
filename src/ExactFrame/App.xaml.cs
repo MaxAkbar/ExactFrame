@@ -49,6 +49,7 @@ public partial class App : Application
         _services.GetRequiredService<ProfileTransferService>().Attach(
             WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow), () => _mainWindow.Content?.XamlRoot);
         _services.GetRequiredService<OutputPreviewService>().Attach(_mainWindow);
+        _services.GetRequiredService<SnapStudioCaptureService>().Attach(_mainWindow);
         _hud = _services.GetRequiredService<HudWindow>();
         _hud.OpenMainRequested += (_, _) => _mainWindow.BringToFront();
         _mainWindow.AppWindow.Closing += OnMainWindowClosing;
@@ -85,8 +86,12 @@ public partial class App : Application
         services.AddSingleton<IProfileTransferService>(sp => sp.GetRequiredService<ProfileTransferService>());
         services.AddSingleton<OutputPreviewService>();
         services.AddSingleton<IOutputPreviewService>(sp => sp.GetRequiredService<OutputPreviewService>());
-        string databasePath = CSharpDbAppStore.DefaultPath();
-        services.AddSingleton(_ => new CSharpDbAppStore(databasePath, JsonSettingsStore.DefaultPath()));
+        services.AddSingleton<SnapStudioCaptureService>();
+        services.AddSingleton<ISnapStudioCaptureService>(sp => sp.GetRequiredService<SnapStudioCaptureService>());
+        string? dataRoot = Environment.GetEnvironmentVariable("EXACTFRAME_DATA_ROOT");
+        string databasePath = string.IsNullOrWhiteSpace(dataRoot) ? CSharpDbAppStore.DefaultPath() : Path.Combine(dataRoot, "exactframe.db");
+        string settingsPath = string.IsNullOrWhiteSpace(dataRoot) ? JsonSettingsStore.DefaultPath() : Path.Combine(dataRoot, "settings.json");
+        services.AddSingleton(_ => new CSharpDbAppStore(databasePath, settingsPath));
         services.AddSingleton<ISettingsStore>(sp => sp.GetRequiredService<CSharpDbAppStore>());
         services.AddSingleton<IAppDataStore>(sp => sp.GetRequiredService<CSharpDbAppStore>());
         services.AddSingleton<IAppInfo>(_ => new AppInfo(databasePath));

@@ -28,6 +28,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IFrameRegionPicker? _framePicker;
     private readonly IProfileTransferService? _profileTransfer;
     private readonly IOutputPreviewService? _outputPreview;
+    private readonly ISnapStudioCaptureService? _snapStudioCapture;
     private readonly bool _profileShortcutsMigrated;
     private readonly IOutlineOverlay _overlay;
     private readonly IHotkeyService _hotkeys;
@@ -58,7 +59,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IStartupService startup,
         IFrameRegionPicker? framePicker = null,
         IProfileTransferService? profileTransfer = null,
-        IOutputPreviewService? outputPreview = null)
+        IOutputPreviewService? outputPreview = null,
+        ISnapStudioCaptureService? snapStudioCapture = null)
     {
         _displayService = displayService;
         _windowService = windowService;
@@ -66,6 +68,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _framePicker = framePicker;
         _profileTransfer = profileTransfer;
         _outputPreview = outputPreview;
+        _snapStudioCapture = snapStudioCapture;
         _overlay = overlay;
         _hotkeys = hotkeys;
         _clipboard = clipboard;
@@ -105,6 +108,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         RestoreCommand = new AsyncRelayCommand(() => RunBusyAsync(RestoreTargetAsync), () => !IsBusy && CanRestore);
         ForgetAppSizeCommand = new RelayCommand(ForgetAppSize, () => HasRememberedAppSize && !IsBusy);
         CopyBoundsCommand = new AsyncRelayCommand(CopyBoundsAsync);
+        CaptureInSnapStudioCommand = new AsyncRelayCommand(() => RunBusyAsync(CaptureInSnapStudioAsync), () => !IsBusy && IsOutlineMode && _snapStudioCapture is not null);
+        ChooseSnapStudioCommand = new AsyncRelayCommand(() => RunBusyAsync(ChooseSnapStudioAsync), () => !IsBusy && _snapStudioCapture is not null);
         CenterCommand = new RelayCommand(() => SelectAnchor(FrameAnchor.Center));
         HideOutlineCommand = new RelayCommand(HideOutline);
         ToggleOutlineCommand = new RelayCommand(() => Guard(ToggleOutline));
@@ -191,6 +196,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void NotifyPanels()
     {
         PreviewOutputsCommand.NotifyCanExecuteChanged();
+        CaptureInSnapStudioCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(ShowFramePanel));
         OnPropertyChanged(nameof(ShowStylePanel));
         OnPropertyChanged(nameof(ShowProfilesPanel));
@@ -211,6 +217,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             ImportProfilesCommand.NotifyCanExecuteChanged();
             ExportProfilesCommand.NotifyCanExecuteChanged();
             PreviewOutputsCommand.NotifyCanExecuteChanged();
+            CaptureInSnapStudioCommand.NotifyCanExecuteChanged();
+            ChooseSnapStudioCommand.NotifyCanExecuteChanged();
             NotifyFrameEditor();
             NotifyFooter();
         }
@@ -324,7 +332,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     private static bool IsExpected(Exception ex) =>
-        ex is InvalidOperationException or ExternalException or ArgumentException or IOException or UnauthorizedAccessException;
+        ex is InvalidOperationException or ExternalException or ArgumentException or IOException or InvalidDataException or UnauthorizedAccessException;
 
     private void Guard(Action action)
     {
