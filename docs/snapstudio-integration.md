@@ -4,13 +4,13 @@ Position a region with ExactFrame, then send a still capture of it to [SnapStudi
 
 ## Before you start
 
-Build integration-enabled versions of **both** projects from source. The published ExactFrame **2.1.1** and SnapStudio **1.1.0** packages do not include this connection. Keep the complete SnapStudio output folder, including `SnapStudio.integration.json`. Finish SnapStudio's first-run setup and leave still capture enabled. Close older running copies and run both apps with matching permissions.
+Install [ExactFrame 2.2.0 or newer](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.2.0) and [SnapStudio 1.2.0 or newer](https://github.com/MaxAkbar/SnapStudio/releases/tag/v1.2.0). Extract both portable ZIPs. Keep the complete SnapStudio folder, including `SnapStudio.integration.json`. Finish SnapStudio's first-run setup and leave still capture enabled. Close older running copies and run both apps with matching permissions. Older releases do not include this connection.
 
 ## Capture
 
 1. In **Outline area**, position the main frame, or add an additional guide.
 2. Under **Capture in SnapStudio**, choose **Main frame** or an additional guide from **Capture area**.
-3. Click **Capture in SnapStudio**. On first use, choose **SnapStudio.App.exe** from the integration-enabled build. The path is remembered; **Choose app…** changes it later.
+3. Click **Capture in SnapStudio**. On first use, choose **SnapStudio.App.exe** from its extracted portable folder. The path is remembered; **Choose app…** changes it later.
 4. Annotate the new document in SnapStudio, then copy or export it.
 
 ExactFrame starts SnapStudio if necessary, then hides its own windows, floating bar, and overlays. SnapStudio minimizes during capture and brings the resulting document forward. ExactFrame restores its windows after success, failure, cancellation, or disconnection without taking focus from SnapStudio. The clipboard stays unchanged.

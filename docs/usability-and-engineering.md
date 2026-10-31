@@ -66,7 +66,7 @@ Browser page tracking remains **not tested**. The tool-created public browser ta
 
 ## Reproducible build and draft release
 
-`global.json` already pinned stable .NET SDK 10.0.402 with prerelease SDKs disabled before this pass. NuGet sources and dependency hashes are now checked in. Normal builds and each single-file runtime have separate lock files because publishing adds linker/runtime packages.
+`global.json` pins stable .NET SDK 10.0.403 with SDK roll-forward and prerelease SDKs disabled. NuGet sources and dependency hashes are checked in. Normal builds and each single-file runtime have separate lock files because publishing adds linker/runtime packages. Update the portable lock files together with the SDK so locked restores keep using its matching linker package.
 
 `.github/workflows/ci.yml` runs on Windows for pull requests and `main`, and can be dispatched manually. It installs the SDK from `global.json`, restores in locked mode, runs Core tests, compiles the native harness and packages x64 plus ARM64. The harness needs an interactive desktop and is not executed on the hosted runner. Reports, portable ZIPs and SHA-256 checksums are retained as workflow artifacts. Actions are pinned to commit hashes; update pins deliberately.
 

@@ -29,7 +29,7 @@ public static class SnapStudioCaptureConnection
             if (document.RootElement.GetProperty("externalCaptureProtocol").GetInt32() != 1) throw new InvalidDataException();
         }
         catch (Exception error) when (error is IOException or InvalidDataException or JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
-        { throw new InvalidOperationException("This SnapStudio copy does not support ExactFrame capture. Choose an integration-enabled build; SnapStudio 1.1.0 does not include this connection.", error); }
+        { throw new InvalidOperationException("This SnapStudio copy does not support ExactFrame capture. Choose SnapStudio 1.2.0 or newer from its extracted portable folder.", error); }
     }
     public static async Task RequestAsync(Stream pipe, Rectangle region, string name, CancellationToken cancellation)
     {

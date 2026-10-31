@@ -58,6 +58,12 @@ Windows 10 version 1809 or later; Windows 11 recommended.
 Hide from recorders requires Windows 10 version 2004 or later and a compatible capture method.
 Use win-x64 on Intel/AMD Windows PCs and win-arm64 on Windows on Arm.
 
+CAPTURE IN SNAPSTUDIO
+Install SnapStudio 1.2.0 or newer from https://github.com/MaxAkbar/SnapStudio/releases/tag/v1.2.0.
+In Outline area, choose the main frame or an additional guide, then Capture in SnapStudio.
+Choose SnapStudio.App.exe from its extracted folder once. Finish SnapStudio setup before capturing.
+The region must fit on one display. This connection captures a still image; ExactFrame does not record video.
+
 BACKGROUND OPERATION
 Closing the window leaves ExactFrame in the notification area by default.
 To exit fully, right-click its notification-area icon and choose Quit ExactFrame.
