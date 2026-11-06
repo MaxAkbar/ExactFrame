@@ -1,112 +1,123 @@
 # ExactFrame
 
-Get your recording area right before you press Record.
+**Get the frame right. Then hit Record.**
 
-ExactFrame helps you frame a tutorial, demo or screen recording at the size you need. Draw an outline around a **1920 × 1080** area, make a browser window fit that space, or add a vertical guide to see how the same shot will work as a Short.
+Stop guessing where your screen recording starts and ends. ExactFrame gives you a precise outline, sizes your app to fit, and helps you plan landscape, square and vertical shots before you record.
 
-Use it alongside OBS Studio or your usual recorder. ExactFrame helps you set up the shot; your recorder captures the video.
+**[Download for Windows →](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.3.0)** · [Quick start](#your-first-frame) · [Keyboard shortcuts](#handy-shortcuts) · [Get help](#need-a-hand)
 
-## Download and open
+*Portable · Windows 10 / 11 · x64 and ARM64 · No installer required*
 
-**[Download ExactFrame 2.3.0](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.3.0)** for Windows:
+[![Animated ExactFrame quick tour: choose 1080p, show the outline, add and move a 9:16 guide, then copy the capture bounds.](docs/media/exactframe-quick-tour.gif)](docs/media/exactframe-overview.png)
 
-| Your PC | Download |
+*A quick tour of the actual app. [View a still image](docs/media/exactframe-overview.png). ExactFrame prepares the shot; OBS Studio or your usual recorder captures the video.*
+
+## What can you do with it?
+
+| Your next recording | How ExactFrame helps |
 |---|---|
-| Intel or AMD, 64-bit — most Windows PCs | [x64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.3.0/ExactFrame-2.3.0-win-x64-portable.zip) |
-| Windows on Arm | [ARM64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.3.0/ExactFrame-2.3.0-win-arm64-portable.zip) |
+| **A crisp tutorial or product demo** | Pick 720p, 1080p, 1440p, 4K or your own dimensions. See exactly where the capture area begins and ends. |
+| **A browser or app walkthrough** | Resize the whole window, its client area or a supported browser's visible web page to your requested size. |
+| **One take, several formats** | Add 9:16, 1:1 or 4:5 guides inside the main frame and position them around the content that matters. |
+| **The same setup tomorrow** | Save your size, display, position and appearance as a profile, then bring it back with a shortcut. |
 
-Extract the ZIP, then open **ExactFrame.exe**. There is no installer and no separate .NET installation to do. You need **Windows 10 version 1809 or later**; Windows 11 is recommended.
+## Download and go
 
-The downloads are currently unsigned, so Windows may show an unknown-publisher warning. Release notes include known limitations and a `SHA256SUMS.txt` file for checking your download.
+Choose your **ExactFrame 2.3.0** download:
 
-> **Version 2.3.0** adds optional PowerToys tools: Workspaces launch commands, FancyZones profile links, timed Awake sessions, and a separately installed Command Palette development companion. **PowerToys is not required.** See the [release notes](docs/releases/v2.3.0.md) and [setup guide](docs/powertoys-integration.md).
+| Your PC | Portable download |
+|---|---|
+| **Most Windows PCs** — Intel or AMD, 64-bit | **[Download x64 ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.3.0/ExactFrame-2.3.0-win-x64-portable.zip)** |
+| **Windows on Arm** | [Download ARM64 ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.3.0/ExactFrame-2.3.0-win-arm64-portable.zip) |
 
-## Set up your first recording
+Extract the ZIP and open **ExactFrame.exe**. No separate .NET installation is needed, and PowerToys is optional.
 
-For a fixed region of your desktop:
+Requires **Windows 10 version 1809 or later**; Windows 11 is recommended. Downloads are currently unsigned, so Windows may show an unknown-publisher warning. The [release page](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.3.0) includes known limitations and `SHA256SUMS.txt` for checking your download.
 
-1. Choose **Outline area** and pick a size, such as **1080p**, or type your own width and height.
-2. Pick a display under the preview. Use the position grid to center the frame or place it in a corner.
-3. Select **Show outline**, or press **Ctrl + Alt + F8**. Arrange your content inside the border.
-4. Select **Copy bounds** and use the X, Y, width and height values to set your recorder's region or crop.
-5. Save a short test recording and check its framing before recording the full take.
+## Your first frame
 
-A **1920 × 1080** frame means 1920 × 1080 physical screen pixels, even when Windows display scaling is set to 150% or 200%. The colored border sits inside the frame; its outer edges mark the capture area.
+1. **Choose a size.** Select **Outline area**, then **1080p** or your own width and height.
+2. **Place the shot.** Pick a display under the preview. Drag the frame in the preview, or use the position grid to center it.
+3. **Show the outline.** Select **Show outline** or press **Ctrl + Alt + F8**, then arrange your content inside the border.
+4. **Set your recorder's region.** Select **Copy bounds** and use the X, Y, width and height values in your recorder's region or crop settings.
+5. **Check a short test clip.** Confirm the framing before recording the full take.
 
-**Hide from recorders** asks Windows to leave the outline and its controls out of captures. It needs Windows 10 version 2004 or later and a compatible capture method, so check the saved clip. If the outline appears, hide it with **Ctrl + Alt + F8** before recording. Move or minimize the main ExactFrame window if it is inside the shot.
+Want a vertical version too? Under **Frame → Additional frames**, select **+ 9:16** and drag the guide in the preview. **Copy bounds** includes the main frame and any additional guides. [Explore output compositions →](docs/output-compositions.md)
 
-## Make an app fit your recording
+> **Before you record:** **Hide from recorders** asks Windows to exclude the outline and floating controls from captures. It needs Windows 10 version 2004 or later and a compatible capture method. Check your saved clip; if the outline appears, hide it with **Ctrl + Alt + F8**. Move or minimize the main ExactFrame window if it is inside the shot.
 
-Choose **Resize window**, select an app from the list or use **Pick on screen**, then enter the size you want. Choose what that size should measure:
+## Make a window fit
 
-| Mode | What fits inside your requested size |
+Select **Resize window**, choose an app from the list or use **Pick on screen**, and enter your target size. Choose what to measure:
+
+| Mode | What your requested size includes |
 |---|---|
 | **Client area** | The app's content below its title bar. In a browser, this includes the toolbar. |
 | **Whole window** | The entire window, including its borders and title bar. |
-| **Web page** | The visible page in a supported browser such as Chrome or Edge, leaving tabs and toolbars outside. |
+| **Web page** | The visible page in a supported browser such as Chrome or Edge, with tabs and toolbars outside the frame. |
 
-Select **Resize window** to apply it. ExactFrame measures the result and tells you whether the app reached the exact size or accepted a nearby size. Some apps enforce minimum sizes or round their dimensions.
+Select **Resize window** to apply it. ExactFrame measures the result and reports whether the app reached the exact size or accepted a nearby size. Some apps enforce minimum sizes or round their dimensions.
 
-After a resize, the outline follows the app as you move it, including between displays. **Restore original size** returns the window to how it was before the first resize in that session.
+The outline follows the app as you move it, including between displays. **Restore original size** returns it to its size and position before the first resize in that session. ExactFrame can automatically reapply an app's remembered size; use **Forget size** to stop this.
 
-ExactFrame also remembers an app's last measured size and mode. Selecting that app again can apply the remembered size automatically. Use **Forget size** to stop this.
+## Make it your own
 
-For web development, keep in mind that these are **physical pixels**. ExactFrame does not measure the page's CSS viewport, browser zoom or device-pixel ratio. The [browser sizing guide](docs/browser-sizing.md) explains how to check those values in your browser.
-
-## Make the setup your own
-
-- **Keep useful guides on screen.** Add a 9:16, 1:1, 4:5 or custom frame inside the main one to plan different crops of the same recording.
-- **Adjust the outline.** The **Style** tab has colors, line weights, dashed or corner borders, dimming, and composition guides.
-- **Save setups you use often.** In **Profiles**, save a size, position, display and mode together. You can include the appearance and apply a profile with a shortcut.
-- **Keep controls close by.** The floating bar beside the outline lets you make quick adjustments. **Click-through** lets clicks pass through the border to the app underneath.
-- **Leave ExactFrame running.** By default, closing the window keeps it in the notification area so the outline and shortcuts stay available. Right-click its icon and choose **Quit ExactFrame** to exit. If you enable **Start with Windows**, keep the executable in a stable folder.
-
-A frame must fit on one display. If there is not enough room, ExactFrame explains the problem instead of silently shrinking the requested size.
-
-## More ways to work
-
-When you need more than a basic recording region:
-
-| If you want to… | Use… |
-|---|---|
-| Draw a region on screen, start from an existing window, or resize with handles | [Direct frame editing](docs/direct-frame-editing.md), including snapping and precise keyboard adjustments |
-| Move additional frames directly and plan their final output sizes | [Output compositions](docs/output-compositions.md), with crop controls, size sliders and output previews |
-| Move your saved setups to another PC | [Profile import and export](docs/portable-profiles.md), with a review of display mappings before import |
-| Choose the right app when several similar windows are open | [Application matching](docs/application-targeting.md) by executable path, title or window class, with a preview of matches |
-| Apply a frame to an OBS Display Capture source | [Send to OBS](docs/obs-integration.md), with a preview of the change and undo |
-| Capture a frame as an editable screenshot | [Capture in SnapStudio](docs/snapstudio-integration.md), using SnapStudio 1.2.0 or newer |
-| Use Command Palette, Workspaces, FancyZones or Awake | [Optional PowerToys setup](docs/powertoys-integration.md); ExactFrame also works without PowerToys |
-| Check whether your recording setup behaves as expected | **Check my setup** and the [recording compatibility guide](docs/recording-compatibility.md) |
-| Choose an appearance or work in a smaller window | **Theme → System, Light or Dark**, plus [compact controls and a collapsible preview](docs/usability-and-engineering.md) |
-
-Output previews help you plan a composition. A saved clip is still the way to check what your recorder actually produced. The compatibility guide separates completed checks from setups that remain unverified.
+- **Draw the region you need.** Use **Draw on screen**, start with **Use window bounds**, or adjust the frame with drag handles and precise keyboard nudges. [Frame editing guide →](docs/direct-frame-editing.md)
+- **Choose a look.** In **Style**, change colors, line weights, dashed or corner borders, dimming and composition guides. **Theme** switches the app between System, Light and Dark.
+- **Save a favorite setup.** In **Profiles**, save a size, position, display and mode, optionally with its appearance. [Move profiles to another PC →](docs/portable-profiles.md)
+- **Keep controls within reach.** Use the floating bar for quick adjustments. Enable **Click-through** to pass clicks through the border, or collapse the preview for a smaller workspace. [More workspace options →](docs/usability-and-engineering.md)
 
 ## Handy shortcuts
 
-These are the defaults. Open **Help → Keyboard shortcuts** to see your active assignments. To change them, open **Profiles → Global hotkeys**.
-
 | Shortcut | Action |
 |---|---|
-| **F1** | Open Help |
 | **Ctrl + Alt + F8** | Show or hide the outline |
 | **Ctrl + Alt + F9** | Toggle click-through |
 | **Ctrl + Alt + F10** | Apply the next profile |
 | **Ctrl + Alt + 1–9** | Apply the profile assigned to that slot |
-| **Esc** | Close Help or hide the outline while ExactFrame has focus; cancel an active drag |
+| **F1** | Open Help |
+| **Esc** | Cancel an active drag, close Help or hide the outline while ExactFrame has focus |
 
-If a shortcut is already in use by another app, ExactFrame shows that. It also avoids shortcuts that would interfere with typing characters using **AltGr** on your keyboard.
+These are the defaults. See your active assignments in **Help → Keyboard shortcuts** and change them in **Profiles → Global hotkeys**. ExactFrame flags conflicts with other apps and avoids assignments that interfere with AltGr typing.
 
-## Help and settings
+## Connect your workflow
 
-Press **F1** or select **?** for searchable help and troubleshooting. For a bug report, open **Help → About → Copy system info**, then [open an issue](https://github.com/MaxAkbar/ExactFrame/issues). Include what you were trying to do and what happened; for recording problems, include your recorder, capture method and display scaling.
+| Tool | What you can do |
+|---|---|
+| **OBS Studio** | Preview and apply a frame to a Display Capture source, with undo. [Send to OBS →](docs/obs-integration.md) |
+| **SnapStudio 1.2.0+** | Capture the exact frame as a still image and open it for editing. [Capture in SnapStudio →](docs/snapstudio-integration.md) |
+| **PowerToys** *(optional)* | Use Workspaces launch commands, FancyZones profile links and timed Awake sessions. A separate Command Palette development companion is also available. [PowerToys setup →](docs/powertoys-integration.md) |
 
-Settings, profiles and remembered app sizes are stored at:
+See [what's new in 2.3.0](docs/releases/v2.3.0.md).
 
-```text
-%LOCALAPPDATA%\ExactFrame\exactframe.db
-```
+## Need a hand?
 
-Use **Help → About → Open settings folder** to find it.
+Press **F1** or select **?** for searchable help. **Check my setup** walks through recording checks; the [compatibility guide](docs/recording-compatibility.md) lists completed checks and remaining limitations.
+
+<details>
+<summary><strong>Are the dimensions affected by Windows scaling?</strong></summary>
+
+A **1920 × 1080** frame always means 1920 × 1080 **physical screen pixels**, even at 150% or 200% Windows scaling. The colored border sits inside the frame; its outer edges mark the capture area. The frame must fit on one display. ExactFrame explains an oversized request instead of silently shrinking it.
+
+Browser CSS pixels, page zoom and device-pixel ratio are different measurements. See the [browser sizing guide](docs/browser-sizing.md).
+
+</details>
+
+<details>
+<summary><strong>Why is ExactFrame still running after I close the window?</strong></summary>
+
+By default, closing the window keeps ExactFrame in the notification area so the outline and shortcuts stay available. Right-click its icon and choose **Quit ExactFrame** to exit. If you enable **Start with Windows**, keep the executable in a stable folder.
+
+</details>
+
+<details>
+<summary><strong>Where are my settings, and how do I report a problem?</strong></summary>
+
+Settings, profiles and remembered app sizes are stored at `%LOCALAPPDATA%\ExactFrame\exactframe.db`. Use **Help → About → Open settings folder** to find it.
+
+For a bug report, select **Help → About → Copy system info**, then [open an issue](https://github.com/MaxAkbar/ExactFrame/issues). Include what you tried and what happened. For recording problems, include your recorder, capture method and display scaling. If several app windows look alike, the [application matching guide](docs/application-targeting.md) can help you target the right one.
+
+</details>
 
 ## Build from source
 
