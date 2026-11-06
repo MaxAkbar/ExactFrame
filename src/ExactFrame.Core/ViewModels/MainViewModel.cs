@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CSharpDB.Primitives;
 using ExactFrame.Core.Geometry;
+using ExactFrame.Core.Integration;
 using ExactFrame.Core.Models;
 using ExactFrame.Core.Profiles;
 using ExactFrame.Core.Services;
@@ -29,6 +30,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IProfileTransferService? _profileTransfer;
     private readonly IOutputPreviewService? _outputPreview;
     private readonly ISnapStudioCaptureService? _snapStudioCapture;
+    private readonly ICommandCatalogPublisher? _commandCatalog;
+    private readonly Func<IPowerToysService>? _powerToys;
     private readonly bool _profileShortcutsMigrated;
     private readonly IOutlineOverlay _overlay;
     private readonly IHotkeyService _hotkeys;
@@ -60,7 +63,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IFrameRegionPicker? framePicker = null,
         IProfileTransferService? profileTransfer = null,
         IOutputPreviewService? outputPreview = null,
-        ISnapStudioCaptureService? snapStudioCapture = null)
+        ISnapStudioCaptureService? snapStudioCapture = null,
+        ICommandCatalogPublisher? commandCatalog = null,
+        Func<IPowerToysService>? powerToys = null)
     {
         _displayService = displayService;
         _windowService = windowService;
@@ -69,6 +74,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _profileTransfer = profileTransfer;
         _outputPreview = outputPreview;
         _snapStudioCapture = snapStudioCapture;
+        _commandCatalog = commandCatalog;
+        _powerToys = powerToys;
         _overlay = overlay;
         _hotkeys = hotkeys;
         _clipboard = clipboard;
@@ -99,6 +106,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         ShowOutlineModeCommand = new RelayCommand(() => SetMode(FrameMode.Outline));
         ShowResizeModeCommand = new RelayCommand(() => SetMode(FrameMode.Resize));
+        OpenPowerToysCommand = new RelayCommand(() => PowerToysRequested?.Invoke(this, EventArgs.Empty));
         OpenProfilesCommand = new RelayCommand(() =>
         {
             SetMode(FrameMode.Outline);
@@ -244,6 +252,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _overlay.SetCaptureExclusion(_hideFromRecorders);
         RegisterHotkeys();
         RebuildProfiles();
+        if (_settings.ShareWithCommandPalette) RefreshCommandCatalog();
         UpdateFrame(Summary());
         if (_profileShortcutsMigrated && !SaveSettings()) return;
         SetStatus("Choose a size, then show the outline.");
@@ -378,6 +387,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         try
         {
             _store.Save(_settings);
+            if (_settings.ShareWithCommandPalette) RefreshCommandCatalog();
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or CSharpDbException or InvalidOperationException or JsonException)

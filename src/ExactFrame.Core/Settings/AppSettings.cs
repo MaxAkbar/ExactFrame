@@ -10,6 +10,12 @@ public sealed class AppSettings
     public AppThemePreference ThemePreference { get; set; } = AppThemePreference.System;
     public string? SnapStudioExecutablePath { get; set; }
 
+    /// <summary>Off by default. Exposes only profile names, IDs and sizes to the separately installed companion.</summary>
+    public bool ShareWithCommandPalette { get; set; }
+
+    /// <summary>Optional, machine-local FancyZones layout links. Never included in portable profile exports.</summary>
+    public Dictionary<string, string> PowerToysProfileLayouts { get; set; } = [];
+
     public OutlineStyle Style { get; set; } = new();
 
     public bool HideFromRecorders { get; set; } = true;

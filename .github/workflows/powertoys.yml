@@ -1,0 +1,75 @@
+name: Optional PowerToys companion
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/powertoys.yml'
+      - 'ExactFrame.PowerToys.slnx'
+      - 'Directory.Build.props'
+      - 'global.json'
+      - 'src/ExactFrame.CommandPalette/**'
+      - 'src/ExactFrame.Core/Integration/**'
+      - 'src/ExactFrame.Core/ViewModels/MainViewModel.Integration.cs'
+      - 'src/ExactFrame.Core/ViewModels/PowerToysViewModel.cs'
+      - 'src/ExactFrame/Services/PowerToysService.cs'
+      - 'tests/ExactFrame.PowerToys.Tests/**'
+      - 'scripts/Build-PowerToysCompanion.ps1'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/powertoys.yml'
+      - 'ExactFrame.PowerToys.slnx'
+      - 'Directory.Build.props'
+      - 'global.json'
+      - 'src/ExactFrame.CommandPalette/**'
+      - 'src/ExactFrame.Core/Integration/**'
+      - 'src/ExactFrame.Core/ViewModels/MainViewModel.Integration.cs'
+      - 'src/ExactFrame.Core/ViewModels/PowerToysViewModel.cs'
+      - 'src/ExactFrame/Services/PowerToysService.cs'
+      - 'tests/ExactFrame.PowerToys.Tests/**'
+      - 'scripts/Build-PowerToysCompanion.ps1'
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  companion:
+    runs-on: windows-2025
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          global-json-file: global.json
+      - name: Restore optional companion dependencies
+        run: dotnet restore ExactFrame.PowerToys.slnx -p:Platform=x64 --locked-mode
+      - name: Test SDK commands and missing PowerToys behavior
+        run: dotnet test tests/ExactFrame.PowerToys.Tests/ExactFrame.PowerToys.Tests.csproj -c Release -p:Platform=x64 --no-restore --logger "trx;LogFileName=powertoys.trx" --results-directory TestResults
+      - name: Build and validate unsigned companion packages
+        run: |
+          ./scripts/Build-PowerToysCompanion.ps1 -Architecture x64
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          ./scripts/Build-PowerToysCompanion.ps1 -Architecture ARM64
+      - name: Retain optional packages
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: optional-powertoys-companion-unsigned
+          path: |
+            artifacts/powertoys/*/*-unsigned.msix
+            artifacts/powertoys/*/*-development.zip
+            artifacts/powertoys/*/POWERTOYS_SHA256SUMS.txt
+          if-no-files-found: error
+      - name: Retain companion test report
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: powertoys-test-results
+          path: TestResults/*.trx
+          if-no-files-found: ignore

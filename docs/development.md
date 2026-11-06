@@ -1,6 +1,6 @@
 # Developing ExactFrame
 
-Start with the [README](../README.md) for the user workflows. This guide covers building, packaging and checking the current source. The features described in the README are included in v2.1.0.
+Start with the [README](../README.md) for the current user workflows. This guide covers building, packaging and checking the current source; the [release notes](releases/v2.3.0.md) describe version 2.3.0.
 
 ## Build and run
 
@@ -17,6 +17,8 @@ dotnet run --project src/ExactFrame/ExactFrame.csproj -p:Platform=x64 --no-resto
 For ARM64, replace `-p:Platform=x64` with `-p:Platform=ARM64`. In Visual Studio, open `ExactFrame.slnx`, select the matching platform and start the app.
 
 The app is an unpackaged WinUI 3 executable rather than an MSIX package. Portable release builds include their .NET and Windows App SDK dependencies, so users do not need to install those runtimes separately.
+
+The [optional PowerToys companion](powertoys-integration.md) builds from `ExactFrame.PowerToys.slnx`. Its SDK dependencies and package registration are separate from the portable app. The release workflow validates and attaches its unsigned MSIX and development ZIP downloads separately.
 
 ## Tests and verification limits
 

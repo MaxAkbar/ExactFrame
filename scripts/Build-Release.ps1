@@ -69,6 +69,12 @@ Closing the window leaves ExactFrame in the notification area by default.
 To exit fully, right-click its notification-area icon and choose Quit ExactFrame.
 If you enable Start with Windows, keep the application in a stable location.
 
+OPTIONAL POWERTOYS TOOLS
+Open Profiles > PowerToys (optional) for Workspaces launch arguments, FancyZones profile links, and timed Awake.
+PowerToys is not required. Normal startup does not check for it, and Command Palette sharing starts off.
+The Command Palette companion is a separate unsigned development download with its own setup instructions.
+Guide: https://github.com/MaxAkbar/ExactFrame/blob/v$version/docs/powertoys-integration.md
+
 SETTINGS
 Settings are stored per user in %LOCALAPPDATA%\ExactFrame\exactframe.db.
 The application is portable to run; its settings are not stored alongside the executable.

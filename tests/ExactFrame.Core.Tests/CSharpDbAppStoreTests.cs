@@ -20,6 +20,8 @@ public sealed class CSharpDbAppStoreTests : IDisposable
         var settings = new AppSettings
         {
             ThemePreference = AppThemePreference.Dark,
+            ShareWithCommandPalette = true,
+            PowerToysProfileLayouts = new() { ["recording"] = "columns" },
             HideFromRecorders = false,
             Style = new OutlineStyle { Color = OutlineColor.Amber, ShowThirds = true },
             Profiles =
@@ -54,6 +56,8 @@ public sealed class CSharpDbAppStoreTests : IDisposable
         {
             var loaded = reopened.Load();
             Assert.Equal(AppThemePreference.Dark, loaded.ThemePreference);
+            Assert.True(loaded.ShareWithCommandPalette);
+            Assert.Equal("columns", loaded.PowerToysProfileLayouts["recording"]);
             Assert.False(loaded.HideFromRecorders);
             Assert.Equal(settings.Style, loaded.Style);
             Assert.Equal(settings.Profiles, loaded.Profiles);

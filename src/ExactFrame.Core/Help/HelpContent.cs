@@ -12,6 +12,7 @@ public static class HelpContent
     public const string Shortcuts = "shortcuts";
     public const string ResizeWindow = "resize-window";
     public const string ObsIntegration = "obs";
+    public const string PowerToys = "powertoys";
     public const string RecordingSetup = "recording-setup";
     public const string Troubleshooting = "troubleshooting";
     public const string About = "about";
@@ -39,6 +40,20 @@ public static class HelpContent
                         "Leave **Hide from recorders** on, or hide the outline before you start recording."),
                     Tip("All sizes are physical pixels, so 1920 × 1080 stays exactly 1920 × 1080 at 100%, 150% or 200% scaling."),
                     Paragraph("Use **Theme** in the top toolbar to choose **System**, **Light** or **Dark**. System follows Windows. The choice is remembered separately from capture profiles; Windows contrast themes take priority.")
+                ])
+            ]),
+
+        new(PowerToys, "PowerToys (optional)", "",
+            "Use optional PowerToys tools while keeping ExactFrame independent.",
+            [
+                new("Optional setup", [
+                    Paragraph("Open **Profiles → PowerToys (optional)** to check available tools. PowerToys is not required, is never installed automatically, and is not checked during normal startup."),
+                    Bullets("**Command Palette:** install the separate ExactFrame companion, then turn on **Share saved profiles**. Sharing is off by default. Use **Refresh profiles** in the companion after editing profiles.",
+                        "**Workspaces:** apply a profile and choose **Copy launch arguments**. Paste them into ExactFrame's Workspace entry. Increase the delay if other windows take longer to settle.",
+                        "**FancyZones:** choose a layout for its first monitor, snap your windows, then apply your ExactFrame profile. **Link to active profile** reuses a layout with that profile. If FancyZones becomes unavailable, the frame still applies. Use the layout editor for other monitors.",
+                        "**Awake:** request a timed session with the display on. Existing Awake sessions are left alone. Only a session started by ExactFrame can be stopped here.",
+                        "**ZoomIt:** frame your shot, then use ZoomIt's configured shortcuts. Region selection remains manual."),
+                    Tip("Missing PowerToys tools affect only their optional actions. Your frames, shortcuts, profiles, OBS and SnapStudio continue to work.")
                 ])
             ]),
 

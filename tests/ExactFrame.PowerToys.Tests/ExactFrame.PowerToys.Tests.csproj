@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <Platforms>x64;ARM64</Platforms>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <ProjectReference Include="../../src/ExactFrame.Core/ExactFrame.Core.csproj" />
+    <!-- The companion compiles the tiny catalog contract itself, keeping the database out of its package. -->
+    <ProjectReference Include="../../src/ExactFrame.CommandPalette/ExactFrame.CommandPalette.csproj" Aliases="palette" />
+    <Compile Include="../../src/ExactFrame/Services/PowerToysService.cs" Link="Production/PowerToysService.cs" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

@@ -4,6 +4,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using ExactFrame.Core.Services;
 using ExactFrame.Core.Obs;
+using ExactFrame.Core.Integration;
 using ExactFrame.Core.Settings;
 using ExactFrame.Core.ViewModels;
 using ExactFrame.Hud;
@@ -24,6 +25,8 @@ public partial class App : Application
     private TrayIcon? _tray;
     private Mutex? _instance;
     private bool _quitting;
+    private readonly SemaphoreSlim _launchGate = new(1, 1);
+    private readonly CancellationTokenSource _launchLifetime = new();
 
     public App()
     {
@@ -63,6 +66,8 @@ public partial class App : Application
 
         _services.GetRequiredService<MainViewModel>().Initialize();
         if (!IsBackgroundLaunch(arguments)) _mainWindow.Activate();
+        if (arguments.Any(argument => !string.Equals(argument, StartupService.BackgroundArgument, StringComparison.OrdinalIgnoreCase)))
+            _mainWindow.DispatcherQueue.TryEnqueue(async () => await HandleLaunchAsync(arguments));
     }
 
     private static ServiceProvider ConfigureServices()
@@ -91,6 +96,11 @@ public partial class App : Application
         string? dataRoot = Environment.GetEnvironmentVariable("EXACTFRAME_DATA_ROOT");
         string databasePath = string.IsNullOrWhiteSpace(dataRoot) ? CSharpDbAppStore.DefaultPath() : Path.Combine(dataRoot, "exactframe.db");
         string settingsPath = string.IsNullOrWhiteSpace(dataRoot) ? JsonSettingsStore.DefaultPath() : Path.Combine(dataRoot, "settings.json");
+        string catalogPath = string.IsNullOrWhiteSpace(dataRoot) ? CommandCatalog.DefaultPath : Path.Combine(dataRoot, "command-palette.json");
+        services.AddSingleton<ICommandCatalogPublisher>(_ => new CommandCatalogPublisher(catalogPath,
+            Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "ExactFrame.exe")));
+        services.AddSingleton<IPowerToysService>(_ => new PowerToysService());
+        services.AddSingleton<Func<IPowerToysService>>(sp => () => sp.GetRequiredService<IPowerToysService>());
         services.AddSingleton(_ => new CSharpDbAppStore(databasePath, settingsPath));
         services.AddSingleton<ISettingsStore>(sp => sp.GetRequiredService<CSharpDbAppStore>());
         services.AddSingleton<IAppDataStore>(sp => sp.GetRequiredService<CSharpDbAppStore>());
@@ -108,6 +118,8 @@ public partial class App : Application
             sp.GetRequiredService<MainViewModel>(), sp.GetRequiredService<IAppInfo>(),
             sp.GetRequiredService<IDisplayService>(), sp.GetRequiredService<IClipboardService>()));
         services.AddSingleton<MainWindow>();
+        services.AddSingleton<Func<PowerToysViewModel>>(sp => () => new PowerToysViewModel(
+            sp.GetRequiredService<MainViewModel>(), sp.GetRequiredService<IPowerToysService>(), sp.GetRequiredService<IClipboardService>()));
         services.AddSingleton<HudWindow>();
         services.AddSingleton<TrayIcon>();
 
@@ -120,7 +132,42 @@ public partial class App : Application
     /// <summary>Someone started ExactFrame again: show this copy, unless Windows started it at sign-in.</summary>
     private void OnLaunchForwarded(object? sender, IReadOnlyList<string> arguments)
     {
-        if (!IsBackgroundLaunch(arguments)) _mainWindow?.BringToFront();
+        // Return to WM_COPYDATA immediately; execute asynchronous commands on the UI dispatcher.
+        _mainWindow?.DispatcherQueue.TryEnqueue(async () => await HandleLaunchAsync(arguments));
+    }
+
+    private async Task HandleLaunchAsync(IReadOnlyList<string> arguments)
+    {
+        try
+        {
+            await _launchGate.WaitAsync(_launchLifetime.Token);
+            try
+            {
+                if (_services is null || _mainWindow is null) return;
+                var main = _services.GetRequiredService<MainViewModel>();
+                var command = LaunchCommand.Parse(arguments);
+                if (!command.Background) _mainWindow.BringToFront();
+                if (command.DelayMilliseconds > 0) await Task.Delay(command.DelayMilliseconds, _launchLifetime.Token);
+                if (!await main.ExecuteLaunchAsync(command)) { _mainWindow.BringToFront(); return; }
+                foreach (var action in command.Actions)
+                {
+                    if (action is not (FrameAction.OpenObs or FrameAction.OpenPowerToys)) continue;
+                    _mainWindow.BringToFront();
+                    // A background cold launch needs one layout pass before displaying a dialog.
+                    for (int i = 0; i < 50 && _mainWindow.Content?.XamlRoot is null; i++)
+                        await Task.Delay(50, _launchLifetime.Token);
+                    if (action == FrameAction.OpenObs) await _mainWindow.ShowObsAsync();
+                    else await _mainWindow.ShowPowerToysAsync();
+                }
+            }
+            finally { _launchGate.Release(); }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception error) when (error is ArgumentException or InvalidOperationException or System.Runtime.InteropServices.ExternalException)
+        {
+            _services?.GetRequiredService<MainViewModel>().ReportLaunchError(error.Message);
+            _mainWindow?.BringToFront();
+        }
     }
 
     private void OnMainWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
@@ -147,6 +194,7 @@ public partial class App : Application
     private void OnMainWindowClosed(object sender, WindowEventArgs args)
     {
         if (_services is null) return;
+        _launchLifetime.Cancel();
         _services.GetRequiredService<MainViewModel>().Shutdown();
         _hud?.Close();
         _services.Dispose();

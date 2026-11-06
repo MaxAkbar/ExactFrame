@@ -41,6 +41,7 @@ internal sealed class MessageWindow : NativeWindow
             case NativeMethods.WmCopyData when lParam != 0:
                 var data = Marshal.PtrToStructure<NativeMethods.CopyData>(lParam);
                 if (data.Id != LaunchDataId) break;
+                if (data.Data == 0 || data.Size < 2 || data.Size > 65536 || (data.Size & 1) != 0) return 0;
                 string text = data.Data == 0 ? string.Empty : Marshal.PtrToStringUni(data.Data, (int)(data.Size / 2)).TrimEnd('\0');
                 LaunchForwarded?.Invoke(this, text.Length == 0 ? [] : text.Split('\0'));
                 return 1;

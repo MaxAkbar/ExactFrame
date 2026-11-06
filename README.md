@@ -8,18 +8,18 @@ Use it alongside OBS Studio or your usual recorder. ExactFrame helps you set up 
 
 ## Download and open
 
-**[Download ExactFrame 2.2.0](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.2.0)** for Windows:
+**[Download ExactFrame 2.3.0](https://github.com/MaxAkbar/ExactFrame/releases/tag/v2.3.0)** for Windows:
 
 | Your PC | Download |
 |---|---|
-| Intel or AMD, 64-bit — most Windows PCs | [x64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.2.0/ExactFrame-2.2.0-win-x64-portable.zip) |
-| Windows on Arm | [ARM64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.2.0/ExactFrame-2.2.0-win-arm64-portable.zip) |
+| Intel or AMD, 64-bit — most Windows PCs | [x64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.3.0/ExactFrame-2.3.0-win-x64-portable.zip) |
+| Windows on Arm | [ARM64 portable ZIP](https://github.com/MaxAkbar/ExactFrame/releases/download/v2.3.0/ExactFrame-2.3.0-win-arm64-portable.zip) |
 
 Extract the ZIP, then open **ExactFrame.exe**. There is no installer and no separate .NET installation to do. You need **Windows 10 version 1809 or later**; Windows 11 is recommended.
 
 The downloads are currently unsigned, so Windows may show an unknown-publisher warning. Release notes include known limitations and a `SHA256SUMS.txt` file for checking your download.
 
-> **Version 2.2.0** adds **Capture in SnapStudio** for the main frame and additional guides. Use it with [SnapStudio 1.2.0 or newer](https://github.com/MaxAkbar/SnapStudio/releases/tag/v1.2.0). See the [release notes](docs/releases/v2.2.0.md) for setup, checks, and known limitations.
+> **Version 2.3.0** adds optional PowerToys tools: Workspaces launch commands, FancyZones profile links, timed Awake sessions, and a separately installed Command Palette development companion. **PowerToys is not required.** See the [release notes](docs/releases/v2.3.0.md) and [setup guide](docs/powertoys-integration.md).
 
 ## Set up your first recording
 
@@ -75,6 +75,7 @@ When you need more than a basic recording region:
 | Choose the right app when several similar windows are open | [Application matching](docs/application-targeting.md) by executable path, title or window class, with a preview of matches |
 | Apply a frame to an OBS Display Capture source | [Send to OBS](docs/obs-integration.md), with a preview of the change and undo |
 | Capture a frame as an editable screenshot | [Capture in SnapStudio](docs/snapstudio-integration.md), using SnapStudio 1.2.0 or newer |
+| Use Command Palette, Workspaces, FancyZones or Awake | [Optional PowerToys setup](docs/powertoys-integration.md); ExactFrame also works without PowerToys |
 | Check whether your recording setup behaves as expected | **Check my setup** and the [recording compatibility guide](docs/recording-compatibility.md) |
 | Choose an appearance or work in a smaller window | **Theme → System, Light or Dark**, plus [compact controls and a collapsible preview](docs/usability-and-engineering.md) |
 

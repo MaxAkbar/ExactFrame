@@ -1,0 +1,59 @@
+<ContentDialog
+    x:Class="ExactFrame.Views.PowerToysDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="PowerToys (optional)" CloseButtonText="Close">
+    <ScrollViewer Width="520" MaxHeight="560" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="18" Padding="0,0,12,8">
+            <TextBlock Text="Connect the tools you use. ExactFrame works independently, and nothing here starts automatically." TextWrapping="Wrap" />
+            <Border Padding="12" Background="{ThemeResource FooterBrush}" CornerRadius="8">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{x:Bind ViewModel.Status, Mode=OneWay}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                    <ProgressRing Width="18" Height="18" HorizontalAlignment="Left" IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                    <Button Content="Check again" Command="{x:Bind ViewModel.RefreshCommand}" />
+                </StackPanel>
+            </Border>
+            <StackPanel Spacing="8">
+                <TextBlock Text="Command Palette" FontWeight="SemiBold" />
+                <ToggleSwitch Header="Share saved profiles" IsOn="{x:Bind ViewModel.Main.ShareWithCommandPalette, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.IsIdle, Mode=OneWay}" />
+                <TextBlock Text="Install the separate ExactFrame companion in Command Palette to search profiles, toggle the outline, copy bounds, open OBS setup or capture in SnapStudio." TextWrapping="Wrap" FontSize="12" />
+                <TextBlock Text="{x:Bind ViewModel.Main.CommandPaletteStatus, Mode=OneWay}" TextWrapping="Wrap" FontSize="12" />
+            </StackPanel>
+            <StackPanel Spacing="8">
+                <TextBlock Text="Workspaces" FontWeight="SemiBold" />
+                <TextBlock Text="Arrange your recording apps in PowerToys Workspaces. Add these arguments to its ExactFrame entry to apply your active profile after a short delay." TextWrapping="Wrap" FontSize="12" />
+                <TextBox Text="{x:Bind ViewModel.Main.WorkspaceArguments, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.Name="Workspaces launch arguments" />
+                <Button Content="Copy launch arguments" Command="{x:Bind ViewModel.CopyWorkspaceCommand}" />
+            </StackPanel>
+            <StackPanel Spacing="8">
+                <TextBlock Text="FancyZones" FontWeight="SemiBold" />
+                <TextBlock Text="Apply a layout to FancyZones' first monitor. Use its editor for other monitors. Snap your windows before applying an ExactFrame profile." TextWrapping="Wrap" FontSize="12" />
+                <ComboBox Header="Layout" ItemsSource="{x:Bind ViewModel.Layouts}" DisplayMemberPath="Name" SelectedItem="{x:Bind ViewModel.SelectedLayout, Mode=TwoWay}" HorizontalAlignment="Stretch" IsEnabled="{x:Bind ViewModel.CanUseFancyZones, Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Apply layout" Command="{x:Bind ViewModel.ApplyLayoutCommand}" />
+                    <Button Content="Open layout editor" Command="{x:Bind ViewModel.OpenEditorCommand}" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind ViewModel.Main.ProfilePowerToysSummary, Mode=OneWay}" TextWrapping="Wrap" FontSize="12" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Link to active profile" Command="{x:Bind ViewModel.LinkProfileLayoutCommand}" />
+                    <Button Content="Remove link" Command="{x:Bind ViewModel.UnlinkProfileLayoutCommand}" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind ViewModel.Main.PowerToysProfileStatus, Mode=OneWay}" TextWrapping="Wrap" FontSize="12" AutomationProperties.LiveSetting="Polite" />
+            </StackPanel>
+            <StackPanel Spacing="8">
+                <TextBlock Text="Awake" FontWeight="SemiBold" />
+                <TextBlock Text="Keep this PC and its display awake for a demo. ExactFrame leaves existing PowerToys Awake sessions alone." TextWrapping="Wrap" FontSize="12" />
+                <NumberBox Header="Minutes" Minimum="1" Maximum="240" SmallChange="15" Value="{x:Bind ViewModel.AwakeMinutes, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.CanUseAwake, Mode=OneWay}" SpinButtonPlacementMode="Inline" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Start Awake" Command="{x:Bind ViewModel.StartAwakeCommand}" />
+                    <Button Content="Stop ExactFrame's session" Command="{x:Bind ViewModel.StopAwakeCommand}" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Spacing="8">
+                <TextBlock Text="ZoomIt" FontWeight="SemiBold" />
+                <TextBlock Text="Prepare your shot in ExactFrame, then use ZoomIt's zoom, drawing or region recording shortcut. Select the region against your outline, then hide the outline if your recorder captures it." TextWrapping="Wrap" FontSize="12" />
+                <HyperlinkButton Content="PowerToys setup guide" NavigateUri="https://github.com/MaxAkbar/ExactFrame/blob/main/docs/powertoys-integration.md" Padding="0" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

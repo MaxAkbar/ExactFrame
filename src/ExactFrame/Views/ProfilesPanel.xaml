@@ -209,6 +209,9 @@
                         Style="{StaticResource BareSwitchStyle}" />
                 </Grid>
             </StackPanel>
+            <Button Content="PowerToys (optional)…" Command="{x:Bind ViewModel.OpenPowerToysCommand}"
+                    HorizontalAlignment="Left" Style="{StaticResource SmallButtonStyle}"
+                    ToolTipService.ToolTip="Set up optional PowerToys tools and Command Palette sharing" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -70,6 +70,11 @@ public sealed partial class MainViewModel
             return;
         }
         bool resize = profile.Mode == FrameMode.Resize;
+        if (_settings.PowerToysProfileLayouts.ContainsKey(profile.Id))
+        {
+            await RunBusyAsync(() => ApplyProfilePowerToysLayoutAsync(profile.Id));
+            if (_disposed) return;
+        }
         if (resize) Guard(RefreshWindows);
 
         ApplyFrameState(profile);
@@ -279,6 +284,9 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(HasActiveResizeProfile));
         UpdateTargetProfileCommand?.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(ActiveProfileName));
+        OnPropertyChanged(nameof(WorkspaceArguments));
+        OnPropertyChanged(nameof(ProfilePowerToysSummary));
+        OnPropertyChanged(nameof(HasProfilePowerToysLayout));
         OnPropertyChanged(nameof(ProfileEyebrow));
     }
 

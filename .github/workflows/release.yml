@@ -23,8 +23,11 @@ jobs:
   build:
     needs: version
     uses: ./.github/workflows/ci.yml
+  companion:
+    needs: version
+    uses: ./.github/workflows/powertoys.yml
   draft:
-    needs: build
+    needs: [build, companion]
     runs-on: windows-2025
     permissions:
       contents: write
@@ -33,6 +36,10 @@ jobs:
         with:
           name: portable-release
           path: packages
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: optional-powertoys-companion-unsigned
+          path: companion-packages
       - name: Verify packages and create draft
         shell: pwsh
         env:
@@ -53,5 +60,22 @@ jobs:
           $expected = @("ExactFrame-${version}-win-x64-portable.zip", "ExactFrame-${version}-win-arm64-portable.zip")
           $actual = @($files | ForEach-Object { Split-Path $_ -Leaf })
           if ($actual.Count -ne 2 -or (Compare-Object ($expected | Sort-Object) ($actual | Sort-Object))) { throw 'Expected this version of both x64 and ARM64 packages' }
-          gh release create $env:RELEASE_TAG @files $checksum[0].FullName --draft --verify-tag --generate-notes --title "ExactFrame $env:RELEASE_TAG"
+          $companionFiles = @()
+          $companionChecksums = @()
+          foreach ($architecture in @('x64', 'arm64')) {
+            foreach ($suffix in @('unsigned.msix', 'development.zip')) {
+              $name = "ExactFrame.CommandPalette-$version-win-$architecture-$suffix"
+              $found = @(Get-ChildItem companion-packages -Recurse -File | Where-Object Name -CEQ $name)
+              if ($found.Count -ne 1) { throw "Expected exactly one companion asset: $name" }
+              $hash = (Get-FileHash $found[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+              $entry = "$hash  $name"
+              $manifests = @(Get-ChildItem companion-packages -Recurse -Filter POWERTOYS_SHA256SUMS.txt)
+              if (-not ($manifests | Where-Object { @(Get-Content $_.FullName) -ccontains $entry })) { throw "Companion checksum mismatch: $name" }
+              $companionFiles += $found[0].FullName
+              $companionChecksums += $entry
+            }
+          }
+          $companionManifest = Join-Path packages 'POWERTOYS_SHA256SUMS.txt'
+          $companionChecksums | Sort-Object | Set-Content $companionManifest -Encoding ascii
+          gh release create $env:RELEASE_TAG @files $checksum[0].FullName @companionFiles $companionManifest --draft --verify-tag --generate-notes --title "ExactFrame $env:RELEASE_TAG"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }

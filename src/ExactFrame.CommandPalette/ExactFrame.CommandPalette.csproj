@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Built and installed separately. The portable app never references or restores these packages. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <Platforms>x64;ARM64</Platforms>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RootNamespace>ExactFrame.CommandPalette</RootNamespace>
+    <AssemblyName>ExactFrame.CommandPalette</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CommandPalette.Extensions" Version="0.12.260812002" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+    <PackageReference Include="Shmuelie.WinRTServer" Version="2.1.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../ExactFrame.Core/Integration/CommandCatalog.cs" Link="Integration/CommandCatalog.cs" />
+    <Content Include="Assets/*.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Package.appxmanifest" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Install-Companion.ps1" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Public/*" CopyToOutputDirectory="PreserveNewest" />
+    <InternalsVisibleTo Include="ExactFrame.PowerToys.Tests" />
+  </ItemGroup>
+</Project>

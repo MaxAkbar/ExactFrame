@@ -25,6 +25,8 @@ public sealed partial class MainWindow : Window
     private readonly HelpView _helpView;
     private readonly ObsViewModel _obs;
     private readonly Func<RecordingSetupViewModel> _recordingSetup;
+    private readonly Func<PowerToysViewModel> _powerToys;
+    private bool _powerToysOpen;
     private bool _obsOpen;
     private bool _setupOpen;
     private bool _previewExpanded = true;
@@ -32,12 +34,14 @@ public sealed partial class MainWindow : Window
     private readonly Windows.UI.ViewManagement.UISettings _uiSettings = new();
     private readonly Microsoft.UI.System.ThemeSettings _themeSettings;
 
-    public MainWindow(MainViewModel viewModel, HelpViewModel help, ObsViewModel obs, Func<RecordingSetupViewModel> recordingSetup)
+    public MainWindow(MainViewModel viewModel, HelpViewModel help, ObsViewModel obs, Func<RecordingSetupViewModel> recordingSetup,
+        Func<PowerToysViewModel> powerToys)
     {
         ViewModel = viewModel;
         Help = help;
         _obs = obs;
         _recordingSetup = recordingSetup;
+        _powerToys = powerToys;
         InitializeComponent();
 
         PanelHost.Children.Add(new FramePanel(viewModel));
@@ -57,6 +61,7 @@ public sealed partial class MainWindow : Window
         _uiSettings.TextScaleFactorChanged += OnTextScaleChanged;
         _themeSettings.Changed += OnHighContrastChanged;
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        ViewModel.PowerToysRequested += OnPowerToysRequested;
         AppTitleBar.SizeChanged += (_, _) => UpdateTitleBarRegions();
         ModeSwitch.SizeChanged += (_, _) => UpdateTitleBarRegions();
         ProfileButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
@@ -66,6 +71,7 @@ public sealed partial class MainWindow : Window
         Closed += (_, _) =>
         {
             ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            ViewModel.PowerToysRequested -= OnPowerToysRequested;
             _uiSettings.ColorValuesChanged -= OnSystemColorsChanged;
             _uiSettings.TextScaleFactorChanged -= OnTextScaleChanged;
             _themeSettings.Changed -= OnHighContrastChanged;
@@ -88,7 +94,9 @@ public sealed partial class MainWindow : Window
         finally { _setupOpen = false; }
     }
 
-    private async void OnSendToObsClick(object sender, RoutedEventArgs e)
+    private async void OnSendToObsClick(object sender, RoutedEventArgs e) => await ShowObsAsync();
+
+    public async Task ShowObsAsync()
     {
         if (_obsOpen || Content?.XamlRoot is not { } root) return;
         _obsOpen = true;
@@ -97,6 +105,20 @@ public sealed partial class MainWindow : Window
         try { await dialog.ShowAsync(); }
         catch (System.Runtime.InteropServices.COMException) { /* Another dialog is already open. */ }
         finally { _obsOpen = false; }
+    }
+
+    private async void OnPowerToysRequested(object? sender, EventArgs e) => await ShowPowerToysAsync();
+
+    public async Task ShowPowerToysAsync()
+    {
+        if (_powerToysOpen || Content?.XamlRoot is not { } root) return;
+        _powerToysOpen = true;
+        using var tools = _powerToys();
+        var dialog = new PowerToysDialog(tools) { XamlRoot = root };
+        AppThemeHelper.MatchOwner(dialog);
+        try { await dialog.ShowAsync(); }
+        catch (System.Runtime.InteropServices.COMException) { /* Another dialog is already open. */ }
+        finally { _powerToysOpen = false; }
     }
 
     /// <summary>Shows the window if it's in the notification area or minimized, and brings it to the front.</summary>
